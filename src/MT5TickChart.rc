@@ -1,0 +1,210 @@
+//Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#ifndef APSTUDIO_INVOKED
+#include "targetver.h"
+#endif
+#define APSTUDIO_HIDDEN_SYMBOLS
+#include "windows.h"
+#undef APSTUDIO_HIDDEN_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE 9, 1
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+
+IDI_MT5TICKCHART       ICON         "MT5TickChart.ico"
+IDI_SMALL               ICON         "small.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDC_MT5TICKCHART MENU
+{
+   POPUP "Settings"
+   {
+      POPUP "Tick Chart Zoom"
+      {
+         MENUITEM "4",                IDM_TICK_CHART_ZOOM_4
+         MENUITEM "2",                IDM_TICK_CHART_ZOOM_2
+         MENUITEM "1",                IDM_TICK_CHART_ZOOM_1
+      }
+      POPUP "Bar Chart Candle Width"
+      {
+         MENUITEM "4",                IDM_BAR_CHART_CANDLE_WIDTH_4
+         MENUITEM "2",                IDM_BAR_CHART_CANDLE_WIDTH_2
+         MENUITEM "1",                IDM_BAR_CHART_CANDLE_WIDTH_1
+      }
+      POPUP "Tick Chart Time Sep."
+      {
+         MENUITEM "0",                IDM_TICK_TIME_SEP_0
+         MENUITEM "1",                IDM_TICK_TIME_SEP_1
+         MENUITEM "5",                IDM_TICK_TIME_SEP_5
+         MENUITEM "15",                IDM_TICK_TIME_SEP_15
+         MENUITEM "30",                IDM_TICK_TIME_SEP_30
+         MENUITEM "60",                IDM_TICK_TIME_SEP_60
+      }
+      POPUP "Bar Chart Time Sep."
+      {
+         MENUITEM "0",                IDM_BAR_TIME_SEP_0
+         MENUITEM "1",                IDM_BAR_TIME_SEP_1
+         MENUITEM "5",                IDM_BAR_TIME_SEP_5
+         MENUITEM "15",                IDM_BAR_TIME_SEP_15
+         MENUITEM "30",                IDM_BAR_TIME_SEP_30
+         MENUITEM "60",                IDM_BAR_TIME_SEP_60
+      }
+      MENUITEM "Freeze Ranges",                IDM_FREEZE_RANGES
+      MENUITEM "Reset Charts",                IDM_RESET_CHARTS
+      MENUITEM "Exit",                IDM_EXIT
+   }
+   POPUP "Visibility"
+   {
+      MENUITEM "Ask",           IDM_VIS_ASK
+      MENUITEM "Bid",           IDM_VIS_BID
+      MENUITEM "Levels",           IDM_VIS_LEVELS
+      MENUITEM "Auto Moving Range",           IDM_VIS_AUTO_MOV_RANGE
+      MENUITEM "Market Profile Ask",           IDM_VIS_MPROFILE_ASK
+      MENUITEM "Market Profile Bid",           IDM_VIS_MPROFILE_BID
+      MENUITEM "Tick Chart",           IDM_VIS_TICK_CHART
+      MENUITEM "Bar Chart",           IDM_VIS_BAR_CHART
+      MENUITEM "Time Parameter",           IDM_VIS_TIME_PARAMETER
+      POPUP "Other"
+      {
+         MENUITEM "Cumulative Ask",                IDM_VIS_CUMULATIVE_ASK
+         MENUITEM "Cumulative Bid",                IDM_VIS_CUMULATIVE_BID
+         MENUITEM "Distance",                IDM_VIS_DISTANCE
+         MENUITEM "Road",                IDM_VIS_ROAD
+         MENUITEM "Ticks",                IDM_VIS_TICKS
+      }
+   }
+   POPUP "Other"
+   {
+      MENUITEM "Events On Tick Chart",           IDM_TICK_CHART_EVENTS
+      MENUITEM "Events On Bar Chart",           IDM_BAR_CHART_EVENTS
+      MENUITEM "Orders",           IDM_ORDERS
+      MENUITEM "Color Time Param.",           IDM_COLOR_TIME_PARAM
+      MENUITEM "Zoom Time Param.",           IDM_ZOOM_TIME_PARAM
+      MENUITEM "Save Ticks",           IDM_SAVE_TICKS
+      MENUITEM "Print Screen",           IDM_PRINT_SCREEN
+      MENUITEM "About",                IDM_ABOUT
+      MENUITEM "Tool Box",                ID_TOOLBAR_SHOW
+   }
+   POPUP "Play"
+   {
+      POPUP "Timer"
+      {
+         MENUITEM "2000 ms",          IDM_TIMER_2000
+         MENUITEM "1000 ms",          IDM_TIMER_1000
+         MENUITEM "900 ms",           IDM_TIMER_900
+         MENUITEM "800 ms",           IDM_TIMER_800
+         MENUITEM "700 ms",           IDM_TIMER_700
+         MENUITEM "600 ms",           IDM_TIMER_600
+         MENUITEM "500 ms",           IDM_TIMER_500
+         MENUITEM "400 ms",           IDM_TIMER_400
+         MENUITEM "300 ms",           IDM_TIMER_300
+         MENUITEM "200 ms",           IDM_TIMER_200
+         MENUITEM "100 ms",           IDM_TIMER_100
+
+      }
+      MENUITEM "Real Tempo",           IDM_PLAY_REAL_TEMPO
+   }
+}
+
+IDD_TOOLBAR DIALOGEX 200, 10, 105, 152
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION
+EXSTYLE WS_EX_TOOLWINDOW
+CAPTION "Tool Box"
+FONT 8, "MS Sans Serif"
+{
+   LTEXT "Date:", -1, 1, 1, 20, 10
+   LTEXT "1970.01.01", IDC_DATELABEL, 24, 1, 80, 10//, SS_OWNERDRAW
+   LTEXT "INFO:", -1, 1, 12, 30, 10
+   LTEXT "range, etc.", IDC_INFOLABEL, 24, 12, 60, 10
+
+   PUSHBUTTON      "Load Full",IDC_LD_FROM_SERVER_BTN,1,22,50,14
+   PUSHBUTTON      "Load Partial",IDC_LD_FROM_SERVER_PARTIAL_BTN,53,22,50,14
+   AUTOCHECKBOX   "Chart Auto Scroll",IDC_CHART_AUTO_SCRL_CHBX,1,42,64,10
+   EDITTEXT IDC_STEP_SIZE_EDT, 1, 55, 50, 14
+   PUSHBUTTON      "S.B",IDC_STEP_BACKWRD_BTN,53,55,24,14
+   PUSHBUTTON      "S.F",IDC_STEP_FORWRD_BTN,79,55,24,14
+   AUTOCHECKBOX   "Measure",IDC_MEASURE_CHBX,1,71,50,14
+   PUSHBUTTON      "Replay",IDC_REPLAY_BTN,53,71,50,14
+   EDITTEXT IDC_MAIN_EDT, 1, 87, 102, 14
+   PUSHBUTTON      "Set Range",IDC_SET_RANGE_BTN,1,103,50,14
+   PUSHBUTTON      "Set Bar T.sz",IDC_SET_BAR_T_SIZE_BTN,53,103,50,14
+   PUSHBUTTON      "Mv.Rng Up",IDC_MV_RANGE_UP_BTN,1,119,50,14
+   PUSHBUTTON      "Mv.Rng Dn.",IDC_MV_RANGE_DOWN_BTN,53,119,50,14
+   AUTOCHECKBOX   "Levels Edit",IDC_LVLS_EDIT_CHBX,1,135,50,14
+   PUSHBUTTON      "L.A",IDC_LEVEL_ADD_BTN,53,135,24,14, WS_DISABLED
+   PUSHBUTTON      "L.D",IDC_LEVELS_DEL_BTN,79,135,24,14,WS_DISABLED
+}
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+1 TEXTINCLUDE
+{
+   "resource.h\0"
+}
+
+2 TEXTINCLUDE
+{
+   "#ifndef APSTUDIO_INVOKED\r\n"
+   "#include ""targetver.h""\r\n"
+   "#endif\r\n"
+   "#define APSTUDIO_HIDDEN_SYMBOLS\r\n"
+   "#include ""windows.h""\r\n"
+   "#undef APSTUDIO_HIDDEN_SYMBOLS\r\n"
+   "\0"
+}
+
+3 TEXTINCLUDE
+{
+   "\r\n"
+   "\0"
+}
+
+#endif    // APSTUDIO_INVOKED
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE
+{
+   IDC_MT5TICKCHART   "MT5TICKCHART"
+   IDS_APP_TITLE       "MT5 Tick Chart"
+}
+
+#endif
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
