@@ -1045,48 +1045,6 @@ void CALLBACK TimerFunction(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser, DWORD_PT
    if (nextInterval > 0)
       timerHandle = timeSetEvent(nextInterval, 0, TimerFunction, 0, TIME_ONESHOT);
 }
-int MainModuleProcedure(HWND parentWindow, HINSTANCE hInst, int cmdShow)
-{
-   hModuleInstance = hInst;
-   MSG msg;
-   hideShowHMenu = NULL;
-   mainMenu = NULL;
-
-   // Initialize global strings
-   LoadString(hModuleInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
-   LoadString(hModuleInstance, IDC_MT5TICKCHART, szWindowClass, MAX_LOADSTRING);
-   MyRegisterClass(hModuleInstance);
-
-   // Perform application initialization:
-   if (!InitInstance(hModuleInstance, cmdShow))
-   {
-      return FALSE;
-   }
-
-   chartModule.PassSettingsObjRef(&appSets);
-   RECT rect;
-   GetWindowRect(tickChartHWnd, &rect);
-   if (!chartModule.Initialize(MT5ParentChart, mainWindowHandle, tickChartHWnd, barChartHWnd, toolBarHWnd))
-   {
-      chartModule.ModuleDestroy();
-      UnregisterClass(szWindowClass, NULL);
-      return (0);
-   }
-
-   // Main message loop:
-   while (GetMessage(&msg, NULL, 0, 0))
-   {
-      if (!IsDialogMessage(toolBarHWnd, &msg))
-      {
-         TranslateMessage(&msg);
-         DispatchMessage(&msg);
-      }
-   }
-
-   chartModule.ModuleDestroy();
-   UnregisterClass(szWindowClass, NULL);
-   return (int)msg.wParam;
-}
 DWORD WINAPI MainModuleThreadFunction(LPVOID lpParam)
 {
    hModuleInstance = (HINSTANCE)lpParam;
