@@ -9,8 +9,6 @@ HINSTANCE hInst;                     // current instance
 TCHAR szTitle[MAX_LOADSTRING];       // The title bar text
 TCHAR szWindowClass[MAX_LOADSTRING]; // the main window class name
 
-unsigned int RandomRGB();
-unsigned int RandomRGB_gdi();
 // Forward declarations of functions included in this code module:
 ATOM MyRegisterClass(HINSTANCE hInstance);
 BOOL InitInstance(HINSTANCE, int nCmdShow, HWND parentChart = NULL);

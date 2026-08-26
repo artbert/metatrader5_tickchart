@@ -164,10 +164,6 @@ public:
    void FillEllipse(int x1, int y1, int x2, int y2, const uint clr);
 
    bool SelectFont(int size);
-   bool FontNameSet(wchar_t name[]);
-   bool FontSizeSet(int size);
-   bool FontFlagsSet(uint flags);
-   bool FontAngleSet(uint angle);
 
    void DrawTextOut(LPRECT lprc, LPCTSTR text, uint alignment = 0);
    void DrawTextOut_A(LPRECT lprc, LPCSTR text, uint alignment = 0);

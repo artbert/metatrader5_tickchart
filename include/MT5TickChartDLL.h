@@ -8,10 +8,6 @@
 #define DLL_CALL
 #endif
 
-// Forward declarations of your structs
-// struct SYMBOLSETS;
-// struct MqlTick;
-
 // Exported functions
 DLL_EXPORT bool DLL_CALL SetSymbolParameters(SYMBOLSETS &sets, char *date, int dateChars);
 DLL_EXPORT bool DLL_CALL Initialize(long long parent, wchar_t *dataPath, wchar_t *appTitle);
