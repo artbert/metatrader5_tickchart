@@ -3,7 +3,6 @@
 #include <Commdlg.h>
 
 #define MAX_LOADSTRING 100
-
 // Global Variables:
 HINSTANCE hInst;                     // current instance
 TCHAR szTitle[MAX_LOADSTRING];       // The title bar text
@@ -11,7 +10,7 @@ TCHAR szWindowClass[MAX_LOADSTRING]; // the main window class name
 
 // Forward declarations of functions included in this code module:
 ATOM MyRegisterClass(HINSTANCE hInstance);
-BOOL InitInstance(HINSTANCE, int nCmdShow, HWND parentChart = NULL);
+BOOL InitInstance(HINSTANCE, int nCmdShow, HWND parentChart = nullptr);
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
 INT_PTR CALLBACK ToolDlgProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
@@ -32,17 +31,17 @@ CTickChartModule chartModule;
 int _RandomSeed = 11111;
 
 HMENU hideShowHMenu, mainMenu;
-HWND tickChartHWnd = NULL, barChartHWnd = NULL, mainWindowHandle = NULL;
-HWND toolBarHWnd = NULL;
-HWND MT5ParentChart = NULL;
-HANDLE threadHandle = NULL;
+HWND tickChartHWnd = nullptr, barChartHWnd = nullptr, mainWindowHandle = nullptr;
+HWND toolBarHWnd = nullptr;
+HWND MT5ParentChart = nullptr;
+HANDLE threadHandle = nullptr;
 WCHAR fullDataPath[MAX_PATH];
 TCHMODSET appSets;
 MMRESULT timerHandle = 0;
 
 bool tickChMouseTracking = false, barChMouseTracking = false;
 
-HINSTANCE hModuleInstance = NULL;
+HINSTANCE hModuleInstance = nullptr;
 
 ATOM MyRegisterClass(HINSTANCE hInstance)
 {
@@ -56,7 +55,7 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
    wcex.cbWndExtra = 0;
    wcex.hInstance = hInstance;
    wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_MT5TICKCHART));
-   wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
+   wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
    wcex.hbrBackground = CreateSolidBrush(RGB(50, 50, 50));
    wcex.lpszMenuName = MAKEINTRESOURCE(IDC_MT5TICKCHART);
    wcex.lpszClassName = szWindowClass;
@@ -70,7 +69,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow, HWND parentChart)
    hInst = hInstance; // Store instance handle in our global variable
    DWORD dwRemove = WS_MAXIMIZEBOX | WS_THICKFRAME;
    mainWindowHandle = CreateWindowEx(WS_EX_CLIENTEDGE, szWindowClass, szTitle, WS_OVERLAPPEDWINDOW & ~dwRemove,
-                                     CW_USEDEFAULT, CW_USEDEFAULT, 1120, 789, parentChart, NULL, hInstance, NULL);
+                                     CW_USEDEFAULT, CW_USEDEFAULT, 1120, 789, parentChart, nullptr, hInstance, nullptr);
 
    if (!mainWindowHandle)
    {
@@ -81,7 +80,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow, HWND parentChart)
    UpdateWindow(mainWindowHandle);
 
    tickChartHWnd = CreateWindowEx(WS_EX_TRANSPARENT, L"STATIC", L"", WS_CHILD | WS_VISIBLE | SS_NOTIFY | SS_OWNERDRAW,
-                                  0, 0, 1100, 428, mainWindowHandle, (HMENU)NULL, hInstance, NULL);
+                                  0, 0, 1100, 428, mainWindowHandle, (HMENU) nullptr, hInstance, nullptr);
 
    if (!tickChartHWnd)
    {
@@ -93,7 +92,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow, HWND parentChart)
    UpdateWindow(tickChartHWnd);
 
    barChartHWnd = CreateWindowEx(WS_EX_TRANSPARENT, L"STATIC", L"", WS_CHILD | WS_VISIBLE | SS_NOTIFY | SS_OWNERDRAW,
-                                 0, 427, 1100, 300, mainWindowHandle, (HMENU)NULL, hInstance, NULL);
+                                 0, 427, 1100, 300, mainWindowHandle, (HMENU) nullptr, hInstance, nullptr);
 
    if (!barChartHWnd)
    {
@@ -128,16 +127,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
    case WM_CREATE:
    {
       toolBarHWnd = CreateDialog(hModuleInstance, MAKEINTRESOURCE(IDD_TOOLBAR), hWnd, ToolDlgProc);
-      if (toolBarHWnd != NULL)
+      if (toolBarHWnd != nullptr)
       {
          ShowWindow(toolBarHWnd, SW_SHOW);
          HWND editCntrl = GetDlgItem(toolBarHWnd, IDC_STEP_SIZE_EDT);
-         if (editCntrl != NULL)
+         if (editCntrl != nullptr)
             OldEditControlProc = SetWindowLongPtr(editCntrl, GWLP_WNDPROC, (LONG_PTR)EditControlProc);
       }
       else
       {
-         MessageBox(hWnd, L"CreateDialog returned NULL", L"Warning!",
+         MessageBox(hWnd, L"CreateDialog returned nullptr", L"Warning!",
                     MB_OK | MB_ICONINFORMATION);
       }
    }
@@ -165,17 +164,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
          {
             RECT rect;
             GetWindowRect(hWnd, &rect);
-            if (hideShowHMenu == NULL)
+            if (hideShowHMenu == nullptr)
             {
                hideShowHMenu = GetMenu(hWnd);
-               SetMenu(hWnd, NULL);
+               SetMenu(hWnd, nullptr);
                MoveWindow(hWnd, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top - 20, false);
             }
             else
             {
                SetMenu(hWnd, hideShowHMenu);
                MoveWindow(hWnd, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top + 20, false);
-               hideShowHMenu = NULL;
+               hideShowHMenu = nullptr;
             }
          }
          break;
@@ -1049,8 +1048,8 @@ DWORD WINAPI MainModuleThreadFunction(LPVOID lpParam)
 {
    hModuleInstance = (HINSTANCE)lpParam;
    MSG msg;
-   hideShowHMenu = NULL;
-   mainMenu = NULL;
+   hideShowHMenu = nullptr;
+   mainMenu = nullptr;
 
    LARGE_INTEGER Frequency;
    QueryPerformanceFrequency(&Frequency);
@@ -1078,12 +1077,12 @@ DWORD WINAPI MainModuleThreadFunction(LPVOID lpParam)
    if (!chartModule.Initialize(MT5ParentChart, mainWindowHandle, tickChartHWnd, barChartHWnd, toolBarHWnd))
    {
       chartModule.ModuleDestroy();
-      UnregisterClass(szWindowClass, NULL);
+      UnregisterClass(szWindowClass, nullptr);
       return (0);
    }
    PostMessage(MT5ParentChart, WM_LBUTTONUP, 0, -MODULE_INITIALIZED);
    // Main message loop:
-   while (GetMessage(&msg, NULL, 0, 0))
+   while (GetMessage(&msg, nullptr, 0, 0))
    {
       if (!IsDialogMessage(toolBarHWnd, &msg))
       {
@@ -1092,10 +1091,10 @@ DWORD WINAPI MainModuleThreadFunction(LPVOID lpParam)
       }
    }
    SaveDataFile();
-   mainWindowHandle = NULL;
-   threadHandle = NULL;
+   mainWindowHandle = nullptr;
+   threadHandle = nullptr;
    chartModule.ModuleDestroy();
-   UnregisterClass(szWindowClass, NULL);
+   UnregisterClass(szWindowClass, nullptr);
    PostMessage(MT5ParentChart, WM_LBUTTONUP, 0, -CLOSE_CHART);
    return (int)msg.wParam;
 }
@@ -1105,13 +1104,13 @@ bool SaveDataFile()
    HANDLE hFile;
    bool bSuccess = false;
 
-   hFile = CreateFile(fullDataPath, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+   hFile = CreateFile(fullDataPath, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
    if (hFile != INVALID_HANDLE_VALUE)
    {
       DWORD dwFileSize = (DWORD)sizeof(TCHMODSET);
       DWORD dwWritten;
 
-      if (WriteFile(hFile, &appSets, dwFileSize, &dwWritten, NULL))
+      if (WriteFile(hFile, &appSets, dwFileSize, &dwWritten, nullptr))
       {
          bSuccess = true;
       }
@@ -1125,17 +1124,17 @@ bool LoadDataFile()
    HANDLE hFile;
    bool bSuccess = false;
 
-   hFile = CreateFile(fullDataPath, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+   hFile = CreateFile(fullDataPath, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, 0, nullptr);
    if (hFile != INVALID_HANDLE_VALUE)
    {
       DWORD dwFileSize;
 
-      dwFileSize = GetFileSize(hFile, NULL);
+      dwFileSize = GetFileSize(hFile, nullptr);
       if (dwFileSize == sizeof(TICKCHARTMODULESETTINGS))
       {
          DWORD dwRead;
 
-         if (ReadFile(hFile, &appSets, dwFileSize, &dwRead, NULL))
+         if (ReadFile(hFile, &appSets, dwFileSize, &dwRead, nullptr))
          {
             HMENU hm = GetMenu(mainWindowHandle);
 

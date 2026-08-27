@@ -22,26 +22,26 @@ char WNUMBERS_A[10][2] = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
 Canvas::Canvas(void) : m_width(0),
                        m_height(0), initialized(false), m_fontsize(-120)
 {
-   hbm = NULL;
-   oldBitmap = NULL;
-   hDCMem = NULL;
-   hf_12 = NULL;
-   hf_09 = NULL;
-   hf_07 = NULL;
-   olfFont = NULL;
+   hbm = nullptr;
+   oldBitmap = nullptr;
+   hDCMem = nullptr;
+   hf_12 = nullptr;
+   hf_09 = nullptr;
+   hf_07 = nullptr;
+   olfFont = nullptr;
 }
 
 Canvas::~Canvas(void)
 {
-   if (hbm != NULL)
+   if (hbm != nullptr)
       DeleteObject(hbm);
-   if (hDCMem != NULL)
+   if (hDCMem != nullptr)
       DeleteDC(hDCMem);
-   if (hf_12 != NULL)
+   if (hf_12 != nullptr)
       DeleteObject(hf_12);
-   if (hf_09 != NULL)
+   if (hf_09 != nullptr)
       DeleteObject(hf_09);
-   if (hf_07 != NULL)
+   if (hf_07 != nullptr)
       DeleteObject(hf_07);
 }
 bool Canvas::Create(HWND hWnd, const int width, const int height)
@@ -67,7 +67,7 @@ bool Canvas::Create(HWND hWnd, const int width, const int height)
       bmpInfo.bmiHeader.biSizeImage = (uint)(m_width * m_height * 4);
       hDCMem = CreateCompatibleDC(hDC);
       olfFont = (HFONT)SelectObject(hDCMem, hf_12);
-      hbm = CreateDIBSection(hDCMem, &bmpInfo, DIB_RGB_COLORS, (VOID **)&m_pixels, NULL, 0);
+      hbm = CreateDIBSection(hDCMem, &bmpInfo, DIB_RGB_COLORS, (VOID **)&m_pixels, nullptr, 0);
       oldBitmap = (HBITMAP)SelectObject(hDCMem, hbm);
       BitBlt(hDCMem, 0, 0, m_width, m_height, hDC, 0, 0, SRCCOPY);
       SetBkMode(hDCMem, TRANSPARENT);
@@ -138,27 +138,27 @@ void Canvas::CreatePixelFontSet(uint eraseColor)
 }
 bool Canvas::Destroy()
 {
-   if (hDCMem != NULL)
+   if (hDCMem != nullptr)
    {
       DeleteObject(SelectObject(hDCMem, oldBitmap));
-      hbm = NULL;
+      hbm = nullptr;
       SelectObject(hDCMem, olfFont);
       DeleteObject(hf_12);
       DeleteObject(hf_09);
       DeleteObject(hf_07);
-      hf_12 = NULL;
-      hf_09 = NULL;
-      hf_07 = NULL;
+      hf_12 = nullptr;
+      hf_09 = nullptr;
+      hf_07 = nullptr;
 
       DeleteDC(hDCMem);
-      hDCMem = NULL;
+      hDCMem = nullptr;
       initialized = false;
    }
    return (true);
 }
 void Canvas::Update()
 {
-   if (hDCMem != NULL)
+   if (hDCMem != nullptr)
    {
       HDC hDC = GetDC(canvasWindow);
       BitBlt(hDC, 0, 0, m_width, m_height, hDCMem, 0, 0, SRCCOPY);
@@ -167,7 +167,7 @@ void Canvas::Update()
 }
 void Canvas::Update(int nXDest, int nYDest, int nWidth, int nHeight, int nXSrc, int nYSrc)
 {
-   if (hDCMem != NULL)
+   if (hDCMem != nullptr)
    {
       HDC hDC = GetDC(canvasWindow);
       BitBlt(hDC, nXDest, nYDest, nWidth, nHeight, hDCMem, nXSrc, nYSrc, SRCCOPY);

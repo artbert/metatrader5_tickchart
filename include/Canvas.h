@@ -23,7 +23,6 @@ inline double NormalizeDouble(double x, uint places)
 
    return (floor((x * powTen) + 0.5) / powTen);
 }
-
 extern WCHAR TIMETABLE[60][3];
 extern WCHAR WNUMBERS[10][2];
 extern char TIMETABLE_A[60][3];

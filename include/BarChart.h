@@ -3,9 +3,9 @@
 #include <string>
 
 using std::string;
+
 class CBarChart : public ChartCanvas
 {
-
 private:
    double _Point;
    double _DigitsMultiplier;

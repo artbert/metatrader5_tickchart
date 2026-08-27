@@ -1,12 +1,10 @@
-#include "StdAfx.h"
+#include "stdafx.h"
 #include "BarChart.h"
 
-CBarChart::CBarChart(void)
+CBarChart::CBarChart()
 {
    ShowFlags(FLAG_SHOW_LEGEND | FLAGS_SHOW_SCALES | FLAG_SHOW_GRID);
-
    DarkMode = true;
-
    workSpaceChartHeightInPx = 270;
    pointsPerPx = 0;
    mDataAreaStartPoint = 0;
@@ -23,7 +21,6 @@ CBarChart::CBarChart(void)
    totalMProfileSize = 100000;
 
    drawVerticalGrid = false;
-
    mProfileDataVis = false;
 
    seriesSize = 10000;
@@ -56,15 +53,15 @@ CBarChart::CBarChart(void)
    isSignedLevelsDescriptions = false;
    pipsDivider = 1;
 
-   transactionsDescriptions = NULL;
-   transactionsTab = NULL;
+   transactionsDescriptions = nullptr;
+   transactionsTab = nullptr;
    transactionsTabSize = 0;
-   signedLevelsDescriptions = NULL;
+   signedLevelsDescriptions = nullptr;
 
    signedLevelsArraySize = 0;
-   signedLevels = NULL;
+   signedLevels = nullptr;
 
-   calendarEvents = NULL;
+   calendarEvents = nullptr;
    calendarEventsTabSize = 0;
 
    SetColorMode(DarkMode);
@@ -93,16 +90,16 @@ CBarChart::CBarChart(void)
    lastChartPriceMin = -DBL_MAX;
 }
 
-CBarChart::~CBarChart(void)
+CBarChart::~CBarChart()
 {
    delete[] times;
-   if (transactionsTab != NULL)
+   if (transactionsTab != nullptr)
       delete[] transactionsTab;
-   if (calendarEvents != NULL)
+   if (calendarEvents != nullptr)
       delete[] calendarEvents;
-   if (signedLevelsDescriptions != NULL)
+   if (signedLevelsDescriptions != nullptr)
       delete[] signedLevelsDescriptions;
-   if (signedLevels != NULL)
+   if (signedLevels != nullptr)
       delete[] signedLevels;
    delete[] mProfileData;
    delete[] openPrices;
@@ -110,7 +107,7 @@ CBarChart::~CBarChart(void)
    delete[] highPrices;
    delete[] lowPrices;
    delete[] timeParameters;
-   if (transactionsDescriptions != NULL)
+   if (transactionsDescriptions != nullptr)
       delete[] transactionsDescriptions;
 
    delete[] rescaledMProfile;
@@ -169,6 +166,7 @@ void CBarChart::SetColorMode(const bool value)
 void CBarChart::AppendPricesTimeAndParameters(const double open, const double close, const double high, const double low, const time_t time, const ulong timeParameter)
 {
    seriesPointer++;
+
    if (seriesPointer == seriesSize)
    {
       memmove(openPrices, &openPrices[(seriesSize - chartWidthInSamples)], chartWidthInSamples * sizeof(double));
@@ -254,15 +252,15 @@ void CBarChart::AppendSignedLevels(const double levels[], const int levelsSize, 
    }
    else
    {
-      if (signedLevelsDescriptions != NULL)
+      if (signedLevelsDescriptions != nullptr)
       {
          delete[] signedLevelsDescriptions;
-         signedLevelsDescriptions = NULL;
+         signedLevelsDescriptions = nullptr;
       }
-      if (signedLevels != NULL)
+      if (signedLevels != nullptr)
       {
          delete[] signedLevels;
-         signedLevels = NULL;
+         signedLevels = nullptr;
       }
       signedLevelsArraySize = 0;
    }
@@ -299,7 +297,7 @@ void CBarChart::AppendTransactionsPoints(const long transactions[][4], char (*de
          delete[] transactionsTab;
          transactionsTab = new long long[size][4];
 
-         if (transactionsDescriptions != NULL)
+         if (transactionsDescriptions != nullptr)
             delete[] transactionsDescriptions;
 
          transactionsDescriptions = new char[size][64];

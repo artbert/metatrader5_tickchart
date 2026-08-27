@@ -12,11 +12,11 @@ ChartCanvas::ChartCanvas() : m_color_background(XRGB_gdi(0xFF, 0xFF, 0xFF)),
                              m_v_scale_max(10.0),
                              m_num_grid(5),
                              m_scale_digits(0),
-                             m_scale_text(NULL),
+                             m_scale_text(nullptr),
                              m_scale_text_size(0)
 {
-   alphaBlendHDc = NULL;
-   oldBmp = NULL;
+   alphaBlendHDc = nullptr;
+   oldBmp = nullptr;
    blendFunctionParams.BlendOp = AC_SRC_OVER;
    blendFunctionParams.BlendFlags = 0;
    blendFunctionParams.AlphaFormat = 0;          // use source alpha
@@ -26,7 +26,7 @@ ChartCanvas::ChartCanvas() : m_color_background(XRGB_gdi(0xFF, 0xFF, 0xFF)),
 
 ChartCanvas::~ChartCanvas()
 {
-   if (m_scale_text != NULL)
+   if (m_scale_text != nullptr)
       delete[] m_scale_text;
 }
 
@@ -53,7 +53,7 @@ bool ChartCanvas::Create(HWND hWnd, const int width, const int height)
 }
 void ChartCanvas::PrepareAlphaBlend(HWND hWnd)
 {
-   if (alphaBlendHDc != NULL)
+   if (alphaBlendHDc != nullptr)
       DeleteDC(alphaBlendHDc);
 
    HDC hDC = GetDC(hWnd);
@@ -78,11 +78,11 @@ void ChartCanvas::ReleaseAlphaBlend()
 {
    DeleteObject(SelectObject(alphaBlendHDc, oldBmp));
    DeleteDC(alphaBlendHDc);
-   alphaBlendHDc = NULL;
+   alphaBlendHDc = nullptr;
 }
 void ChartCanvas::ApplyAlphaBlend(HWND hWnd, int nXDest, int nYDest, int nWidth, int nHeight, int nXSrc, int nYSrc)
 {
-   if (alphaBlendHDc != NULL)
+   if (alphaBlendHDc != nullptr)
    {
       HDC hDC = GetDC(hWnd);
       AlphaBlend(hDC, nXDest, nYDest, nWidth, nHeight, alphaBlendHDc, nXSrc, nYSrc, nWidth, nHeight, blendFunctionParams);
@@ -202,7 +202,7 @@ void ChartCanvas::CalcScales(void)
    //--- labels on scale
    if (m_scale_text_size != m_num_grid + 1)
    {
-      if (m_scale_text != NULL)
+      if (m_scale_text != nullptr)
          delete[] m_scale_text;
       m_scale_text = new char[m_num_grid + 1][50];
       m_scale_text_size = m_num_grid + 1;

@@ -85,19 +85,19 @@ CTickChart::CTickChart(void)
 
    pipsDivider = 1;
 
-   transactionsTab = NULL;
+   transactionsTab = nullptr;
    signedLevelsArraySize = 0;
-   calendarEvents = NULL;
-   signedLevelsDescriptions = NULL;
-   signedLevels = NULL;
+   calendarEvents = nullptr;
+   signedLevelsDescriptions = nullptr;
+   signedLevels = nullptr;
 
    decimalSep = 40;
 
    TIMESTAMP_SHORT[2] = TIMESTAMP_SHORT[5] = ':';
    TIMESTAMP_SHORT[8] = '\0';
 
-   erase_bkg_hor = NULL;
-   erase_bkg_ver = NULL;
+   erase_bkg_hor = nullptr;
+   erase_bkg_ver = nullptr;
 
    SetColorMode(DarkMode);
 
@@ -117,7 +117,7 @@ CTickChart::CTickChart(void)
    erase_flags = 0;
    _extremumCount = 0;
 
-   transactionsDescriptions = NULL;
+   transactionsDescriptions = nullptr;
 
    rescaledMProfileTabSize = 1;
    rescaledMProfileAsk = new double[rescaledMProfileTabSize];
@@ -138,21 +138,21 @@ CTickChart::~CTickChart(void)
    delete[] mProfileDataBid;
    delete[] mProfileDataAsk;
    delete[] times;
-   if (transactionsTab != NULL)
+   if (transactionsTab != nullptr)
       delete[] transactionsTab;
-   if (calendarEvents != NULL)
+   if (calendarEvents != nullptr)
       delete[] calendarEvents;
-   if (signedLevelsDescriptions != NULL)
+   if (signedLevelsDescriptions != nullptr)
       delete[] signedLevelsDescriptions;
-   if (signedLevels != NULL)
+   if (signedLevels != nullptr)
       delete[] signedLevels;
 
-   if (erase_bkg_hor != NULL)
+   if (erase_bkg_hor != nullptr)
       delete[] erase_bkg_hor;
-   if (erase_bkg_ver != NULL)
+   if (erase_bkg_ver != nullptr)
       delete[] erase_bkg_ver;
 
-   if (transactionsDescriptions != NULL)
+   if (transactionsDescriptions != nullptr)
       delete[] transactionsDescriptions;
 
    delete[] rescaledMProfileAsk;
@@ -164,9 +164,9 @@ bool CTickChart::Create(HWND hWnd, const int width, const int height, double poi
    if (!ChartCanvas::Create(hWnd, width, height))
       return (false);
 
-   if (erase_bkg_hor != NULL)
+   if (erase_bkg_hor != nullptr)
       delete[] erase_bkg_hor;
-   if (erase_bkg_ver != NULL)
+   if (erase_bkg_ver != nullptr)
       delete[] erase_bkg_ver;
 
    erase_bkg_hor = new int[height];
@@ -469,15 +469,15 @@ void CTickChart::AppendSignedLevels(const double levels[], const int levelsSize,
    }
    else
    {
-      if (signedLevelsDescriptions != NULL)
+      if (signedLevelsDescriptions != nullptr)
       {
          delete[] signedLevelsDescriptions;
-         signedLevelsDescriptions = NULL;
+         signedLevelsDescriptions = nullptr;
       }
-      if (signedLevels != NULL)
+      if (signedLevels != nullptr)
       {
          delete[] signedLevels;
-         signedLevels = NULL;
+         signedLevels = nullptr;
       }
       signedLevelsArraySize = 0;
    }
@@ -512,7 +512,7 @@ void CTickChart::AppendTransactionsPoints(const long transactions[][4], char (*d
          delete[] transactionsTab;
          transactionsTab = new long long[size][4];
 
-         if (transactionsDescriptions != NULL)
+         if (transactionsDescriptions != nullptr)
             delete[] transactionsDescriptions;
 
          transactionsDescriptions = new char[size][64];

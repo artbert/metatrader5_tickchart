@@ -3,16 +3,16 @@
 
 CTickChartModule::CTickChartModule(void)
 {
-   rootWnd = NULL;
-   tChHWnd = NULL;
-   bChHWnd = NULL;
-   TerminalParentChartHWnd = NULL;
+   rootWnd = nullptr;
+   tChHWnd = nullptr;
+   bChHWnd = nullptr;
+   TerminalParentChartHWnd = nullptr;
    readyToUse = false;
 
-   timesTabInMs = NULL;
-   bidsTab = NULL;
-   asksTab = NULL;
-   realTempoValsTab = NULL;
+   timesTabInMs = nullptr;
+   bidsTab = nullptr;
+   asksTab = nullptr;
+   realTempoValsTab = nullptr;
    dataSize = 0;
 
    isCalendarDataRead = false;
@@ -46,13 +46,13 @@ CTickChartModule::CTickChartModule(void)
 
 CTickChartModule::~CTickChartModule(void)
 {
-   if (timesTabInMs != NULL)
+   if (timesTabInMs != nullptr)
       delete[] timesTabInMs;
-   if (bidsTab != NULL)
+   if (bidsTab != nullptr)
       delete[] bidsTab;
-   if (asksTab != NULL)
+   if (asksTab != nullptr)
       delete[] asksTab;
-   if (realTempoValsTab != NULL)
+   if (realTempoValsTab != nullptr)
       delete[] realTempoValsTab;
 
    DeleteObject(m_simplePen);
@@ -65,13 +65,13 @@ bool CTickChartModule::Initialize(HWND terminalParent, HWND rootWindow, HWND tic
 {
    dataSize = 1000000;
 
-   if (timesTabInMs != NULL)
+   if (timesTabInMs != nullptr)
       delete[] timesTabInMs;
-   if (bidsTab != NULL)
+   if (bidsTab != nullptr)
       delete[] bidsTab;
-   if (asksTab != NULL)
+   if (asksTab != nullptr)
       delete[] asksTab;
-   if (realTempoValsTab != NULL)
+   if (realTempoValsTab != nullptr)
       delete[] realTempoValsTab;
 
    timesTabInMs = new __int64[dataSize];
@@ -218,30 +218,30 @@ bool CTickChartModule::Initialize(HWND terminalParent, HWND rootWindow, HWND tic
 void CTickChartModule::ModuleDestroy()
 {
    readyToUse = false;
-   if (timesTabInMs != NULL)
+   if (timesTabInMs != nullptr)
    {
       delete[] timesTabInMs;
-      timesTabInMs = NULL;
+      timesTabInMs = nullptr;
    }
-   if (bidsTab != NULL)
+   if (bidsTab != nullptr)
    {
       delete[] bidsTab;
-      bidsTab = NULL;
+      bidsTab = nullptr;
    }
-   if (asksTab != NULL)
+   if (asksTab != nullptr)
    {
       delete[] asksTab;
-      asksTab = NULL;
+      asksTab = nullptr;
    }
-   if (realTempoValsTab != NULL)
+   if (realTempoValsTab != nullptr)
    {
       delete[] realTempoValsTab;
-      realTempoValsTab = NULL;
+      realTempoValsTab = nullptr;
    }
 
-   rootWnd = NULL;
-   tChHWnd = NULL;
-   bChHWnd = NULL;
+   rootWnd = nullptr;
+   tChHWnd = nullptr;
+   bChHWnd = nullptr;
 
    dataSize = 0;
 
@@ -271,7 +271,7 @@ void CTickChartModule::ModuleDestroy()
    tickChart1.Destroy();
    barChart1.Destroy();
    DeleteObject(m_simplePen);
-   m_simplePen = NULL;
+   m_simplePen = nullptr;
 
    if (m_gdiplusToken != 0)
    {
@@ -785,7 +785,7 @@ void CTickChartModule::TickChartTTipChanged(int posX, int posY, short LBUTTON_st
             HDC hDc = GetDC(tChHWnd);
             old_pen = (HPEN)SelectObject(hDc, m_simplePen);
 
-            MoveToEx(hDc, mouseDnPosX, mouseDnPosY, NULL);
+            MoveToEx(hDc, mouseDnPosX, mouseDnPosY, nullptr);
             LineTo(hDc, posX, posY);
 
             SelectObject(hDc, old_pen);
@@ -984,7 +984,7 @@ void CTickChartModule::BarChartTTipChanged(int posX, int posY, short LBUTTON_sta
             HDC hDc = GetDC(bChHWnd);
             old_pen = (HPEN)SelectObject(hDc, m_simplePen);
 
-            MoveToEx(hDc, mouseDnBarPosX, mouseDnBarPosY, NULL);
+            MoveToEx(hDc, mouseDnBarPosX, mouseDnBarPosY, nullptr);
             LineTo(hDc, posX, posY);
 
             SelectObject(hDc, old_pen);
@@ -1341,7 +1341,7 @@ bool CTickChartModule::SaveTicksClicked(LPCTSTR pszFileName)
    HANDLE hFile;
    bool bSuccess = false;
 
-   hFile = CreateFile(pszFileName, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+   hFile = CreateFile(pszFileName, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
    if (hFile != INVALID_HANDLE_VALUE)
    {
       DWORD dwFileSize;
@@ -1368,7 +1368,7 @@ bool CTickChartModule::SaveTicksClicked(LPCTSTR pszFileName)
       dwFileSize = (DWORD)strContent.size();
       DWORD dwWritten;
 
-      if (WriteFile(hFile, strContent.c_str(), dwFileSize, &dwWritten, NULL))
+      if (WriteFile(hFile, strContent.c_str(), dwFileSize, &dwWritten, nullptr))
       {
          bSuccess = true;
          SetDlgItemTextA(hWnd, IDC_MAIN_EDT, "File Saved");
@@ -1452,22 +1452,22 @@ bool CTickChartModule::ReadTickDataFromFile(LPCTSTR pszFileName)
    HANDLE hFile;
    bool bSuccess = false;
 
-   hFile = CreateFile(pszFileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+   hFile = CreateFile(pszFileName, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, 0, nullptr);
    if (hFile != INVALID_HANDLE_VALUE)
    {
       DWORD dwFileSize;
 
-      dwFileSize = GetFileSize(hFile, NULL);
+      dwFileSize = GetFileSize(hFile, nullptr);
       if (dwFileSize != 0xFFFFFFFF)
       {
-         char *pszFileText = NULL;
+         char *pszFileText = nullptr;
          pszFileText = new char[dwFileSize];
 
-         if (pszFileText != NULL)
+         if (pszFileText != nullptr)
          {
             DWORD dwRead;
 
-            if (ReadFile(hFile, pszFileText, dwFileSize, &dwRead, NULL))
+            if (ReadFile(hFile, pszFileText, dwFileSize, &dwRead, nullptr))
             {
                long long *lngPtr = (long long *)pszFileText;
                double *dblPtr = (double *)pszFileText;
@@ -1476,13 +1476,13 @@ bool CTickChartModule::ReadTickDataFromFile(LPCTSTR pszFileName)
 
                if (dataSize > 0)
                {
-                  if (timesTabInMs != NULL)
+                  if (timesTabInMs != nullptr)
                      delete[] timesTabInMs;
-                  if (bidsTab != NULL)
+                  if (bidsTab != nullptr)
                      delete[] bidsTab;
-                  if (asksTab != NULL)
+                  if (asksTab != nullptr)
                      delete[] asksTab;
-                  if (realTempoValsTab != NULL)
+                  if (realTempoValsTab != nullptr)
                      delete[] realTempoValsTab;
 
                   timesTabInMs = new __int64[dataSize];
@@ -1515,15 +1515,15 @@ bool CTickChartModule::ReadTickDataFromFile(LPCTSTR pszFileName)
 }
 void CTickChartModule::ResetData()
 {
-   seriesIndex = -1;
-   barChartHigh = DBL_MAX * -1.0;
-   barChartLow = DBL_MAX;
+   // seriesIndex = -1;
+   // barChartHigh = DBL_MAX * -1.0;
+   // barChartLow = DBL_MAX;
 
-   barChartTickSizeCounter = 0;
-   chartSearchIndex = -1;
+   // barChartTickSizeCounter = 0;
+   // chartSearchIndex = -1;
 
-   tickChart1.FillSeries(last_tick.ask, last_tick.bid, 0, 0, 0, 0);
-   barChart1.FillSeries(last_tick.bid, last_tick.bid, last_tick.bid, last_tick.bid, 0, 0);
+   // tickChart1.FillSeries(last_tick.ask, last_tick.bid, 0, 0, 0, 0);
+   // barChart1.FillSeries(last_tick.bid, last_tick.bid, last_tick.bid, last_tick.bid, 0, 0);
 }
 void CTickChartModule::UpdateBiggerBarsData(bool updateChart)
 {

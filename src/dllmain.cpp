@@ -34,11 +34,11 @@ EXT bool __stdcall Initialize(long long parent, wchar_t *dataPath, wchar_t *appT
       i = MAX_LOADSTRING - 1;
    szTitle[i] = L'\0';
 
-   if (threadHandle == NULL)
+   if (threadHandle == nullptr)
    {
       try
       {
-         threadHandle = CreateThread(NULL, 0, MainModuleThreadFunction, (LPVOID)moduleInstance, 0, &dwThreadId);
+         threadHandle = CreateThread(nullptr, 0, MainModuleThreadFunction, (LPVOID)moduleInstance, 0, &dwThreadId);
       }
       catch (int e)
       {
@@ -52,7 +52,7 @@ EXT bool __stdcall Initialize(long long parent, wchar_t *dataPath, wchar_t *appT
       PostMessage(MT5ParentChart, WM_LBUTTONUP, 0, -MODULE_INITIALIZED);
    }
 
-   if (threadHandle != NULL)
+   if (threadHandle != nullptr)
       return (true);
    else
       return (false);
@@ -104,7 +104,7 @@ EXT bool __stdcall TimeSepVLineDragged(time_t &newValue)
 
 EXT bool __stdcall ModuleDestroy()
 {
-   if (mainWindowHandle != NULL)
+   if (mainWindowHandle != nullptr)
       PostMessageA(mainWindowHandle, WM_CLOSE, 0, 0);
    return (true);
 }
@@ -123,7 +123,7 @@ BOOL APIENTRY DllMain(HMODULE hModule,
    case DLL_THREAD_DETACH:
       break;
    case DLL_PROCESS_DETACH:
-      if (mainWindowHandle != NULL)
+      if (mainWindowHandle != nullptr)
          PostMessageA(mainWindowHandle, WM_CLOSE, 0, 0);
       Sleep(1000);
       break;
