@@ -112,9 +112,6 @@ void ChartCanvas::Redraw()
    if (IS_SHOW_GRID)
       DrawGrid();
 
-   // if (IS_SHOW_DESCRIPTORS)
-   //    DrawDescriptors();
-
    DrawChart();
 
    if (updateWhole)
@@ -139,8 +136,6 @@ void ChartCanvas::Redraw(int nXDest, int nYDest, int nWidth, int nHeight, int nX
       DrawScales();
    if (IS_SHOW_GRID)
       DrawGrid();
-   // if (IS_SHOW_DESCRIPTORS)
-   //    DrawDescriptors();
    //--- draw data
    DrawChart();
    //--- fix changes
@@ -217,7 +212,6 @@ void ChartCanvas::CalcScales(void)
 
    for (uint i = 0; i <= m_num_grid; i++, val += dval)
    {
-      // sprintf_s(m_scale_text[i], "%.*f", m_scale_digits, val);
       snprintf(m_scale_text[i], 50, "%.*f", m_scale_digits, val);
    }
 }

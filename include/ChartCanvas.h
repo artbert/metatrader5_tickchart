@@ -139,7 +139,6 @@ protected:
    virtual int DrawScaleLeft(const bool draw = true);
    virtual int DrawScaleRight(const bool draw = true);
    virtual void DrawGrid(void);
-   // virtual void DrawDescriptors(void);
    virtual void DrawChart(void);
    virtual void DrawData(const uint idx = 0) {}
 };

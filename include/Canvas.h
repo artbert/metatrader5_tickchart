@@ -30,21 +30,7 @@ extern char TIMETABLE_A[60][3];
 extern char WNUMBERS_A[10][2];
 
 template <class _cls>
-inline _cls MaxInArray(_cls arr[], int arraySize, int start = 0, int count = -1)
-{
-   _cls result = arr[start];
-   int limit = count == -1 ? arraySize : start + count;
-   for (int i = start + 1; i < limit; i++)
-   {
-      if (arr[i] > result)
-      {
-         result = arr[i];
-      }
-   }
-   return (result);
-}
-template <class _cls>
-inline _cls MaxInArray2(_cls arr[], int start, int count)
+inline _cls MaxInArray(_cls arr[], int start, int count)
 {
    _cls result = arr[start];
    for (int i = start + 1; i < start + count; i++)
@@ -72,7 +58,7 @@ inline void MinMax(_cls arr[], int start, int count, _cls &minOut, _cls &maxOut)
    maxOut = mx;
 }
 template <class _cls>
-inline _cls MinInArray2(_cls arr[], int start, int count)
+inline _cls MinInArray(_cls arr[], int start, int count)
 {
    _cls result = arr[start];
    for (int i = start + 1; i < start + count; i++)
@@ -84,29 +70,6 @@ inline _cls MinInArray2(_cls arr[], int start, int count)
    }
    return (result);
 }
-template <class _cls>
-inline _cls MinInArray(_cls arr[], int arraySize, int start = 0, int count = -1)
-{
-   _cls result = arr[start];
-   int limit = count == -1 ? arraySize : start + count;
-   for (int i = start + 1; i < limit; i++)
-   {
-      if (arr[i] < result)
-      {
-         result = arr[i];
-      }
-   }
-   return (result);
-}
-inline int TimeMinute(time_t date)
-{
-   return (int((date % 3600) / 60));
-}
-inline int TimeHour(time_t date)
-{
-   return (int((date % 86400) / 3600));
-}
-
 class Canvas
 {
 private:
@@ -139,10 +102,8 @@ protected:
 public:
    Canvas(void);
    ~Canvas(void);
-   bool IsInitialized();
    void ArrayFill(int start, int count, int val);
    void Erase(const uint clr = 0);
-   uint PixelGet(const int x, const int y) const;
    void PixelSet(const int x, const int y, const uint clr);
    void LineVertical(int x, int y1, int y2, const uint clr);
    void SafeSortedLineVertical(int x, int y1, int y2, const uint clr);
@@ -154,18 +115,11 @@ public:
    void Line(int x1, int y1, int x2, int y2, const uint clr);
    void Rectangle(int x1, int y1, int x2, int y2, const uint clr);
    void SafeSortedRectangle(int x1, int y1, int x2, int y2, const uint clr);
-   void Triangle(int x1, int y1, int x2, int y2, int x3, int y3, const uint clr);
-   void Circle(int x, int y, int r, const uint clr);
-   void Ellipse(int x1, int y1, int x2, int y2, const uint clr);
    void FillRectangle(int x1, int y1, int x2, int y2, const uint clr);
    void SafeSortedFillRectangle(int x1, int y1, int x2, int y2, const uint clr);
    void FillTriangle(int x1, int y1, int x2, int y2, int x3, int y3, const uint clr);
    void FillCircle(int x, int y, int r, const uint clr);
-   void FillEllipse(int x1, int y1, int x2, int y2, const uint clr);
-
    bool SelectFont(int size);
-
-   void DrawTextOut(LPRECT lprc, LPCTSTR text, uint alignment = 0);
    void DrawTextOut_A(LPRECT lprc, LPCSTR text, uint alignment = 0);
    void TextColorSet(const uint clr);
 
@@ -185,11 +139,7 @@ public:
    bool Destroy();
    void Update();
    void Update(int nXDest, int nYDest, int nWidth, int nHeight, int nXSrc, int nYSrc);
-   int TextWidth(LPCTSTR text);
    int TextWidth_A(LPCSTR text);
-   int TextHeight(LPCTSTR text);
-   void TextSize(LPCTSTR text, int &width, int &height);
-
    void CreatePixelFontSet(uint eraseColor);
 
 private:

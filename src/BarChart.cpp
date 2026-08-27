@@ -399,8 +399,8 @@ void CBarChart::UpdateChart(bool vScaleParChanged)
 
       extremumStartIndex = seriesPointer - extremumCount + 1;
 
-      double maximum = MaxInArray2(highPrices, extremumStartIndex, extremumCount);
-      double minimum = MinInArray2(lowPrices, extremumStartIndex, extremumCount);
+      double maximum = MaxInArray(highPrices, extremumStartIndex, extremumCount);
+      double minimum = MinInArray(lowPrices, extremumStartIndex, extremumCount);
 
       if (actualBidHigh > maximum)
          maximum = actualBidHigh;
@@ -952,7 +952,7 @@ void CBarChart::DrawMProfile(int dataStartIndex)
             }
          }
 
-         double maxVal = MaxInArray2(rescaledMProfile, 0, rangeHeight);
+         double maxVal = MaxInArray(rescaledMProfile, 0, rangeHeight);
 
          if (maxVal != 0)
          {
@@ -962,7 +962,7 @@ void CBarChart::DrawMProfile(int dataStartIndex)
       }
       else
       {
-         double maxVal = MaxInArray2(mProfileData, mProfileStartIndex, mProfileSize);
+         double maxVal = MaxInArray(mProfileData, mProfileStartIndex, mProfileSize);
 
          multiplierValid = false;
 

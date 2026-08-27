@@ -44,10 +44,6 @@ Canvas::~Canvas(void)
    if (hf_07 != NULL)
       DeleteObject(hf_07);
 }
-bool Canvas::IsInitialized()
-{
-   return (initialized);
-}
 bool Canvas::Create(HWND hWnd, const int width, const int height)
 {
    if (!initialized)
@@ -181,14 +177,6 @@ void Canvas::Update(int nXDest, int nYDest, int nWidth, int nHeight, int nXSrc, 
 void Canvas::Erase(const uint clr)
 {
    memset(m_pixels, clr, m_width * m_height * 4);
-}
-uint Canvas::PixelGet(const int x, const int y) const
-{
-   if ((unsigned)x < (unsigned)m_width && (unsigned)y < (unsigned)m_height)
-   {
-      return (m_pixels[y * m_width + x]);
-   }
-   return (0);
 }
 void Canvas::PixelSet(const int x, const int y, const uint clr)
 {
@@ -1102,229 +1090,6 @@ void Canvas::SafeSortedRectangle(int x1, int y1, int x2, int y2, const uint clr)
    SafeSortedLineHorizontal(x1, x2, y2, clr);
    SafeSortedLineVertical(x1, y1, y2, clr);
 }
-void Canvas::Triangle(int x1, int y1, int x2, int y2, int x3, int y3, const uint clr)
-{
-   Line(x1, y1, x2, y2, clr);
-   Line(x2, y2, x3, y3, clr);
-   Line(x3, y3, x1, y1, clr);
-}
-//+------------------------------------------------------------------+
-//| Draw circle according to Bresenham's algorithm                   |
-//+------------------------------------------------------------------+
-void Canvas::Circle(int x, int y, int r, const uint clr)
-{
-   int f = 1 - r;
-   int dd_x = 1;
-   int dd_y = -2 * r;
-   int dx = 0;
-   int dy = r;
-   int xx, yy;
-   //--- draw
-   while (dy >= dx)
-   {
-      xx = x + dx;
-      if (xx >= 0 && xx < m_width)
-      {
-         yy = y + dy;
-         if (yy >= 0 && yy < m_height)
-         {
-            m_pixels[yy * m_width + xx] = clr;
-         }
-         yy = y - dy;
-         if (yy >= 0 && yy < m_height)
-         {
-            m_pixels[yy * m_width + xx] = clr;
-         }
-      }
-      xx = x - dx;
-      if (xx >= 0 && xx < m_width)
-      {
-         yy = y + dy;
-         if (yy >= 0 && yy < m_height)
-         {
-            m_pixels[yy * m_width + xx] = clr;
-         }
-         yy = y - dy;
-         if (yy >= 0 && yy < m_height)
-         {
-            m_pixels[yy * m_width + xx] = clr;
-         }
-      }
-      xx = x + dy;
-      if (xx >= 0 && xx < m_width)
-      {
-         yy = y + dx;
-         if (yy >= 0 && yy < m_height)
-         {
-            m_pixels[yy * m_width + xx] = clr;
-         }
-         yy = y - dx;
-         if (yy >= 0 && yy < m_height)
-         {
-            m_pixels[yy * m_width + xx] = clr;
-         }
-      }
-      xx = x - dy;
-      if (xx >= 0 && xx < m_width)
-      {
-         yy = y + dx;
-         if (yy >= 0 && yy < m_height)
-         {
-            m_pixels[yy * m_width + xx] = clr;
-         }
-         yy = y - dx;
-         if (yy >= 0 && yy < m_height)
-         {
-            m_pixels[yy * m_width + xx] = clr;
-         }
-      }
-      //---
-      if (f >= 0)
-      {
-         dy--;
-         dd_y += 2;
-         f += dd_y;
-      }
-      dx++;
-      dd_x += 2;
-      f += dd_x;
-   }
-}
-//+------------------------------------------------------------------+
-//| Draw ellipse according to Bresenham's algorithm                  |
-//+------------------------------------------------------------------+
-void Canvas::Ellipse(int x1, int y1, int x2, int y2, const uint clr)
-{
-   int x, y;
-   int rx, ry;
-   int dx, dy;
-   int xx, yy;
-   int rx_sq, ry_sq;
-   int f;
-   int tmp;
-   //--- handle extreme conditions
-   if (x1 == x2)
-   {
-      if (y1 == y2)
-      {
-         PixelSet(x1, y1, clr);
-      }
-      else
-      {
-         LineVertical(x1, y1, y2, clr);
-      }
-      return;
-   }
-   if (y1 == y2)
-   {
-      LineHorizontal(x1, x2, y1, clr);
-      return;
-   }
-   //--- sort by X
-   if (x1 > x2)
-   {
-      tmp = x1;
-      x1 = x2;
-      x2 = tmp;
-   }
-   //--- sort by Y
-   if (y1 > y2)
-   {
-      tmp = y1;
-      y1 = y2;
-      y2 = tmp;
-   }
-   x = (x2 + x1) >> 1;
-   y = (y2 + y1) >> 1;
-   rx = (x2 - x1) >> 1;
-   ry = (y2 - y1) >> 1;
-   dx = 0;
-   dy = ry;
-   rx_sq = rx * rx;
-   ry_sq = ry * ry;
-   f = (rx_sq << 1) * ((dy - 1) * dy) + rx_sq + (ry_sq << 1) * (1 - rx_sq);
-   while (rx_sq * dy > ry_sq * dx)
-   {
-      yy = y + dy;
-      if (yy >= 0 && yy < m_height)
-      {
-         yy *= m_width;
-         xx = x + dx;
-         if (xx >= 0 && xx < m_width)
-         {
-            m_pixels[yy + xx] = clr;
-         }
-         xx = x - dx;
-         if (xx >= 0 && xx < m_width)
-         {
-            m_pixels[yy + xx] = clr;
-         }
-      }
-      yy = y - dy;
-      if (yy >= 0 && yy < m_height)
-      {
-         yy *= m_width;
-         xx = x + dx;
-         if (xx >= 0 && xx < m_width)
-         {
-            m_pixels[yy + xx] = clr;
-         }
-         xx = x - dx;
-         if (xx >= 0 && xx < m_width)
-         {
-            m_pixels[yy + xx] = clr;
-         }
-      }
-      if (f >= 0)
-      {
-         dy--;
-         f -= (rx_sq << 2) * dy;
-      }
-      f += (ry_sq << 1) * (3 + (dx << 1));
-      dx++;
-   }
-   f = (ry_sq << 1) * (dx + 1) * dx + (rx_sq << 1) * (dy * (dy - 2) + 1) + (1 - (rx_sq << 1)) * ry_sq;
-   while (dy >= 0)
-   {
-      yy = y + dy;
-      if (yy >= 0 && yy < m_height)
-      {
-         yy *= m_width;
-         xx = x + dx;
-         if (xx >= 0 && xx < m_width)
-         {
-            m_pixels[yy + xx] = clr;
-         }
-         xx = x - dx;
-         if (xx >= 0 && xx < m_width)
-         {
-            m_pixels[yy + xx] = clr;
-         }
-      }
-      yy = y - dy;
-      if (yy >= 0 && yy < m_height)
-      {
-         yy *= m_width;
-         xx = x + dx;
-         if (xx >= 0 && xx < m_width)
-         {
-            m_pixels[yy + xx] = clr;
-         }
-         xx = x - dx;
-         if (xx >= 0 && xx < m_width)
-         {
-            m_pixels[yy + xx] = clr;
-         }
-      }
-      if (f <= 0)
-      {
-         dx++;
-         f += (ry_sq << 2) * dx;
-      }
-      dy--;
-      f += (rx_sq << 1) * (3 - (dy << 1));
-   }
-}
 void Canvas::FillRectangle(int x1, int y1, int x2, int y2, const uint clr)
 {
    int tmp;
@@ -1509,90 +1274,6 @@ void Canvas::FillCircle(int x, int y, int r, const uint clr)
       f += dd_x;
    }
 }
-//+------------------------------------------------------------------+
-//| Draw filled ellipse                                              |
-//+------------------------------------------------------------------+
-void Canvas::FillEllipse(int x1, int y1, int x2, int y2, const uint clr)
-{
-   int x, y;
-   int rx, ry;
-   int dx, dy;
-   int rx_sq, ry_sq;
-   int f;
-   int tmp;
-   //--- handle extreme conditions
-   if (x1 == x2)
-   {
-      if (y1 == y2)
-      {
-         PixelSet(x1, y1, clr);
-      }
-      else
-      {
-         LineVertical(x1, y1, y2, clr);
-      }
-      return;
-   }
-   if (y1 == y2)
-   {
-      LineHorizontal(x1, x2, y1, clr);
-      return;
-   }
-   //--- sort by X
-   if (x1 > x2)
-   {
-      tmp = x1;
-      x1 = x2;
-      x2 = tmp;
-   }
-   //--- sort by Y
-   if (y1 > y2)
-   {
-      tmp = y1;
-      y1 = y2;
-      y2 = tmp;
-   }
-   x = (x2 + x1) >> 1;
-   y = (y2 + y1) >> 1;
-   rx = (x2 - x1) >> 1;
-   ry = (y2 - y1) >> 1;
-   dx = 0;
-   dy = ry;
-   rx_sq = rx * rx;
-   ry_sq = ry * ry;
-   f = (rx_sq << 1) * ((dy - 1) * dy) + rx_sq + (ry_sq << 1) * (1 - rx_sq);
-   while (rx_sq * dy > ry_sq * (dx))
-   {
-      LineHorizontal(x - dx, x + dx, y + dy, clr);
-      LineHorizontal(x - dx, x + dx, y - dy, clr);
-      if (f >= 0)
-      {
-         dy--;
-         f -= (rx_sq << 2) * dy;
-      }
-      f += (ry_sq << 1) * (3 + (dx << 1));
-      dx++;
-   }
-   f = (ry_sq << 1) * (dx + 1) * dx + (rx_sq << 1) * (dy * (dy - 2) + 1) + (1 - (rx_sq << 1)) * ry_sq;
-   while (dy >= 0)
-   {
-      LineHorizontal(x - dx, x + dx, y + dy, clr);
-      LineHorizontal(x - dx, x + dx, y - dy, clr);
-      if (f <= 0)
-      {
-         dx++;
-         f += (ry_sq << 2) * dx;
-      }
-      dy--;
-      f += (rx_sq << 1) * (3 - (dy << 1));
-   }
-}
-void Canvas::DrawTextOut(LPRECT lprc, LPCTSTR text, uint alignment)
-{
-   // alignment=DT_SINGLELINE | DT_NOCLIP//DrawText is somewhat faster when DT_NOCLIP is used.
-   // DT_BOTTOM,DT_CENTER,DT_LEFT,DT_RIGHT,DT_TOP,DT_VCENTER
-   DrawTextW(hDCMem, text, -1, lprc, alignment);
-}
 void Canvas::DrawTextOut_A(LPRECT lprc, LPCSTR text, uint alignment)
 {
    // alignment=DT_SINGLELINE | DT_NOCLIP//DrawText is somewhat faster when DT_NOCLIP is used.
@@ -1641,32 +1322,10 @@ bool Canvas::SelectFont(int size)
    }
    return (true);
 }
-
-int Canvas::TextWidth(LPCTSTR text)
-{
-   SIZE psizl;
-   GetTextExtentPoint32W(hDCMem, text, (int)_tcslen(text), &psizl);
-   //--- result
-   return (psizl.cx);
-}
 int Canvas::TextWidth_A(LPCSTR text)
 {
    SIZE psizl;
    GetTextExtentPoint32A(hDCMem, text, (int)strlen(text), &psizl);
    //--- result
    return (psizl.cx);
-}
-int Canvas::TextHeight(LPCTSTR text)
-{
-   SIZE psizl;
-   GetTextExtentPoint32W(hDCMem, text, (int)_tcslen(text), &psizl);
-   //--- result
-   return (psizl.cy);
-}
-void Canvas::TextSize(LPCTSTR text, int &width, int &height)
-{
-   SIZE psizl;
-   GetTextExtentPoint32W(hDCMem, text, (int)_tcslen(text), &psizl);
-   width = psizl.cx;
-   height = psizl.cy;
 }

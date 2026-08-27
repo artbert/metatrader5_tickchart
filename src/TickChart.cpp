@@ -1448,8 +1448,8 @@ void CTickChart::DrawMProfile(int dataStartIndex)
                }
             }
 
-            double maxBid = MaxInArray2(rescaledMProfileBid, 0, rangeHeight);
-            double maxAsk = MaxInArray2(rescaledMProfileAsk, 0, rangeHeight);
+            double maxBid = MaxInArray(rescaledMProfileBid, 0, rangeHeight);
+            double maxAsk = MaxInArray(rescaledMProfileAsk, 0, rangeHeight);
 
             if (maxAsk > maxBid)
             {
@@ -1470,8 +1470,8 @@ void CTickChart::DrawMProfile(int dataStartIndex)
          }
          else
          {
-            double maxBid = MaxInArray2(mProfileDataBid, mProfileStartIndex, mProfileSize);
-            double maxAsk = MaxInArray2(mProfileDataAsk, mProfileStartIndex, mProfileSize);
+            double maxBid = MaxInArray(mProfileDataBid, mProfileStartIndex, mProfileSize);
+            double maxAsk = MaxInArray(mProfileDataAsk, mProfileStartIndex, mProfileSize);
             multiplierValid = false;
 
             if (maxAsk > maxBid)
