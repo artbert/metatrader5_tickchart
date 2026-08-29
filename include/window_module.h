@@ -1,6 +1,6 @@
 #pragma once
-#include "TickChartModule.h"
-#include <Commdlg.h>
+#include "chart_module.h"
+#include <commdlg.h>
 
 #define MAX_LOADSTRING 100
 // Global Variables:

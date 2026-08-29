@@ -1,7 +1,7 @@
 // dllmain.cpp : Defines the entry point for the DLL application.
 #include "stdafx.h"
-#include "MainMT5TCh.h"
-#include "MT5TickChartDLL.h"
+#include "window_module.h"
+#include "mt5_tick_chart_lib.h"
 
 #define EXT extern "C" __declspec(dllexport)
 

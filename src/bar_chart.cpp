@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "BarChart.h"
+#include "bar_chart.h"
 
 CBarChart::CBarChart()
 {

@@ -1,6 +1,4 @@
-//{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ generated include file.
-// Used by MT5TickChart.rc
+// Used by mt5_tick_chart.rc
 
 #define IDM_TICK_CHART_ZOOM_4 202
 #define IDM_TICK_CHART_ZOOM_2 201

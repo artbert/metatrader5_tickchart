@@ -1,5 +1,7 @@
 #pragma once
 
+#include "resource.h"
+
 #ifdef _WIN32
 #define DLL_EXPORT extern "C" __declspec(dllexport)
 #define DLL_CALL __stdcall

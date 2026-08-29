@@ -27,8 +27,8 @@ LANGUAGE 9, 1
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 
-IDI_MT5TICKCHART       ICON         "MT5TickChart.ico"
-IDI_SMALL               ICON         "small.ico"
+IDI_MT5TICKCHART       ICON         "mt5_tick_chart.ico"
+IDI_SMALL              ICON         "small.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //

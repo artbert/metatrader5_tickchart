@@ -1,5 +1,5 @@
-#include "StdAfx.h"
-#include "TickChart.h"
+#include "stdafx.h"
+#include "tick_chart.h"
 
 CTickChart::CTickChart(void)
 {

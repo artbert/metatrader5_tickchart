@@ -1,5 +1,5 @@
 #pragma once
-#include "chartcanvas.h"
+#include "chart_canvas.h"
 #include <string>
 
 using std::string;

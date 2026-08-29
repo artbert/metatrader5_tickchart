@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Resource.h"
+#include "resource.h"
 
 long long ProccessorFrequency = 1;
 

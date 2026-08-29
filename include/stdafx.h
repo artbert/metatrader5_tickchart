@@ -22,4 +22,4 @@
 
 // TODO: reference additional headers your program requires here
 #pragma comment(lib, "Msimg32.lib")
-#pragma comment(lib, "winmm.lib") /* include winmm.lib */
+#pragma comment(lib, "winmm.lib")

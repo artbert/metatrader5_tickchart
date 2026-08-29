@@ -1,7 +1,7 @@
-#include "Resource.h"
-#include "TickChart.h"
-#include "BarChart.h"
-#include <Mmsystem.h>
+#include "resource.h"
+#include "tick_chart.h"
+#include "bar_chart.h"
+#include <mmsystem.h>
 #include <gdiplus.h>
 
 class CTickChartModule
