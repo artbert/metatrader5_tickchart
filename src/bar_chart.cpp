@@ -1,4 +1,4 @@
-#include "bar_chart.h"
+#include "bar_chart.hpp"
 
 CBarChart::CBarChart()
 {

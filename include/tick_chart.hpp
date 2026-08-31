@@ -1,5 +1,5 @@
 #pragma once
-#include "chart_canvas.h"
+#include "chart_canvas.hpp"
 #include <string>
 #include <math.h>
 #include <algorithm>

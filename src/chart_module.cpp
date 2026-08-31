@@ -1,4 +1,4 @@
-#include "chart_module.h"
+#include "chart_module.hpp"
 #include <ctime>
 
 CTickChartModule::CTickChartModule(void)

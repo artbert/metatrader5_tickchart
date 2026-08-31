@@ -1,5 +1,5 @@
 #pragma once
-#include "canvas.h"
+#include "canvas.hpp"
 #include <algorithm>
 #include <cfloat>
 #include <cstring>

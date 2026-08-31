@@ -1,7 +1,7 @@
 // main.cpp : Defines the entry point for the DLL application.
 #include <windows.h>
-#include "window_module.h"
-#include "mt5_tick_chart_lib.h"
+#include "window_module.hpp"
+#include "mt5_tick_chart_lib.hpp"
 
 #define EXT extern "C" __declspec(dllexport)
 

@@ -8,7 +8,7 @@
 // Generated from the TEXTINCLUDE 2 resource.
 //
 #ifndef APSTUDIO_INVOKED
-#include "targetver.h"
+#include "targetver.hpp"
 #endif
 #define APSTUDIO_HIDDEN_SYMBOLS
 #include "windows.h"
@@ -168,7 +168,7 @@ FONT 8, "MS Sans Serif"
 2 TEXTINCLUDE
 {
    "#ifndef APSTUDIO_INVOKED\r\n"
-   "#include ""targetver.h""\r\n"
+   "#include ""targetver.hpp""\r\n"
    "#endif\r\n"
    "#define APSTUDIO_HIDDEN_SYMBOLS\r\n"
    "#include ""windows.h""\r\n"

@@ -1,5 +1,5 @@
 #pragma once
-#include "chart_module.h"
+#include "chart_module.hpp"
 #include <commdlg.h>
 
 #define MAX_LOADSTRING 100

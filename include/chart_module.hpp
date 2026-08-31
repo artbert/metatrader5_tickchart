@@ -1,6 +1,6 @@
 #include "resource.h"
-#include "tick_chart.h"
-#include "bar_chart.h"
+#include "tick_chart.hpp"
+#include "bar_chart.hpp"
 #include <mmsystem.h>
 #include <gdiplus.h>
 

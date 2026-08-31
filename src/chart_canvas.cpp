@@ -1,4 +1,4 @@
-#include "chart_canvas.h"
+#include "chart_canvas.hpp"
 #include <cstdio>
 
 ChartCanvas::ChartCanvas() : m_color_background(XRGB_gdi(0xFF, 0xFF, 0xFF)),

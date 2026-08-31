@@ -1,4 +1,4 @@
-#include "canvas.h"
+#include "canvas.hpp"
 
 WCHAR TIMETABLE[60][3] = {L"00", L"01", L"02", L"03", L"04", L"05", L"06", L"07", L"08", L"09",
                           L"10", L"11", L"12", L"13", L"14", L"15", L"16", L"17", L"18", L"19",
