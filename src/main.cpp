@@ -1,5 +1,5 @@
-// dllmain.cpp : Defines the entry point for the DLL application.
-#include "stdafx.h"
+// main.cpp : Defines the entry point for the DLL application.
+#include <windows.h>
 #include "window_module.h"
 #include "mt5_tick_chart_lib.h"
 

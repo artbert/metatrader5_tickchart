@@ -20,7 +20,6 @@ add_compile_options(-fexceptions)
 # DLL target
 add_library(MT5TickChartDLL SHARED
     src/main.cpp
-    src/mt5_tick_chart_lib.cpp
     src/chart_module.cpp
     src/tick_chart.cpp
     src/bar_chart.cpp

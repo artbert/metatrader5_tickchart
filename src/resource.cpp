@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include <windows.h>
 #include "resource.h"
 
 long long ProccessorFrequency = 1;

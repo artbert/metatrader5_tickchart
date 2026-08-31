@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "bar_chart.h"
 
 CBarChart::CBarChart()

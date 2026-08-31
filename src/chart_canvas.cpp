@@ -1,5 +1,5 @@
-#include "stdafx.h"
 #include "chart_canvas.h"
+#include <cstdio>
 
 ChartCanvas::ChartCanvas() : m_color_background(XRGB_gdi(0xFF, 0xFF, 0xFF)),
                              m_color_border(XRGB_gdi(0x9F, 0x9F, 0x9F)),

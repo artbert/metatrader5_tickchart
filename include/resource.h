@@ -106,6 +106,8 @@
 #endif
 
 #pragma once
+
+typedef long long time_t;
 typedef struct TICKCHARTMODULESETTINGS
 {
    unsigned char tickChartZoom;
