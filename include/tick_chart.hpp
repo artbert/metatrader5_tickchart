@@ -1,7 +1,7 @@
 #pragma once
 #include "chart_canvas.hpp"
 #include <string>
-#include <math.h>
+#include <cmath>
 #include <algorithm>
 
 enum {
@@ -124,8 +124,8 @@ private:
    uint rescaledMProfileTabSize;
 
 public:
-   CTickChart(void);
-   ~CTickChart(void);
+   CTickChart();
+   ~CTickChart();
 
    virtual bool Create(HWND hWnd, const int width, const int height, double pointValue, int digits);
 
@@ -306,7 +306,7 @@ public:
    void AppendPricesTimeAndParameters(const double askPrice, const double bidPrice, const time_t time, const ulong timeParameter, const int askChange, const int bidChange, const short road, const short distance, const short ticks);
    void UpdateMarketProfile(const double askPrice, const double bidPrice);
    void MoveMarketProfileRange(const double lowRange, const double highRange);
-   int GetSeriesSize(void)
+   int GetSeriesSize()
    {
       return (chartWidthInSamples);
    }
@@ -360,19 +360,19 @@ public:
       else
          erase_flags &= ~IS_TICKSARRIVED;
    }
-   uint GetDataAreaStartPoint(void)
+   uint GetDataAreaStartPoint()
    {
       return (mDataAreaStartPoint);
    }
 
 protected:
-   void DrawChart(void) override;
+   void DrawChart() override;
    void DrawData(const uint index = 0) override;
-   void DrawBackground(void) override;
+   void DrawBackground() override;
 
 private:
    void SafeSlopingLine(int x1, int y1, int x2, int y2, const uint clr);
-   void DrawSignedLevels(void);
+   void DrawSignedLevels();
    void DrawMProfile(int dataStartIndex);
    void DrawTravelledDistanceScales();
    void DrawTravelledRoadScales();

@@ -57,8 +57,8 @@ private:
   ULONG_PTR m_gdiplusToken;
 
 public:
-  CTickChartModule(void);
-  ~CTickChartModule(void);
+  CTickChartModule();
+  ~CTickChartModule();
 
   int OnTimer();
 

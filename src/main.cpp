@@ -44,7 +44,7 @@ EXT bool __stdcall Initialize(long long parent, wchar_t *dataPath, wchar_t *appT
       {
          CHAR test[100];
          _i64toa_s((long long)e, test, 100, 10);
-         MessageBoxA(0, test, "INFO", MB_OK);
+         MessageBoxA(nullptr, test, "INFO", MB_OK);
       }
    }
    else // Already initialized

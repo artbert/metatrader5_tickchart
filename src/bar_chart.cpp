@@ -1,5 +1,7 @@
 #include "bar_chart.hpp"
 
+#include <utility>
+
 CBarChart::CBarChart() : DarkMode(true), workSpaceChartHeightInPx(270), pointsPerPx(0), mDataAreaStartPoint(0), initialized(false), interval(5), mainPlotVis(true), barsDataMultiplier(1), barChartTickSize(30), mProfileStartIndex(-1), mProfileSize(0), mProfileSizeFactor(1), totalMProfileSize(100000), drawVerticalGrid(false), mProfileDataVis(false), seriesSize(10000), chartWidthInSamples(1000), barChartBarWidth(4), extremumCount(chartWidthInSamples), extremumStartIndex(0), isCalendarEvents(false), showCalendarEvents(false), isSignedLevelsDescriptions(false), pipsDivider(1), transactionsDescriptions(nullptr), transactionsTab(nullptr), transactionsTabSize(0), signedLevelsDescriptions(nullptr), signedLevelsArraySize(0), signedLevels(nullptr), calendarEvents(nullptr), calendarEventsTabSize(0)
 {
    ShowFlags(FLAG_SHOW_LEGEND | FLAGS_SHOW_SCALES | FLAG_SHOW_GRID);
@@ -162,7 +164,7 @@ void CBarChart::FillSeries(const double open, const double close, const double h
       timeParameters[i] = timeParameter;
    }
 
-   long long *tab1 = (long long *)(mProfileData);
+   auto *tab1 = (long long *)(mProfileData);
    for (int i = 0; i < totalMProfileSize / 2; i++)
    {
       tab1[i] = 0;
@@ -282,7 +284,7 @@ void CBarChart::SetActualBidPrice(const double currentPrice, const double curren
    actualBidHigh = currentHigh;
    actualBidLow = currentLow;
 }
-void CBarChart::UpdateCurrentPriceLevel(void)
+void CBarChart::UpdateCurrentPriceLevel()
 {
    if (actualBidHigh > lastChartPriceMax || actualBidLow < lastChartPriceMin)
    {
@@ -406,7 +408,7 @@ void CBarChart::RefreshWindow()
 {
    Update();
 }
-void CBarChart::DrawChart(void)
+void CBarChart::DrawChart()
 {
    if (initialized)
    {
@@ -875,7 +877,7 @@ void CBarChart::DrawMProfile(int dataStartIndex)
 
       if (dy == 0)
       {
-         if (rangeHeight != rescaledMProfileTabSize)
+         if (std::cmp_not_equal(rangeHeight , rescaledMProfileTabSize))
          {
             delete[] rescaledMProfile;
             rescaledMProfile = new double[rangeHeight];

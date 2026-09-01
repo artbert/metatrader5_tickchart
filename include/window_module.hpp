@@ -1109,7 +1109,7 @@ bool SaveDataFile()
    hFile = CreateFile(fullDataPath, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
    if (hFile != INVALID_HANDLE_VALUE)
    {
-      DWORD dwFileSize = (DWORD)sizeof(TCHMODSET);
+      auto dwFileSize = (DWORD)sizeof(TCHMODSET);
       DWORD dwWritten = 0;
 
       if (WriteFile(hFile, &appSets, dwFileSize, &dwWritten, nullptr))

@@ -1,6 +1,6 @@
 #include "canvas.hpp"
 
-#include <math.h>
+#include <cmath>
 
 WCHAR TIMETABLE[60][3] = {L"00", L"01", L"02", L"03", L"04", L"05", L"06", L"07", L"08", L"09",
                           L"10", L"11", L"12", L"13", L"14", L"15", L"16", L"17", L"18", L"19",
@@ -20,12 +20,12 @@ char TIMETABLE_A[60][3] = {"00", "01", "02", "03", "04", "05", "06", "07", "08",
 
 char WNUMBERS_A[10][2] = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
 
-Canvas::Canvas(void) : m_width(0),
+Canvas::Canvas() : m_width(0),
                        m_height(0), hbm(nullptr), oldBitmap(nullptr), hDCMem(nullptr), hf_12(nullptr), hf_09(nullptr), hf_07(nullptr), olfFont(nullptr), initialized(false), m_fontsize(-120)
 {
 }
 
-Canvas::~Canvas(void)
+Canvas::~Canvas()
 {
    if (hbm != nullptr)
       DeleteObject(hbm);
@@ -1283,7 +1283,7 @@ void Canvas::ArrayFill(int start, int count, int val)
 {
    unsigned long long fillValue = val;
    fillValue = fillValue << 32 | val;
-   unsigned long long *dest = (unsigned long long *)(&m_pixels[start]);
+   auto *dest = (unsigned long long *)(&m_pixels[start]);
    int length = count;
    while (length >= 2)
    {

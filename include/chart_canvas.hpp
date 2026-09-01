@@ -74,8 +74,8 @@ protected:
    HBITMAP oldBmp;
 
 public:
-   ChartCanvas(void);
-   ~ChartCanvas(void);
+   ChartCanvas();
+   ~ChartCanvas();
 
    bool Create(HWND hWnd, const int width, const int height) override;
    void ShowFlags(const uint flags, const bool redraw = true);
@@ -99,27 +99,27 @@ public:
    {
       m_color_grid = value;
    }
-   uint ColorBackground(void) const
+   [[nodiscard]] uint ColorBackground() const
    {
       return (m_color_background);
    }
-   uint ColorBorder(void) const
+   [[nodiscard]] uint ColorBorder() const
    {
       return (m_color_border);
    }
-   uint ColorText(void) const
+   [[nodiscard]] uint ColorText() const
    {
       return (m_color_text);
    }
-   uint ColorGrid(void) const
+   [[nodiscard]] uint ColorGrid() const
    {
       return (m_color_grid);
    }
-   double VScaleMin(void) const
+   [[nodiscard]] double VScaleMin() const
    {
       return (m_v_scale_min);
    }
-   double VScaleMax(void) const
+   [[nodiscard]] double VScaleMax() const
    {
       return (m_v_scale_max);
    }
@@ -131,14 +131,14 @@ public:
 protected:
    virtual void Redraw();
    virtual void Redraw(int nXDest, int nYDest, int nWidth, int nHeight, int nXSrc, int nYSrc);
-   virtual void DrawBackground(void);
-   virtual void DrawScales(void);
-   virtual void CalcScales(void);
+   virtual void DrawBackground();
+   virtual void DrawScales();
+   virtual void CalcScales();
    virtual int DrawScaleTop(const bool draw = true);
    virtual int DrawScaleBottom(const bool draw = true);
    virtual int DrawScaleLeft(const bool draw = true);
    virtual int DrawScaleRight(const bool draw = true);
-   virtual void DrawGrid(void);
-   virtual void DrawChart(void);
+   virtual void DrawGrid();
+   virtual void DrawChart();
    virtual void DrawData(const uint idx = 0) {}
 };

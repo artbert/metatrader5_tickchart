@@ -1,6 +1,8 @@
 #include "tick_chart.hpp"
 
-CTickChart::CTickChart(void) : DarkMode(true), mDataAreaStartPoint(0), initialized(false), boldenChart(false), tickSampleWidth(4), mainPlotVis(true), barsDataMultiplier(1), interval(5), mProfileStartIndex(-1), mProfileSize(0), mProfileSizeFactor(1), totalMProfileSize(100000), mColorTimeParameter(true), calendarEventsTabSize(0), transactionsTabSize(0), mProfileDataBidVis(false), mProfileDataAskVis(false), chartVisSize(2), seriesSize(10000), chartWidthInSamples(2000), drawVerticalGrid(false), isCalendarEvents(false), showCalendarEvents(false), isSignedLevelsDescriptions(false), isOrdersPoints(false), travelledDistanceVis(false), travelledRoadVis(false), ticksArrivedVis(false), travelledDistanceScaleDrawn(false), travelledRoadScaleDrawn(false), ticksArrivedScaleDrawn(false), pipsDivider(1), transactionsTab(nullptr), signedLevelsArraySize(0), calendarEvents(nullptr), signedLevelsDescriptions(nullptr), signedLevels(nullptr), decimalSep(40), erase_bkg_hor(nullptr), erase_bkg_ver(nullptr)
+#include <utility>
+
+CTickChart::CTickChart() : DarkMode(true), mDataAreaStartPoint(0), initialized(false), boldenChart(false), tickSampleWidth(4), mainPlotVis(true), barsDataMultiplier(1), interval(5), mProfileStartIndex(-1), mProfileSize(0), mProfileSizeFactor(1), totalMProfileSize(100000), mColorTimeParameter(true), calendarEventsTabSize(0), transactionsTabSize(0), mProfileDataBidVis(false), mProfileDataAskVis(false), chartVisSize(2), seriesSize(10000), chartWidthInSamples(2000), drawVerticalGrid(false), isCalendarEvents(false), showCalendarEvents(false), isSignedLevelsDescriptions(false), isOrdersPoints(false), travelledDistanceVis(false), travelledRoadVis(false), ticksArrivedVis(false), travelledDistanceScaleDrawn(false), travelledRoadScaleDrawn(false), ticksArrivedScaleDrawn(false), pipsDivider(1), transactionsTab(nullptr), signedLevelsArraySize(0), calendarEvents(nullptr), signedLevelsDescriptions(nullptr), signedLevels(nullptr), decimalSep(40), erase_bkg_hor(nullptr), erase_bkg_ver(nullptr)
 {
    ShowFlags(FLAG_SHOW_LEGEND | FLAGS_SHOW_SCALES | FLAG_SHOW_GRID);
    seriesPointer = chartWidthInSamples - 2;
@@ -69,7 +71,7 @@ CTickChart::CTickChart(void) : DarkMode(true), mDataAreaStartPoint(0), initializ
    rescaledMProfileBid = new double[rescaledMProfileTabSize];
 }
 
-CTickChart::~CTickChart(void)
+CTickChart::~CTickChart()
 {
    delete[] chartVisibility;
    delete[] askPrices;
@@ -186,7 +188,7 @@ void CTickChart::SetColorMode(const bool value)
       timeIntervalObjColor = (uint)XRGB_gdi(212, 212, 212);
    }
 }
-void CTickChart::DrawBackground(void)
+void CTickChart::DrawBackground()
 {
    if (vScaleParamsChanged)
    {
@@ -299,8 +301,8 @@ void CTickChart::FillSeries(const double askPrice, const double bidPrice, const 
       ticksArrived[i] = 0;
    }
 
-   long long *tab1 = (long long *)(mProfileDataBid);
-   long long *tab2 = (long long *)(mProfileDataAsk);
+   auto *tab1 = (long long *)(mProfileDataBid);
+   auto *tab2 = (long long *)(mProfileDataAsk);
 
    for (int i = 0; i < totalMProfileSize / 2; i++)
    {
@@ -514,7 +516,7 @@ void CTickChart::UpdateChart(int nXDest, int nYDest, int nWidth, int nHeight, in
       Redraw(nXDest, nYDest, nWidth, nHeight, nXSrc, nYSrc);
    }
 }
-void CTickChart::DrawChart(void)
+void CTickChart::DrawChart()
 {
    if (initialized)
    {
@@ -1141,7 +1143,7 @@ void CTickChart::DrawData(const uint index)
                }
                else
                {
-                  if ((unsigned)(y1_ask - minY - 1) < valid_range)
+                  if (std::cmp_less((y1_ask - minY - 1), valid_range))
                   {
                      uint clr = askLineColor;
                      uint *data = &m_pixels[y1_ask * m_width + x];
@@ -1176,7 +1178,7 @@ void CTickChart::DrawData(const uint index)
                   {
                      if (y1_ask != y2_ask)
                         SafeSortedLineVertical(x, y1_ask, y2_ask, askLineColor);
-                     else if ((unsigned)(y1_ask - minY - 1) < valid_range)
+                     else if (std::cmp_less((y1_ask - minY - 1), valid_range))
                         m_pixels[y1_ask * m_width + x] = askLineColor;
                   }
                }
@@ -1184,7 +1186,7 @@ void CTickChart::DrawData(const uint index)
                {
                   if (y1_ask != y2_ask)
                      SafeSortedLineVertical(x, y1_ask, y2_ask, askLineColor);
-                  else if ((unsigned)(y1_ask - minY - 1) < valid_range)
+                  else if (std::cmp_less((y1_ask - minY - 1), valid_range))
                      m_pixels[y1_ask * m_width + x] = askLineColor;
                }
                lastAsk[0] = y1_ask;
@@ -1201,7 +1203,7 @@ void CTickChart::DrawData(const uint index)
                }
                else
                {
-                  if ((unsigned)(y1_bid - minY - 1) < valid_range)
+                  if (std::cmp_less((y1_bid - minY - 1), valid_range))
                   {
                      uint clr = bidLineColor;
                      uint *data = &m_pixels[y1_bid * m_width + x];
@@ -1235,7 +1237,7 @@ void CTickChart::DrawData(const uint index)
                   {
                      if (y1_bid != y2_bid)
                         SafeSortedLineVertical(x, y1_bid, y2_bid, bidLineColor);
-                     else if ((unsigned)(y1_bid - minY - 1) < valid_range)
+                     else if (std::cmp_less((y1_bid - minY - 1), valid_range))
                         m_pixels[y1_bid * m_width + x] = bidLineColor;
                   }
                }
@@ -1243,7 +1245,7 @@ void CTickChart::DrawData(const uint index)
                {
                   if (y1_bid != y2_bid)
                      SafeSortedLineVertical(x, y1_bid, y2_bid, bidLineColor);
-                  else if ((unsigned)(y1_bid - minY - 1) < valid_range)
+                  else if (std::cmp_less((y1_bid - minY - 1), valid_range))
                      m_pixels[y1_bid * m_width + x] = bidLineColor;
                }
                lastBid[0] = y1_bid;
@@ -1300,7 +1302,7 @@ void CTickChart::DrawData(const uint index)
    vScaleParamsChanged = false;
 }
 
-void CTickChart::DrawSignedLevels(void)
+void CTickChart::DrawSignedLevels()
 {
    RECT rct;
    rct.left = m_data_area.left + 1;
@@ -1349,7 +1351,7 @@ void CTickChart::DrawMProfile(int dataStartIndex)
 
          if (dy == 0)
          {
-            if (rangeHeight != rescaledMProfileTabSize)
+            if (std::cmp_not_equal(rangeHeight , rescaledMProfileTabSize))
             {
                delete[] rescaledMProfileAsk;
                delete[] rescaledMProfileBid;

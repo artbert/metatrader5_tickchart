@@ -1,11 +1,12 @@
 #include "chart_module.hpp"
 #include <ctime>
+#include <utility>
 
-CTickChartModule::CTickChartModule(void) : rootWnd(nullptr), tChHWnd(nullptr), bChHWnd(nullptr), TerminalParentChartHWnd(nullptr), readyToUse(false), timesTabInMs(nullptr), bidsTab(nullptr), asksTab(nullptr), realTempoValsTab(nullptr), dataSize(0), isCalendarDataRead(false), seriesIndex(-1), chartSearchIndex(-1), upRangeLineValue(0), downRangeLineValue(0), barChartTickSizeCounter(0), milisecondTimerInterval(1000), isTimerOn(false), noOfSecondsForCalc(7), PipsDivider(10), PipsDividerMultiplier(0.1), DarkMode(true), _Point(0.00001), _DigitsMultiplier(POWER_OF_10[5]), _Digits(5), ExpandDateRange(true), ExcludePremarketData(true), EnableSpeedStats(false), TimeSepVLine(0), m_gdiplusToken(0)
+CTickChartModule::CTickChartModule() : rootWnd(nullptr), tChHWnd(nullptr), bChHWnd(nullptr), TerminalParentChartHWnd(nullptr), readyToUse(false), timesTabInMs(nullptr), bidsTab(nullptr), asksTab(nullptr), realTempoValsTab(nullptr), dataSize(0), isCalendarDataRead(false), seriesIndex(-1), chartSearchIndex(-1), upRangeLineValue(0), downRangeLineValue(0), barChartTickSizeCounter(0), milisecondTimerInterval(1000), isTimerOn(false), noOfSecondsForCalc(7), PipsDivider(10), PipsDividerMultiplier(0.1), DarkMode(true), _Point(0.00001), _DigitsMultiplier(POWER_OF_10[5]), _Digits(5), ExpandDateRange(true), ExcludePremarketData(true), EnableSpeedStats(false), TimeSepVLine(0), m_gdiplusToken(0)
 {
 }
 
-CTickChartModule::~CTickChartModule(void)
+CTickChartModule::~CTickChartModule()
 {
    if (timesTabInMs != nullptr)
       delete[] timesTabInMs;
@@ -388,7 +389,7 @@ void CTickChartModule::StepForwardBtnClicked()
          barChart1.UpdateCurrentPriceLevel();
 
       time_t _time = timesTabInMs[chartSearchIndex] / 1000;
-      tm timeinfo = {0};
+      tm timeinfo = {.tm_sec=0};
       localtime_s(&timeinfo, &_time);
       char date[20];
       strftime(date, sizeof(date), "%Y.%m.%d", &timeinfo);
@@ -523,7 +524,7 @@ void CTickChartModule::StepBackwardBtnClicked(bool rewind, bool forceVScaleUpdat
       barChart1.UpdateChart(forceVScaleUpdate);
 
       time_t _time = timesTabInMs[chartSearchIndex] / 1000;
-      tm timeinfo = {0};
+      tm timeinfo = {.tm_sec=0};
       localtime_s(&timeinfo, &_time);
       char date[20];
       strftime(date, sizeof(date), "%Y.%m.%d", &timeinfo);
@@ -649,7 +650,7 @@ void CTickChartModule::TickChartTTipChanged(int posX, int posY, short LBUTTON_st
          {
             ulong actualPreciseTime = timesTabInMs[calculatedIndex];
             ulong timeDiff = 0;
-            if (actualPreciseTime >= (ulong)mouseDnTime)
+            if (std::cmp_greater_equal(actualPreciseTime ,mouseDnTime))
             {
                timeDiff = actualPreciseTime - mouseDnTime;
             }
@@ -1347,7 +1348,7 @@ int CTickChartModule::GetEncoderClsid(const WCHAR *format, CLSID *pClsid)
    if (size == 0)
       return -1;
 
-   Gdiplus::ImageCodecInfo *pImageCodecInfo = (Gdiplus::ImageCodecInfo *)(malloc(size));
+   auto *pImageCodecInfo = (Gdiplus::ImageCodecInfo *)(malloc(size));
    if (pImageCodecInfo == nullptr)
       return -1;
 
@@ -1430,8 +1431,8 @@ bool CTickChartModule::ReadTickDataFromFile(LPCTSTR pszFileName)
 
             if (ReadFile(hFile, pszFileText, dwFileSize, &dwRead, nullptr))
             {
-               long long *lngPtr = (long long *)pszFileText;
-               double *dblPtr = (double *)pszFileText;
+               auto *lngPtr = (long long *)pszFileText;
+               auto *dblPtr = (double *)pszFileText;
 
                dataSize = (int)lngPtr[0];
 
@@ -1512,7 +1513,7 @@ int CTickChartModule::OnTimer()
 
          QueryPerformanceCounter(&EndingTime);
          ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
-         long long interval = static_cast<long long>(ElapsedMicroseconds.QuadPart * 1000 / (Frequency.QuadPart));
+         auto interval = static_cast<long long>(ElapsedMicroseconds.QuadPart * 1000 / (Frequency.QuadPart));
 
          nextInterval = realTempoValsTab[chartSearchIndex] - (int)(interval);
          if ((appSets->tickChartZoom) & 1) // tickSampleWidth==1 Step forward == 2, to avoid tick chart flickering

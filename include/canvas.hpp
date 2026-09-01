@@ -1,11 +1,11 @@
 #pragma once
 #include <cmath>
-#include <math.h>
+#include <cmath>
 #include <windows.h>
 
-typedef unsigned char byte;
-typedef unsigned int uint;
-typedef unsigned long long ulong;
+using byte = unsigned char;
+using uint = unsigned int;
+using ulong = unsigned long long;
 
 #define XRGB(r, g, b) (0xFF000000 | (byte(r) << 16) | (byte(g) << 8) | byte(b))
 #define XRGB_gdi(r, g, b) ((byte(r) << 16) | (byte(g) << 8) | byte(b))
@@ -103,8 +103,8 @@ protected:
    //--- data
    uint *m_pixels{}; // array of pixels
 public:
-   Canvas(void);
-   ~Canvas(void);
+   Canvas();
+   ~Canvas();
    void ArrayFill(int start, int count, int val);
    void Erase(const uint clr = 0);
    void PixelSet(const int x, const int y, const uint clr);
@@ -129,11 +129,11 @@ public:
    void DrawBitTimeSepStamp_09(const char arrayOfSigns[], int arrSize, int x, int y, int leftLimit, int rightLimit);
    void DrawBitText_12(const char arrayOfSigns[], int arrSize, int x, int y, bool safeMode = true, int leftLimit = -1, int rightLimit = -1);
 
-   int Width() const
+   [[nodiscard]] int Width() const
    {
       return (m_width);
    }
-   int Height() const
+   [[nodiscard]] int Height() const
    {
       return (m_height);
    }

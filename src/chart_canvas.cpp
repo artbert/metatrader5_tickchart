@@ -1,5 +1,6 @@
 #include "chart_canvas.hpp"
 #include <cstdio>
+#include <utility>
 
 ChartCanvas::ChartCanvas() : m_color_background(XRGB_gdi(0xFF, 0xFF, 0xFF)),
                              m_color_border(XRGB_gdi(0x9F, 0x9F, 0x9F)),
@@ -143,7 +144,7 @@ void ChartCanvas::Redraw(int nXDest, int nYDest, int nWidth, int nHeight, int nX
 }
 //'memset' can bu used in case 'm_color_background' is gray color,
 // or can be casted to unsigned char
-void ChartCanvas::DrawBackground(void)
+void ChartCanvas::DrawBackground()
 {
    // To use memset, m_color_background must fit unsigned char value (int parameter casted to unsigned char in memset)
    if (vScaleParamsChanged)
@@ -162,7 +163,7 @@ void ChartCanvas::DrawBackground(void)
       }
    }
 }
-void ChartCanvas::DrawScales(void)
+void ChartCanvas::DrawScales()
 {
    //--- recalculate
    CalcScales();
@@ -176,7 +177,7 @@ void ChartCanvas::DrawScales(void)
    if (IS_SHOW_SCALE_BOTTOM)
       DrawScaleBottom();
 }
-void ChartCanvas::CalcScales(void)
+void ChartCanvas::CalcScales()
 {
    int width = m_data_area.right - m_data_area.left;
    int height = m_data_area.bottom - m_data_area.top;
@@ -272,7 +273,7 @@ int ChartCanvas::DrawScaleLeft(const bool draw)
       for (uint i = 0; i <= m_num_grid; i++, y -= m_dy_grid)
       {
          SafeSortedLineHorizontal(x1, x2, y, m_color_text);
-         if ((int)i < m_scale_text_size)
+         if (std::cmp_less(i, m_scale_text_size))
          {
             DrawBitText_12(m_scale_text[i], 10, m_data_area.left, y - 4, false);
          }
@@ -313,7 +314,7 @@ int ChartCanvas::DrawScaleRight(const bool draw)
       for (uint i = 0; i <= m_num_grid; i++, y -= m_dy_grid)
       {
          Line(x1, y, x2, y, m_color_text);
-         if ((int)i < m_scale_text_size)
+         if (std::cmp_less(i, m_scale_text_size))
          {
             rct.top = y;
             rct.bottom = y;
@@ -326,7 +327,7 @@ int ChartCanvas::DrawScaleRight(const bool draw)
    //--- return widht
    return (size);
 }
-void ChartCanvas::DrawGrid(void)
+void ChartCanvas::DrawGrid()
 {
    //--- check flag
    if (!IS_SHOW_GRID)
@@ -345,7 +346,7 @@ void ChartCanvas::DrawGrid(void)
    for (uint i = 0; i <= j; i++, y -= m_dy_grid)
       LineHorizontalDott(x1, x2, y, m_color_grid);
 }
-void ChartCanvas::DrawChart(void)
+void ChartCanvas::DrawChart()
 {
    for (uint i = 0; i < m_data_total; i++)
       DrawData(i);

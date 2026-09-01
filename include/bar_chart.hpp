@@ -84,8 +84,8 @@ private:
    int interval_idx;
 
 public:
-   CBarChart(void);
-   ~CBarChart(void);
+   CBarChart();
+   ~CBarChart();
 
    virtual bool Create(HWND hWnd, const int width, const int height, double pointValue, int digits);
    void UpdateChart(bool vScaleParChanged = false);
@@ -230,20 +230,20 @@ public:
       }
    }
    void AppendTransactionsPoints(const long transactions[][4], char (*descriptions)[64], const int size, const bool update = true);
-   uint GetDataAreaStartPoint(void)
+   uint GetDataAreaStartPoint()
    {
       return (mDataAreaStartPoint);
    }
-   double GetPointsPerPixel(void)
+   double GetPointsPerPixel()
    {
       return (pointsPerPx);
    }
 
    void SetActualBidPrice(const double currentPrice, const double currentHigh, const double currentLow);
-   void UpdateCurrentPriceLevel(void);
+   void UpdateCurrentPriceLevel();
 
 protected:
-   void DrawChart(void) override;
+   void DrawChart() override;
    void DrawData(const uint index = 0) override;
    void DrawMProfile(int dataStartIndex);
    void DrawSignedLevels();
