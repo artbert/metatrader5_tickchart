@@ -1,37 +1,9 @@
 #include "tick_chart.hpp"
 
-CTickChart::CTickChart(void)
+CTickChart::CTickChart(void) : DarkMode(true), mDataAreaStartPoint(0), initialized(false), boldenChart(false), tickSampleWidth(4), mainPlotVis(true), barsDataMultiplier(1), interval(5), mProfileStartIndex(-1), mProfileSize(0), mProfileSizeFactor(1), totalMProfileSize(100000), mColorTimeParameter(true), calendarEventsTabSize(0), transactionsTabSize(0), mProfileDataBidVis(false), mProfileDataAskVis(false), chartVisSize(2), seriesSize(10000), chartWidthInSamples(2000), drawVerticalGrid(false), isCalendarEvents(false), showCalendarEvents(false), isSignedLevelsDescriptions(false), isOrdersPoints(false), travelledDistanceVis(false), travelledRoadVis(false), ticksArrivedVis(false), travelledDistanceScaleDrawn(false), travelledRoadScaleDrawn(false), ticksArrivedScaleDrawn(false), pipsDivider(1), transactionsTab(nullptr), signedLevelsArraySize(0), calendarEvents(nullptr), signedLevelsDescriptions(nullptr), signedLevels(nullptr), decimalSep(40), erase_bkg_hor(nullptr), erase_bkg_ver(nullptr)
 {
    ShowFlags(FLAG_SHOW_LEGEND | FLAGS_SHOW_SCALES | FLAG_SHOW_GRID);
-
-   DarkMode = true;
-
-   mDataAreaStartPoint = 0;
-   initialized = false;
-   boldenChart = false;
-   tickSampleWidth = 4;
-   mainPlotVis = true;
-   barsDataMultiplier = 1;
-   interval = 5;
-   mProfileStartIndex = -1;
-   mProfileSize = 0;
-   mProfileSizeFactor = 1;
-   totalMProfileSize = 100000;
-   mColorTimeParameter = true;
-   calendarEventsTabSize = 0;
-   transactionsTabSize = 0;
-
-   mProfileDataBidVis = false;
-   mProfileDataAskVis = false;
-
-   chartVisSize = 2;
-
-   seriesSize = 10000;
-   chartWidthInSamples = 2000;
    seriesPointer = chartWidthInSamples - 2;
-
-   drawVerticalGrid = false;
-
    times = new time_t[seriesSize];
    memset(times, 0, seriesSize * sizeof(time_t));
 
@@ -69,34 +41,8 @@ CTickChart::CTickChart(void)
    chartVisibility[0] = 1;
    chartVisibility[1] = 1;
 
-   isCalendarEvents = false;
-   showCalendarEvents = false;
-   isSignedLevelsDescriptions = false;
-   isOrdersPoints = false;
-
-   travelledDistanceVis = false;
-   travelledRoadVis = false;
-   ticksArrivedVis = false;
-
-   travelledDistanceScaleDrawn = false;
-   travelledRoadScaleDrawn = false;
-   ticksArrivedScaleDrawn = false;
-
-   pipsDivider = 1;
-
-   transactionsTab = nullptr;
-   signedLevelsArraySize = 0;
-   calendarEvents = nullptr;
-   signedLevelsDescriptions = nullptr;
-   signedLevels = nullptr;
-
-   decimalSep = 40;
-
    TIMESTAMP_SHORT[2] = TIMESTAMP_SHORT[5] = ':';
    TIMESTAMP_SHORT[8] = '\0';
-
-   erase_bkg_hor = nullptr;
-   erase_bkg_ver = nullptr;
 
    SetColorMode(DarkMode);
 
@@ -652,8 +598,8 @@ void CTickChart::DrawData(const uint index)
    int idxIncr = 1;
    int counter = 1;
    int rectDt1 = 0, rectDt2 = 0;
-   uint tmParamClr;
-   uint *tmParamPaddingClr;
+   uint tmParamClr = 0;
+   uint *tmParamPaddingClr = nullptr;
    if (tickSampleWidth == 4)
       tmParamPaddingClr = &tmParamClr;
    else
@@ -724,13 +670,13 @@ void CTickChart::DrawData(const uint index)
    int minPixelRealPrice = y2_ask;
    unsigned long long interval_factor = intervals_quot[interval_idx];
 
-   uint tmParamAnchorPt;
+   uint tmParamAnchorPt = 0;
    char timeSepSignature[6];
    timeSepSignature[2] = ':';
    timeSepSignature[5] = '\0';
    ulong dayHourSeconds1 = 0;
    ulong dayHourSeconds2 = 0;
-   ulong hour1;
+   ulong hour1 = 0;
 
    for (; i <= seriesPointer; i += idxIncr, x += dx)
    {
@@ -1126,8 +1072,8 @@ void CTickChart::DrawData(const uint index)
             {
                if (mCumulativeCountDataAsk[i] != 0)
                {
-                  int maxAskInd;
-                  int minAskInd;
+                  int maxAskInd = 0;
+                  int minAskInd = 0;
                   MinMax(mCumulativeCountDataAsk, extremumStartIndex, extremumCount, minAskInd, maxAskInd);
 
                   int extremumInd = abs(maxAskInd) > abs(minAskInd) ? abs(maxAskInd) : abs(minAskInd);
@@ -1156,8 +1102,8 @@ void CTickChart::DrawData(const uint index)
             {
                if (mCumulativeCountDataBid[i] != 0)
                {
-                  int maxBidInd;
-                  int minBidInd;
+                  int maxBidInd = 0;
+                  int minBidInd = 0;
                   MinMax(mCumulativeCountDataBid, extremumStartIndex, extremumCount, minBidInd, maxBidInd);
 
                   int extremumInd = abs(maxBidInd) > abs(minBidInd) ? abs(maxBidInd) : abs(minBidInd);

@@ -54,14 +54,14 @@ protected:
 
    bool vScaleParamsChanged;
 
-   RECT m_data_area;
-   int m_y_min;
-   int m_y_max;
+   RECT m_data_area{};
+   int m_y_min{};
+   int m_y_max{};
    double m_v_scale_min;
    double m_v_scale_max;
-   int m_y_0;
-   double m_scale_y;
-   int m_dy_grid;
+   int m_y_0{};
+   double m_scale_y{};
+   int m_dy_grid{};
    uint m_num_grid;
    char (*m_scale_text)[50];
    int m_scale_text_size;
@@ -69,7 +69,7 @@ protected:
    uint m_data_total;
    uint m_allowed_show_flags;
 
-   BLENDFUNCTION blendFunctionParams;
+   BLENDFUNCTION blendFunctionParams{};
    HDC alphaBlendHDc;
    HBITMAP oldBmp;
 
@@ -77,7 +77,7 @@ public:
    ChartCanvas(void);
    ~ChartCanvas(void);
 
-   virtual bool Create(HWND hWnd, const int width, const int height);
+   bool Create(HWND hWnd, const int width, const int height) override;
    void ShowFlags(const uint flags, const bool redraw = true);
 
    void VScaleParams(const double max, const double min, const uint grid, const bool redraw = true);

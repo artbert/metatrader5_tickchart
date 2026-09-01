@@ -2,7 +2,9 @@
 #include "chart_module.hpp"
 #include <commdlg.h>
 
-#define MAX_LOADSTRING 100
+enum {
+MAX_LOADSTRING = 100
+};
 // Global Variables:
 HINSTANCE hInst;                     // current instance
 TCHAR szTitle[MAX_LOADSTRING];       // The title bar text
@@ -860,7 +862,7 @@ bool MenuItemsActivationProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 LRESULT CALLBACK TickChartWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
    PAINTSTRUCT ps;
-   HDC hdc;
+   HDC hdc = nullptr;
    static int startPt = -1;
 
    switch (message)
@@ -912,7 +914,7 @@ LRESULT CALLBACK TickChartWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM
 LRESULT CALLBACK BarChartWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
    PAINTSTRUCT ps;
-   HDC hdc;
+   HDC hdc = nullptr;
    static int startPt = -1;
 
    switch (message)
@@ -966,7 +968,7 @@ LRESULT CALLBACK EditControlProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
       {
       case VK_RETURN:
       {
-         BOOL success;
+         BOOL success = 0;
          uint newValue = (uint)GetDlgItemInt(toolBarHWnd, IDC_STEP_SIZE_EDT, &success, false);
          if (success)
          {
@@ -1101,14 +1103,14 @@ DWORD WINAPI MainModuleThreadFunction(LPVOID lpParam)
 
 bool SaveDataFile()
 {
-   HANDLE hFile;
+   HANDLE hFile = nullptr;
    bool bSuccess = false;
 
    hFile = CreateFile(fullDataPath, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
    if (hFile != INVALID_HANDLE_VALUE)
    {
       DWORD dwFileSize = (DWORD)sizeof(TCHMODSET);
-      DWORD dwWritten;
+      DWORD dwWritten = 0;
 
       if (WriteFile(hFile, &appSets, dwFileSize, &dwWritten, nullptr))
       {
@@ -1121,18 +1123,18 @@ bool SaveDataFile()
 }
 bool LoadDataFile()
 {
-   HANDLE hFile;
+   HANDLE hFile = nullptr;
    bool bSuccess = false;
 
    hFile = CreateFile(fullDataPath, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, 0, nullptr);
    if (hFile != INVALID_HANDLE_VALUE)
    {
-      DWORD dwFileSize;
+      DWORD dwFileSize = 0;
 
       dwFileSize = GetFileSize(hFile, nullptr);
       if (dwFileSize == sizeof(TICKCHARTMODULESETTINGS))
       {
-         DWORD dwRead;
+         DWORD dwRead = 0;
 
          if (ReadFile(hFile, &appSets, dwFileSize, &dwRead, nullptr))
          {

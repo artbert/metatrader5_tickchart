@@ -5,23 +5,23 @@ ChartCanvas::ChartCanvas() : m_color_background(XRGB_gdi(0xFF, 0xFF, 0xFF)),
                              m_color_border(XRGB_gdi(0x9F, 0x9F, 0x9F)),
                              m_color_text(XRGB_gdi(0x3F, 0x3F, 0x3F)),
                              m_color_grid(XRGB_gdi(0xCF, 0xCF, 0xCF)),
-                             m_allowed_show_flags(FLAGS_SHOW_ALL),
+                             m_allowed_show_flags(FLAGS_SHOW_ALL), alphaBlendHDc(nullptr), oldBmp(nullptr),
                              m_show_flags(FLAG_SHOW_NONE),
                              m_data_total(0),
-                             m_v_scale_min(0.0),
+                             vScaleParamsChanged(true), m_v_scale_min(0.0),
                              m_v_scale_max(10.0),
                              m_num_grid(5),
                              m_scale_digits(0),
                              m_scale_text(nullptr),
                              m_scale_text_size(0)
 {
-   alphaBlendHDc = nullptr;
-   oldBmp = nullptr;
+   
+   
    blendFunctionParams.BlendOp = AC_SRC_OVER;
    blendFunctionParams.BlendFlags = 0;
    blendFunctionParams.AlphaFormat = 0;          // use source alpha
    blendFunctionParams.SourceConstantAlpha = 50; // use constant alpha, with
-   vScaleParamsChanged = true;
+   
 }
 
 ChartCanvas::~ChartCanvas()
@@ -246,7 +246,7 @@ int ChartCanvas::DrawScaleLeft(const bool draw)
       return (0);
    //--- variables
    int x1 = m_data_area.left;
-   int x2;
+   int x2 = 0;
    int y = m_y_min;
    //--- calculate scale width
    int size = 0;
@@ -289,7 +289,7 @@ int ChartCanvas::DrawScaleRight(const bool draw)
    if (!IS_SHOW_SCALE_RIGHT)
       return (0);
    //--- variables
-   int x1;
+   int x1 = 0;
    int x2 = m_data_area.right;
    int y = m_y_min;
    //--- calculate scale width

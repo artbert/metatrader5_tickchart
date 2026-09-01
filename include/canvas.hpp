@@ -1,5 +1,6 @@
 #pragma once
 #include <cmath>
+#include <math.h>
 #include <windows.h>
 
 typedef unsigned char byte;
@@ -18,7 +19,7 @@ static double POWER_OF_10[16] =
 
 inline double NormalizeDouble(double x, uint places)
 {
-   double powTen;
+   double powTen = NAN;
    if (places < 16)
       powTen = POWER_OF_10[places];
    else
@@ -77,17 +78,17 @@ class Canvas
 private:
    HBITMAP hbm;
    HBITMAP oldBitmap;
-   BITMAPINFO bmpInfo;
+   BITMAPINFO bmpInfo{};
    HDC hDCMem;
    HFONT hf_12, hf_09, hf_07;
    HFONT olfFont;
-   HWND canvasWindow;
+   HWND canvasWindow{};
 
-   int lettersData[41][2][77]; //[letter index][0-ind,1-color]
-   int lettersBitIndsUsed[41];
+   int lettersData[41][2][77]{}; //[letter index][0-ind,1-color]
+   int lettersBitIndsUsed[41]{};
 
-   int lettersData_09[41][2][40]; //[letter index][0-ind,1-color]
-   int lettersBitIndsUsed_09[41];
+   int lettersData_09[41][2][40]{}; //[letter index][0-ind,1-color]
+   int lettersBitIndsUsed_09[41]{};
 
    bool initialized;
 
@@ -95,12 +96,12 @@ protected:
    int m_width;  // canvas width
    int m_height; // canvas height
    //--- for text
-   wchar_t m_fontname[100]; // font name
+   wchar_t m_fontname[100]{}; // font name
    int m_fontsize;          // font size
-   uint m_fontflags;        // font flags
-   uint m_fontangle;        // angle of text tilt to the X axis in 0.1 degrees
+   uint m_fontflags{};        // font flags
+   uint m_fontangle{};        // angle of text tilt to the X axis in 0.1 degrees
    //--- data
-   uint *m_pixels; // array of pixels
+   uint *m_pixels{}; // array of pixels
 public:
    Canvas(void);
    ~Canvas(void);

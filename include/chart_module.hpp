@@ -7,15 +7,15 @@
 class CTickChartModule
 {
 private:
-  TCHMODSET *appSets;
-  HWND hWnd;
+  TCHMODSET *appSets{};
+  HWND hWnd{};
   HWND rootWnd;
   bool readyToUse;
 
   HWND tChHWnd, bChHWnd;
   HWND TerminalParentChartHWnd;
 
-  HPEN m_simplePen, old_pen;
+  HPEN m_simplePen{}, old_pen{};
   __int64 *timesTabInMs;
   double *bidsTab, *asksTab;
   int dataSize;
@@ -27,14 +27,14 @@ private:
   double upRangeLineValue, downRangeLineValue;
   int barChartTickSizeCounter;
 
-  double barChartHigh;
-  double barChartLow;
+  double barChartHigh{};
+  double barChartLow{};
   int milisecondTimerInterval;
   bool isTimerOn;
-  bool pointerLabelVisible;
-  int doubleSignificantPlaces;
+  bool pointerLabelVisible{};
+  int doubleSignificantPlaces{};
 
-  int collectedDataSize;
+  int collectedDataSize{};
   int noOfSecondsForCalc;
 
   int *realTempoValsTab;
@@ -51,9 +51,9 @@ private:
   bool ExcludePremarketData;
   bool EnableSpeedStats;
 
-  char TOOLTIPLABELCONTENT[1000];
+  char TOOLTIPLABELCONTENT[1000]{};
 
-  MqlTick last_tick;
+  MqlTick last_tick{};
   ULONG_PTR m_gdiplusToken;
 
 public:

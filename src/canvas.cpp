@@ -1,5 +1,7 @@
 #include "canvas.hpp"
 
+#include <math.h>
+
 WCHAR TIMETABLE[60][3] = {L"00", L"01", L"02", L"03", L"04", L"05", L"06", L"07", L"08", L"09",
                           L"10", L"11", L"12", L"13", L"14", L"15", L"16", L"17", L"18", L"19",
                           L"20", L"21", L"22", L"23", L"24", L"25", L"26", L"27", L"28", L"29",
@@ -19,15 +21,8 @@ char TIMETABLE_A[60][3] = {"00", "01", "02", "03", "04", "05", "06", "07", "08",
 char WNUMBERS_A[10][2] = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
 
 Canvas::Canvas(void) : m_width(0),
-                       m_height(0), initialized(false), m_fontsize(-120)
+                       m_height(0), hbm(nullptr), oldBitmap(nullptr), hDCMem(nullptr), hf_12(nullptr), hf_09(nullptr), hf_07(nullptr), olfFont(nullptr), initialized(false), m_fontsize(-120)
 {
-   hbm = nullptr;
-   oldBitmap = nullptr;
-   hDCMem = nullptr;
-   hf_12 = nullptr;
-   hf_09 = nullptr;
-   hf_07 = nullptr;
-   olfFont = nullptr;
 }
 
 Canvas::~Canvas(void)
@@ -1091,7 +1086,7 @@ void Canvas::SafeSortedRectangle(int x1, int y1, int x2, int y2, const uint clr)
 }
 void Canvas::FillRectangle(int x1, int y1, int x2, int y2, const uint clr)
 {
-   int tmp;
+   int tmp = 0;
    //--- sort vertexes
    if (x2 < x1)
    {
@@ -1146,8 +1141,8 @@ void Canvas::SafeSortedFillRectangle(int x1, int y1, int x2, int y2, const uint 
 //+------------------------------------------------------------------+
 void Canvas::FillTriangle(int x1, int y1, int x2, int y2, int x3, int y3, const uint clr)
 {
-   int xx1, xx2, tmp;
-   double k1 = 0, k2 = 0, xd1, xd2;
+   int xx1 = 0, xx2 = 0, tmp = 0;
+   double k1 = 0, k2 = 0, xd1 = NAN, xd2 = NAN;
    //--- sort vertexes from lesser to greater
    if (y1 > y2)
    {

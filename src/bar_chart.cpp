@@ -1,34 +1,10 @@
 #include "bar_chart.hpp"
 
-CBarChart::CBarChart()
+CBarChart::CBarChart() : DarkMode(true), workSpaceChartHeightInPx(270), pointsPerPx(0), mDataAreaStartPoint(0), initialized(false), interval(5), mainPlotVis(true), barsDataMultiplier(1), barChartTickSize(30), mProfileStartIndex(-1), mProfileSize(0), mProfileSizeFactor(1), totalMProfileSize(100000), drawVerticalGrid(false), mProfileDataVis(false), seriesSize(10000), chartWidthInSamples(1000), barChartBarWidth(4), extremumCount(chartWidthInSamples), extremumStartIndex(0), isCalendarEvents(false), showCalendarEvents(false), isSignedLevelsDescriptions(false), pipsDivider(1), transactionsDescriptions(nullptr), transactionsTab(nullptr), transactionsTabSize(0), signedLevelsDescriptions(nullptr), signedLevelsArraySize(0), signedLevels(nullptr), calendarEvents(nullptr), calendarEventsTabSize(0)
 {
    ShowFlags(FLAG_SHOW_LEGEND | FLAGS_SHOW_SCALES | FLAG_SHOW_GRID);
-   DarkMode = true;
-   workSpaceChartHeightInPx = 270;
-   pointsPerPx = 0;
-   mDataAreaStartPoint = 0;
 
-   initialized = false;
-   interval = 5;
-   mainPlotVis = true;
-   barsDataMultiplier = 1;
-   barChartTickSize = 30;
-
-   mProfileStartIndex = -1;
-   mProfileSize = 0;
-   mProfileSizeFactor = 1;
-   totalMProfileSize = 100000;
-
-   drawVerticalGrid = false;
-   mProfileDataVis = false;
-
-   seriesSize = 10000;
-   chartWidthInSamples = 1000;
    seriesPointer = chartWidthInSamples - 2;
-   barChartBarWidth = 4;
-
-   extremumCount = chartWidthInSamples;
-   extremumStartIndex = 0;
 
    times = new time_t[seriesSize];
    memset(times, 0, seriesSize * sizeof(time_t));
@@ -46,22 +22,6 @@ CBarChart::CBarChart()
 
    mProfileData = new int[totalMProfileSize];
    memset(mProfileData, 0, seriesSize * sizeof(int));
-
-   isCalendarEvents = false;
-   showCalendarEvents = false;
-   isSignedLevelsDescriptions = false;
-   pipsDivider = 1;
-
-   transactionsDescriptions = nullptr;
-   transactionsTab = nullptr;
-   transactionsTabSize = 0;
-   signedLevelsDescriptions = nullptr;
-
-   signedLevelsArraySize = 0;
-   signedLevels = nullptr;
-
-   calendarEvents = nullptr;
-   calendarEventsTabSize = 0;
 
    SetColorMode(DarkMode);
 
@@ -563,7 +523,7 @@ void CBarChart::DrawData(const uint index)
    timeSepSignature[5] = '\0';
    ulong dayHourSeconds1 = 0;
    ulong dayHourSeconds2 = 0;
-   ulong hour1;
+   ulong hour1 = 0;
 
    for (; i <= seriesPointer; i++, x += dx)
    {

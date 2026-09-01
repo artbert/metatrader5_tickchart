@@ -4,14 +4,16 @@
 #include <math.h>
 #include <algorithm>
 
-#define IS_MPROFILEDATABID 1
-#define IS_MPROFILEDATAASK 2
-#define IS_CUMULATIVEDATAASK 4
-#define IS_CUMULATIVEDATABID 8
-#define IS_TRAVELLEDDISTANCE 16
-#define IS_TRAVELLEDROAD 32
-#define IS_TICKSARRIVED 64
-#define IS_SHOW_TRANSACTIONS 128
+enum {
+IS_MPROFILEDATABID = 1,
+IS_MPROFILEDATAASK = 2,
+IS_CUMULATIVEDATAASK = 4,
+IS_CUMULATIVEDATABID = 8,
+IS_TRAVELLEDDISTANCE = 16,
+IS_TRAVELLEDROAD = 32,
+IS_TICKSARRIVED = 64,
+IS_SHOW_TRANSACTIONS = 128
+};
 
 using std::string;
 
@@ -19,21 +21,21 @@ class CTickChart : public ChartCanvas
 {
 
 private:
-   double _Point;
-   int _Digits;
-   double _DigitsMultiplier;
+   double _Point{};
+   int _Digits{};
+   double _DigitsMultiplier{};
    bool DarkMode;
    int interval;
    bool initialized;
 
    bool mProfileDataBidVis;
    bool mProfileDataAskVis;
-   bool mTimeParameterVis;
+   bool mTimeParameterVis{};
    bool mColorTimeParameter;
-   bool mSignedLevelsVis;
+   bool mSignedLevelsVis{};
 
-   bool mCumulativeDataBidVis;
-   bool mCumulativeDataAskVis;
+   bool mCumulativeDataBidVis{};
+   bool mCumulativeDataAskVis{};
 
    bool boldenChart;
    bool drawVerticalGrid;
@@ -81,38 +83,38 @@ private:
    long long (*transactionsTab)[4]; // open time-type-ticket-price in points
    int transactionsTabSize;
 
-   char INFOSTRING[1000];
-   uint timeParamColors[256][2];
+   char INFOSTRING[1000]{};
+   uint timeParamColors[256][2]{};
 
    int pipsDivider;
-   int doubleSignificantPlaces;
+   int doubleSignificantPlaces{};
 
-   uint askLineColor;
-   uint bidLineColor;
-   uint cumulativeBidDataColor, cumulativeAskDataColor;
-   uint timeParameterObjColorNeutral, timeParameterObjColorBid, timeParameterObjColorAsk;
-   uint verticalGridColor;
-   uint duplicatedScaleColor;
-   uint timeIntervalTextColor, timeIntervalObjColor;
-   uint signedLevelsObjColor;
-   uint signedLevelsTextColor;
-   uint mProfileBidColor, mProfileAskColor;
-   uint calendarEventCircleColor;
-   uint orderPointBuyColor, orderPointSellColor, orderPointCloseColor, orderPointLineColor, orderPointTextColor;
-   uint travelledDistanceHLineColor;
-   uint travelledDistanceColor;
-   uint travelledRoadColor;
-   uint ticksArrivedColor;
+   uint askLineColor{};
+   uint bidLineColor{};
+   uint cumulativeBidDataColor{}, cumulativeAskDataColor{};
+   uint timeParameterObjColorNeutral{}, timeParameterObjColorBid{}, timeParameterObjColorAsk{};
+   uint verticalGridColor{};
+   uint duplicatedScaleColor{};
+   uint timeIntervalTextColor{}, timeIntervalObjColor{};
+   uint signedLevelsObjColor{};
+   uint signedLevelsTextColor{};
+   uint mProfileBidColor{}, mProfileAskColor{};
+   uint calendarEventCircleColor{};
+   uint orderPointBuyColor{}, orderPointSellColor{}, orderPointCloseColor{}, orderPointLineColor{}, orderPointTextColor{};
+   uint travelledDistanceHLineColor{};
+   uint travelledDistanceColor{};
+   uint travelledRoadColor{};
+   uint ticksArrivedColor{};
 
    uint mDataAreaStartPoint;
 
    int decimalSep;
-   char TIMESTAMP_SHORT[9];
+   char TIMESTAMP_SHORT[9]{};
 
    int *erase_bkg_hor; // array of flags for indexes for horizontal lines to be erased
    int *erase_bkg_ver; // array of flags for indexes for vertical lines to be erased
 
-   unsigned long long intervals_quot[5];
+   unsigned long long intervals_quot[5]{};
    int interval_idx;
    ulong erase_flags;
    uint _extremumCount;
@@ -364,9 +366,9 @@ public:
    }
 
 protected:
-   virtual void DrawChart(void);
-   virtual void DrawData(const uint index = 0);
-   virtual void DrawBackground(void);
+   void DrawChart(void) override;
+   void DrawData(const uint index = 0) override;
+   void DrawBackground(void) override;
 
 private:
    void SafeSlopingLine(int x1, int y1, int x2, int y2, const uint clr);

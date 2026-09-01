@@ -1,47 +1,8 @@
 #include "chart_module.hpp"
 #include <ctime>
 
-CTickChartModule::CTickChartModule(void)
+CTickChartModule::CTickChartModule(void) : rootWnd(nullptr), tChHWnd(nullptr), bChHWnd(nullptr), TerminalParentChartHWnd(nullptr), readyToUse(false), timesTabInMs(nullptr), bidsTab(nullptr), asksTab(nullptr), realTempoValsTab(nullptr), dataSize(0), isCalendarDataRead(false), seriesIndex(-1), chartSearchIndex(-1), upRangeLineValue(0), downRangeLineValue(0), barChartTickSizeCounter(0), milisecondTimerInterval(1000), isTimerOn(false), noOfSecondsForCalc(7), PipsDivider(10), PipsDividerMultiplier(0.1), DarkMode(true), _Point(0.00001), _DigitsMultiplier(POWER_OF_10[5]), _Digits(5), ExpandDateRange(true), ExcludePremarketData(true), EnableSpeedStats(false), TimeSepVLine(0), m_gdiplusToken(0)
 {
-   rootWnd = nullptr;
-   tChHWnd = nullptr;
-   bChHWnd = nullptr;
-   TerminalParentChartHWnd = nullptr;
-   readyToUse = false;
-
-   timesTabInMs = nullptr;
-   bidsTab = nullptr;
-   asksTab = nullptr;
-   realTempoValsTab = nullptr;
-   dataSize = 0;
-
-   isCalendarDataRead = false;
-   seriesIndex = -1;
-   chartSearchIndex = -1;
-
-   upRangeLineValue = 0;
-   downRangeLineValue = 0;
-
-   barChartTickSizeCounter = 0;
-
-   milisecondTimerInterval = 1000;
-   isTimerOn = false;
-   noOfSecondsForCalc = 7;
-
-   PipsDivider = 10;
-   PipsDividerMultiplier = 0.1;
-   DarkMode = true;
-   _Point = 0.00001;
-   _DigitsMultiplier = POWER_OF_10[5];
-   _Digits = 5;
-
-   ExpandDateRange = true;
-   ExcludePremarketData = true;
-   EnableSpeedStats = false;
-
-   TimeSepVLine = 0;
-
-   m_gdiplusToken = 0;
 }
 
 CTickChartModule::~CTickChartModule(void)
@@ -289,7 +250,7 @@ void CTickChartModule::LoadFromServerBtnClicked()
 }
 void CTickChartModule::LoadFromServerPartialBtnClicked()
 {
-   BOOL success;
+   BOOL success = 0;
    uint minutes = (uint)GetDlgItemInt(hWnd, IDC_MAIN_EDT, &success, false);
    if (success)
    {
@@ -882,7 +843,7 @@ void CTickChartModule::BarChartTTipChanged(int posX, int posY, short LBUTTON_sta
          }
          else
          {
-            int ind1, ind2;
+            int ind1 = 0, ind2 = 0;
             if (barStartIndex < calculatedIndex)
             {
                ind1 = barStartIndex;
@@ -1024,7 +985,7 @@ void CTickChartModule::ReplayBtnClicked()
    {
       if ((*appSets).realTempo)
       {
-         BOOL success;
+         BOOL success = 0;
          uint tickInterv = (uint)GetDlgItemInt(hWnd, IDC_STEP_SIZE_EDT, &success, false);
          if (success)
          {
@@ -1040,7 +1001,7 @@ void CTickChartModule::SetRangeBtnClicked()
 {
    if (chartSearchIndex == -1)
       return;
-   BOOL success;
+   BOOL success = 0;
    uint newRange = (uint)GetDlgItemInt(hWnd, IDC_MAIN_EDT, &success, false);
    if (success)
    {
@@ -1074,7 +1035,7 @@ void CTickChartModule::SetRangeBtnClicked()
 }
 void CTickChartModule::SetBarTickSizeBtnClicked()
 {
-   BOOL success;
+   BOOL success = 0;
    uint newVal = (uint)GetDlgItemInt(hWnd, IDC_MAIN_EDT, &success, false);
    if (success)
    {
@@ -1128,7 +1089,7 @@ void CTickChartModule::MoveRangeUpBtnClicked()
 {
    if (seriesIndex == -1)
       return;
-   BOOL success;
+   BOOL success = 0;
    uint valueToMove = (uint)GetDlgItemInt(hWnd, IDC_MAIN_EDT, &success, false);
    if (success)
    {
@@ -1149,7 +1110,7 @@ void CTickChartModule::MoveRangeDownBtnClicked()
 {
    if (seriesIndex == -1)
       return;
-   BOOL success;
+   BOOL success = 0;
    uint valueToMove = (uint)GetDlgItemInt(hWnd, IDC_MAIN_EDT, &success, false);
    if (success)
    {
@@ -1338,13 +1299,13 @@ void CTickChartModule::ZoomTimeParamChanged()
 
 bool CTickChartModule::SaveTicksClicked(LPCTSTR pszFileName)
 {
-   HANDLE hFile;
+   HANDLE hFile = nullptr;
    bool bSuccess = false;
 
    hFile = CreateFile(pszFileName, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
    if (hFile != INVALID_HANDLE_VALUE)
    {
-      DWORD dwFileSize;
+      DWORD dwFileSize = 0;
 
       std::string strContent = "";
       char temp[1000];
@@ -1366,7 +1327,7 @@ bool CTickChartModule::SaveTicksClicked(LPCTSTR pszFileName)
          strContent += '\n';
       }
       dwFileSize = (DWORD)strContent.size();
-      DWORD dwWritten;
+      DWORD dwWritten = 0;
 
       if (WriteFile(hFile, strContent.c_str(), dwFileSize, &dwWritten, nullptr))
       {
@@ -1449,13 +1410,13 @@ void CTickChartModule::TimerIntervalChanged()
 }
 bool CTickChartModule::ReadTickDataFromFile(LPCTSTR pszFileName)
 {
-   HANDLE hFile;
+   HANDLE hFile = nullptr;
    bool bSuccess = false;
 
    hFile = CreateFile(pszFileName, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, 0, nullptr);
    if (hFile != INVALID_HANDLE_VALUE)
    {
-      DWORD dwFileSize;
+      DWORD dwFileSize = 0;
 
       dwFileSize = GetFileSize(hFile, nullptr);
       if (dwFileSize != 0xFFFFFFFF)
@@ -1465,7 +1426,7 @@ bool CTickChartModule::ReadTickDataFromFile(LPCTSTR pszFileName)
 
          if (pszFileText != nullptr)
          {
-            DWORD dwRead;
+            DWORD dwRead = 0;
 
             if (ReadFile(hFile, pszFileText, dwFileSize, &dwRead, nullptr))
             {

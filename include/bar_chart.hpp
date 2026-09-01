@@ -7,9 +7,9 @@ using std::string;
 class CBarChart : public ChartCanvas
 {
 private:
-   double _Point;
-   double _DigitsMultiplier;
-   int _Digits;
+   double _Point{};
+   double _DigitsMultiplier{};
+   int _Digits{};
 
    bool DarkMode;
    int interval;
@@ -19,9 +19,9 @@ private:
    double actualBidPrice, previousBidPrice, actualBidHigh, actualBidLow;
    double lastChartPriceMax, lastChartPriceMin;
    bool mProfileDataVis;
-   bool mTimeParameterVis;
-   bool mColorTimeParameter;
-   bool mSignedLevelsVis;
+   bool mTimeParameterVis{};
+   bool mColorTimeParameter{};
+   bool mSignedLevelsVis{};
    bool mainPlotVis;
 
    bool initialized;
@@ -51,36 +51,36 @@ private:
    int calendarEventsTabSize;
    bool isCalendarEvents, showCalendarEvents;
 
-   bool isOrdersPoints;
+   bool isOrdersPoints{};
    long long (*transactionsTab)[4];
    char (*transactionsDescriptions)[64];
    int transactionsTabSize;
 
    int pipsDivider;
-   int doubleSignificantPlaces;
+   int doubleSignificantPlaces{};
 
-   uint signedLevelsObjColor;
-   uint signedLevelsTextColor;
-   uint timeParameterObjColor;
-   uint bullCandleColor, bearCandleColor;
-   uint timeIntervalTextColor, timeIntervalObjColor;
-   uint verticalGridColor;
-   uint orderPointBuyColor, orderPointSellColor, orderPointCloseColor, orderPointLineColor, orderPointTextColor;
-   uint calendarEventCircleColor;
-   uint mProfileColor;
+   uint signedLevelsObjColor{};
+   uint signedLevelsTextColor{};
+   uint timeParameterObjColor{};
+   uint bullCandleColor{}, bearCandleColor{};
+   uint timeIntervalTextColor{}, timeIntervalObjColor{};
+   uint verticalGridColor{};
+   uint orderPointBuyColor{}, orderPointSellColor{}, orderPointCloseColor{}, orderPointLineColor{}, orderPointTextColor{};
+   uint calendarEventCircleColor{};
+   uint mProfileColor{};
 
    uint mDataAreaStartPoint;
 
-   char INFOSTRING[1000];
-   char DESCRIPTION[100];
-   uint timeParamColors[256][2];
+   char INFOSTRING[1000]{};
+   char DESCRIPTION[100]{};
+   uint timeParamColors[256][2]{};
 
    int extremumCount, extremumStartIndex;
 
    double *rescaledMProfile;
    uint rescaledMProfileTabSize;
 
-   unsigned long long intervals_quot[5];
+   unsigned long long intervals_quot[5]{};
    int interval_idx;
 
 public:
@@ -243,8 +243,8 @@ public:
    void UpdateCurrentPriceLevel(void);
 
 protected:
-   virtual void DrawChart(void);
-   virtual void DrawData(const uint index = 0);
+   void DrawChart(void) override;
+   void DrawData(const uint index = 0) override;
    void DrawMProfile(int dataStartIndex);
    void DrawSignedLevels();
 };
