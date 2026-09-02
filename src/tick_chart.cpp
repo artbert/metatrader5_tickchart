@@ -1,5 +1,6 @@
 #include "tick_chart.hpp"
 
+#include <algorithm>
 #include <utility>
 
 CTickChart::CTickChart() : DarkMode(true), mDataAreaStartPoint(0), initialized(false), boldenChart(false), tickSampleWidth(4), mainPlotVis(true), barsDataMultiplier(1), interval(5), mProfileStartIndex(-1), mProfileSize(0), mProfileSizeFactor(1), totalMProfileSize(100000), mColorTimeParameter(true), calendarEventsTabSize(0), transactionsTabSize(0), mProfileDataBidVis(false), mProfileDataAskVis(false), chartVisSize(2), seriesSize(10000), chartWidthInSamples(2000), drawVerticalGrid(false), isCalendarEvents(false), showCalendarEvents(false), isSignedLevelsDescriptions(false), isOrdersPoints(false), travelledDistanceVis(false), travelledRoadVis(false), ticksArrivedVis(false), travelledDistanceScaleDrawn(false), travelledRoadScaleDrawn(false), ticksArrivedScaleDrawn(false), pipsDivider(1), transactionsTab(nullptr), signedLevelsArraySize(0), calendarEvents(nullptr), signedLevelsDescriptions(nullptr), signedLevels(nullptr), decimalSep(40), erase_bkg_hor(nullptr), erase_bkg_ver(nullptr)
@@ -85,23 +86,13 @@ CTickChart::~CTickChart()
    delete[] mProfileDataBid;
    delete[] mProfileDataAsk;
    delete[] times;
-   if (transactionsTab != nullptr)
-      delete[] transactionsTab;
-   if (calendarEvents != nullptr)
-      delete[] calendarEvents;
-   if (signedLevelsDescriptions != nullptr)
-      delete[] signedLevelsDescriptions;
-   if (signedLevels != nullptr)
-      delete[] signedLevels;
-
-   if (erase_bkg_hor != nullptr)
-      delete[] erase_bkg_hor;
-   if (erase_bkg_ver != nullptr)
-      delete[] erase_bkg_ver;
-
-   if (transactionsDescriptions != nullptr)
-      delete[] transactionsDescriptions;
-
+   delete[] transactionsTab;
+   delete[] calendarEvents;
+   delete[] signedLevelsDescriptions;
+   delete[] signedLevels;
+   delete[] erase_bkg_hor;
+   delete[] erase_bkg_ver;
+   delete[] transactionsDescriptions;
    delete[] rescaledMProfileAsk;
    delete[] rescaledMProfileBid;
 }
@@ -109,12 +100,12 @@ CTickChart::~CTickChart()
 bool CTickChart::Create(HWND hWnd, const int width, const int height, double pointValue, int digits)
 {
    if (!ChartCanvas::Create(hWnd, width, height))
+   {
       return (false);
+   }
 
-   if (erase_bkg_hor != nullptr)
-      delete[] erase_bkg_hor;
-   if (erase_bkg_ver != nullptr)
-      delete[] erase_bkg_ver;
+   delete[] erase_bkg_hor;
+   delete[] erase_bkg_ver;
 
    erase_bkg_hor = new int[height];
    erase_bkg_ver = new int[width];
@@ -195,12 +186,12 @@ void CTickChart::DrawBackground()
       memset(m_pixels, m_color_background, m_width * m_height * 4);
       Rectangle(0, 0, m_width - 1, m_height - 1, m_color_border);
    }
-   else if (erase_flags)
+   else if (erase_flags != 0u)
    {
       // If Market Profile, etc.
       int len = (m_data_area.right - m_data_area.left) - 10;
       uint *offst = &m_pixels[m_data_area.left + 1];
-      for (int i = m_height - 2; i--;)
+      for (int i = m_height - 2; (i--) != 0;)
       {
          offst += m_width;
          memset(offst, m_color_background, len * 4);
@@ -229,8 +220,10 @@ void CTickChart::DrawBackground()
       for (int *i = &erase_bkg_hor[8]; i < erase_bkg_hor + m_height - 1; i++)
       {
          offst += m_width;
-         if (*i) // if *i!=0
+         if (*i != 0)
+         { // if *i!=0
             memset(offst, m_color_background, size);
+         }
       }
 
       // Clearing the Clock
@@ -344,23 +337,35 @@ void CTickChart::AppendPricesTimeAndParameters(const double askPrice, const doub
    ticksArrived[seriesPointer] = ticks;
 
    if (bidChange == 0)
+   {
       mCumulativeCountDataBid[seriesPointer] = mCumulativeCountDataBid[seriesPointer - 1];
+   }
    else
    {
       if ((bidChange & 0x80000000) == (mCumulativeCountDataBid[seriesPointer - 1] & 0x80000000))
+      {
          mCumulativeCountDataBid[seriesPointer] = mCumulativeCountDataBid[seriesPointer - 1] + bidChange;
+      }
       else
+      {
          mCumulativeCountDataBid[seriesPointer] = bidChange;
+      }
    }
 
    if (askChange == 0)
+   {
       mCumulativeCountDataAsk[seriesPointer] = mCumulativeCountDataAsk[seriesPointer - 1];
+   }
    else
    {
       if ((askChange & 0x80000000) == (mCumulativeCountDataAsk[seriesPointer - 1] & 0x80000000))
+      {
          mCumulativeCountDataAsk[seriesPointer] = mCumulativeCountDataAsk[seriesPointer - 1] + askChange;
+      }
       else
+      {
          mCumulativeCountDataAsk[seriesPointer] = askChange;
+      }
    }
 
    initialized = true;
@@ -368,8 +373,8 @@ void CTickChart::AppendPricesTimeAndParameters(const double askPrice, const doub
 
 void CTickChart::UpdateMarketProfile(const double askPrice, const double bidPrice)
 {
-   int bidInd = (int)(bidPrice * _DigitsMultiplier + 0.5) % 100000;
-   int askInd = (int)(askPrice * _DigitsMultiplier + 0.5) % 100000;
+   int bidInd = (int)((bidPrice * _DigitsMultiplier) + 0.5) % 100000;
+   int askInd = (int)((askPrice * _DigitsMultiplier) + 0.5) % 100000;
 
    mProfileDataBid[bidInd]++;
    mProfileDataAsk[askInd]++;
@@ -377,14 +382,18 @@ void CTickChart::UpdateMarketProfile(const double askPrice, const double bidPric
 
 void CTickChart::MoveMarketProfileRange(const double lowRange, const double highRange)
 {
-   mProfileStartIndex = ((int)(lowRange * _DigitsMultiplier + 0.5) % 100000);
-   int endInd = ((int)(highRange * _DigitsMultiplier + 0.5) % 100000);
+   mProfileStartIndex = ((int)((lowRange * _DigitsMultiplier) + 0.5) % 100000);
+   int endInd = ((int)((highRange * _DigitsMultiplier) + 0.5) % 100000);
 
    mProfileSize = endInd - mProfileStartIndex;
    if (mProfileSize > 1)
+   {
       mProfileSizeFactor = 2147483648 / (mProfileSize - 1);
+   }
    else
+   {
       mProfileSizeFactor = 2147483648 / (mProfileSize);
+   }
 }
 void CTickChart::AppendSignedLevels(const double levels[], const int levelsSize, char (*descriptions)[100], const int descrSize, const bool update)
 {
@@ -395,7 +404,9 @@ void CTickChart::AppendSignedLevels(const double levels[], const int levelsSize,
       if (descrSize > 0)
       {
          if (descrSize != levelsSize)
+         {
             return;
+         }
 
          if (signedLevelsArraySize != descrSize)
          {
@@ -459,8 +470,9 @@ void CTickChart::AppendTransactionsPoints(const long transactions[][4], char (*d
          delete[] transactionsTab;
          transactionsTab = new long long[size][4];
 
-         if (transactionsDescriptions != nullptr)
+         {
             delete[] transactionsDescriptions;
+         }
 
          transactionsDescriptions = new char[size][64];
       }
@@ -502,7 +514,9 @@ void CTickChart::UpdateChart(bool vScaleParChanged)
    if (initialized)
    {
       if (vScaleParChanged)
+      {
          vScaleParamsChanged = vScaleParChanged;
+      }
 
       Redraw();
    }
@@ -512,7 +526,9 @@ void CTickChart::UpdateChart(int nXDest, int nYDest, int nWidth, int nHeight, in
    if (initialized)
    {
       if (vScaleParChanged)
+      {
          vScaleParamsChanged = vScaleParChanged;
+      }
       Redraw(nXDest, nYDest, nWidth, nHeight, nXSrc, nYSrc);
    }
 }
@@ -531,11 +547,11 @@ void CTickChart::DrawData(const uint index)
    uint extremumCount = _extremumCount;
    int extremumStartIndex = seriesPointer - extremumCount + 1;
 
-   if (mProfileDataAskVis | mProfileDataBidVis)
+   if (static_cast<int>((mProfileDataAskVis) | static_cast<int>(mProfileDataBidVis) != 0))
    {
       DrawMProfile(extremumStartIndex);
    }
-   if (mSignedLevelsVis && signedLevelsArraySize)
+   if (mSignedLevelsVis && (signedLevelsArraySize != 0))
    {
       DrawSignedLevels();
    }
@@ -545,27 +561,33 @@ void CTickChart::DrawData(const uint index)
    int calEvStartInd = -1;
    int calEvEndInd = -1;
 
-   if (isCalendarEvents & showCalendarEvents)
+   if (static_cast<int>((isCalendarEvents) & static_cast<int>(showCalendarEvents) != 0))
    {
       int firstValidRateIndex = i;
       while (times[firstValidRateIndex] == 0)
       {
          firstValidRateIndex++;
          if (firstValidRateIndex >= seriesPointer)
+         {
             break;
+         }
       }
       for (int j = 0; j < calendarEventsTabSize; j++)
       {
          if (calEvStartInd == -1)
          {
             if (calendarEvents[j].eventDateTime >= times[firstValidRateIndex])
+            {
                calEvStartInd = j;
+            }
          }
 
          if (calEvEndInd == -1)
          {
             if (calendarEvents[calendarEventsTabSize - 1 - j].eventDateTime <= times[seriesPointer])
+            {
                calEvEndInd = calendarEventsTabSize - 1 - j;
+            }
          }
       }
    }
@@ -579,37 +601,48 @@ void CTickChart::DrawData(const uint index)
       {
          firstValidRateIndex++;
          if (firstValidRateIndex >= seriesPointer)
+         {
             break;
+         }
       }
       for (int j = 0; j < transactionsTabSize; j++)
       {
          if (transactionPStartInd == -1)
          {
             if (transactionsTab[j][0] >= times[firstValidRateIndex])
+            {
                transactionPStartInd = j;
+            }
          }
 
          if (transactionPEndInd == -1)
          {
             if (transactionsTab[transactionsTabSize - 1 - j][0] <= times[seriesPointer])
+            {
                transactionPEndInd = transactionsTabSize - 1 - j;
+            }
          }
       }
    }
 
    int idxIncr = 1;
    int counter = 1;
-   int rectDt1 = 0, rectDt2 = 0;
+   int rectDt1 = 0;
+   int rectDt2 = 0;
    uint tmParamClr = 0;
    uint *tmParamPaddingClr = nullptr;
    if (tickSampleWidth == 4)
+   {
       tmParamPaddingClr = &tmParamClr;
+   }
    else
    {
       tmParamPaddingClr = &m_color_background;
 
       if (tickSampleWidth == 1)
+      {
          idxIncr = 2;
+      }
    }
 
    int x = m_data_area.left + 1;
@@ -621,7 +654,8 @@ void CTickChart::DrawData(const uint index)
    double val_bid = 0;
    double y_scale_shift = 0;
 
-   int minY = 1, maxY = m_height - 2;
+   int minY = 1;
+   int maxY = m_height - 2;
    uint valid_range = maxY - minY - 1;
 
    ulong tmParamMax = 0;
@@ -632,7 +666,9 @@ void CTickChart::DrawData(const uint index)
    {
       MinMax(timeParameters, extremumStartIndex, extremumCount, tmParamMin, tmParamMax);
       if (tmParamMax == tmParamMin)
+      {
          ++tmParamMax;
+      }
 
       // 2^21 = 2097152
       // 255: max index from colorArray
@@ -650,8 +686,8 @@ void CTickChart::DrawData(const uint index)
       val_bid -= m_v_scale_min;
    }
 
-   y2_ask = (int)(m_y_0 - val_ask * m_scale_y + 0.5);
-   y2_bid = (int)(m_y_0 - val_bid * m_scale_y + 0.5);
+   y2_ask = (int)(m_y_0 - (val_ask * m_scale_y) + 0.5);
+   y2_bid = (int)(m_y_0 - (val_bid * m_scale_y) + 0.5);
 
    // Assuming that the bid will not be higher than the ask
    // Note: chart coordinates on the Y-axis increase downward.
@@ -690,18 +726,16 @@ void CTickChart::DrawData(const uint index)
          val_ask -= y_scale_shift;
          val_bid -= y_scale_shift;
 
-         y1_ask = (int)(m_y_0 - val_ask * m_scale_y + 0.5);
-         y1_bid = (int)(m_y_0 - val_bid * m_scale_y + 0.5);
+         y1_ask = (int)(m_y_0 - (val_ask * m_scale_y) + 0.5);
+         y1_bid = (int)(m_y_0 - (val_bid * m_scale_y) + 0.5);
 
          y1_ask = std::max(y1_ask, minY);
          y1_ask = std::min(y1_ask, maxY);
-         if (minPixelRealPrice > y1_ask)
-            minPixelRealPrice = y1_ask;
+         minPixelRealPrice = std::min(minPixelRealPrice, y1_ask);
 
          y1_bid = std::max(y1_bid, minY);
          y1_bid = std::min(y1_bid, maxY);
-         if (maxPixelRealPrice < y1_bid)
-            maxPixelRealPrice = y1_bid;
+         maxPixelRealPrice = std::max(maxPixelRealPrice, y1_bid);
 
          val_ask = askPrices[i];
          val_bid = bidPrices[i];
@@ -709,18 +743,16 @@ void CTickChart::DrawData(const uint index)
          val_ask -= y_scale_shift;
          val_bid -= y_scale_shift;
 
-         y2_ask = (int)(m_y_0 - val_ask * m_scale_y + 0.5);
-         y2_bid = (int)(m_y_0 - val_bid * m_scale_y + 0.5);
+         y2_ask = (int)(m_y_0 - (val_ask * m_scale_y) + 0.5);
+         y2_bid = (int)(m_y_0 - (val_bid * m_scale_y) + 0.5);
 
          y2_ask = std::max(y2_ask, minY);
          y2_ask = std::min(y2_ask, maxY);
-         if (minPixelRealPrice > y2_ask)
-            minPixelRealPrice = y2_ask;
+         minPixelRealPrice = std::min(minPixelRealPrice, y2_ask);
 
          y2_bid = std::max(y2_bid, minY);
          y2_bid = std::min(y2_bid, maxY);
-         if (maxPixelRealPrice < y2_bid)
-            maxPixelRealPrice = y2_bid;
+         maxPixelRealPrice = std::max(maxPixelRealPrice, y2_bid);
 
          rectDt1 = x;
          tmParamAnchorPt = x;
@@ -738,21 +770,19 @@ void CTickChart::DrawData(const uint index)
          val_ask -= y_scale_shift;
          val_bid -= y_scale_shift;
 
-         y2_ask = (int)(m_y_0 - val_ask * m_scale_y + 0.5);
-         y2_bid = (int)(m_y_0 - val_bid * m_scale_y + 0.5);
+         y2_ask = (int)(m_y_0 - (val_ask * m_scale_y) + 0.5);
+         y2_bid = (int)(m_y_0 - (val_bid * m_scale_y) + 0.5);
 
          y2_ask = std::max(y2_ask, minY);
          y2_ask = std::min(y2_ask, maxY);
-         if (minPixelRealPrice > y2_ask)
-            minPixelRealPrice = y2_ask;
+         minPixelRealPrice = std::min(minPixelRealPrice, y2_ask);
 
          y2_bid = std::max(y2_bid, minY);
          y2_bid = std::min(y2_bid, maxY);
-         if (maxPixelRealPrice < y2_bid)
-            maxPixelRealPrice = y2_bid;
+         maxPixelRealPrice = std::max(maxPixelRealPrice, y2_bid);
       }
 
-      if (isCalendarEvents & showCalendarEvents)
+      if (static_cast<int>((isCalendarEvents) & static_cast<int>(showCalendarEvents) != 0))
       {
          if (((calEvStartInd & 0x80000000) | (calEvEndInd & 0x80000000)) == 0)
          {
@@ -763,9 +793,13 @@ void CTickChart::DrawData(const uint index)
                if (times[i] >= calendarEvents[calEvStartInd].eventDateTime)
                {
                   if (calendarEvents[calEvStartInd].importance == 2)
+                  {
                      gross = 0;
+                  }
                   else if (calendarEvents[calEvStartInd].importance == 3)
+                  {
                      gross = 3;
+                  }
                   if (calendarEvents[calEvStartInd].eventChange > 0)
                   {
                      FillTriangle(x - 4 - gross, calendarSignOffset + 10 + gross, x + 6 + gross, calendarSignOffset + 10 + gross, x + 1, calendarSignOffset - gross, orderPointBuyColor);
@@ -802,7 +836,9 @@ void CTickChart::DrawData(const uint index)
                   }
 
                   if (rct.top > 1 && rct.top < m_height - 9)
-                     DrawBitTimeSepStamp_09(INFOSTRING, idx, x - 9 - idx * 5, calendarSignOffset + 5 - 4, m_data_area.left, m_data_area.right);
+                  {
+                     DrawBitTimeSepStamp_09(INFOSTRING, idx, x - 9 - (idx * 5), calendarSignOffset + 5 - 4, m_data_area.left, m_data_area.right);
+                  }
 
                   calEvStartInd++;
                   calendarSignOffset += 20;
@@ -831,7 +867,7 @@ void CTickChart::DrawData(const uint index)
 
                   pointPrice -= y_scale_shift;
 
-                  int baseAnchorPt = (int)(m_y_0 - pointPrice * m_scale_y + 0.5);
+                  int baseAnchorPt = (int)(m_y_0 - (pointPrice * m_scale_y) + 0.5);
                   if (initializing)
                   {
                      if (baseAnchorPt < (m_data_area.bottom - m_data_area.top) / 2)
@@ -844,17 +880,23 @@ void CTickChart::DrawData(const uint index)
                   int _pt = x - 11;
                   uint _clr = orderPointBuyColor;
                   if (transactionsTab[transactionPStartInd][1] > 1)
+                  {
                      _pt = x + 13;
-                  if (transactionsTab[transactionPStartInd][1] & 1) // If odd number
+                  }
+                  if ((transactionsTab[transactionPStartInd][1] & 1) != 0)
+                  { // If odd number
                      _clr = orderPointSellColor;
+                  }
                   FillTriangle(_pt, baseAnchorPt + 8, _pt, baseAnchorPt - 8, x + 1, baseAnchorPt, _clr);
 
                   LineVertical(x + 1, baseAnchorPt + transactionPointOffset, baseAnchorPt, orderPointLineColor);
                   rct.top = baseAnchorPt + transactionPointOffset - 8;
 
                   if (rct.top > 1 && rct.top < m_height - 9)
+                  {
                      DrawBitTimeSepStamp_09(transactionsDescriptions[transactionPStartInd], (int)transactionsTab[transactionPStartInd][3],
                                             x - (((int)transactionsTab[transactionPStartInd][3] * 5) / 2), rct.top, m_data_area.left, m_data_area.right);
+                  }
 
                   transactionPStartInd++;
                   transactionPointOffset += 10 * transactionPointOffsetMultiplier;
@@ -872,31 +914,47 @@ void CTickChart::DrawData(const uint index)
          {
             DrawTravelledDistanceScales();
          }
-         int local_Y1 = m_data_area.top + 40 - travelledDistance[i - 1] * 2;
-         int local_Y2 = m_data_area.top + 40 - travelledDistance[i] * 2;
+         int local_Y1 = m_data_area.top + 40 - (travelledDistance[i - 1] * 2);
+         int local_Y2 = m_data_area.top + 40 - (travelledDistance[i] * 2);
 
          if (local_Y1 < minY)
+         {
             local_Y1 = minY;
+         }
          else if (local_Y1 > maxY)
+         {
             local_Y1 = maxY;
+         }
          if (local_Y2 < minY)
+         {
             local_Y2 = minY;
+         }
          else if (local_Y2 > maxY)
+         {
             local_Y2 = maxY;
+         }
 
          if (tickSampleWidth == 1)
          {
             if (local_Y1 == local_Y2)
+            {
                PixelSet(x, local_Y1, travelledDistanceColor);
+            }
             else
+            {
                LineVertical(x, local_Y1, local_Y2, travelledDistanceColor);
+            }
          }
          else
          {
             if (local_Y1 == local_Y2)
+            {
                LineHorizontal(x, x + dx, local_Y1, travelledDistanceColor);
+            }
             else
+            {
                SafeSlopingLine(x, local_Y1, x + dx, local_Y2, travelledDistanceColor);
+            }
          }
       }
       if (travelledRoadVis)
@@ -905,27 +963,43 @@ void CTickChart::DrawData(const uint index)
          int local_Y2 = m_data_area.bottom - (travelledRoad[i] * 2);
 
          if (local_Y1 < minY)
+         {
             local_Y1 = minY;
+         }
          else if (local_Y1 > maxY)
+         {
             local_Y1 = maxY;
+         }
          if (local_Y2 < minY)
+         {
             local_Y2 = minY;
+         }
          else if (local_Y2 > maxY)
+         {
             local_Y2 = maxY;
+         }
 
          if (tickSampleWidth == 1)
          {
             if (local_Y1 == local_Y2)
+            {
                PixelSet(x, local_Y1, travelledRoadColor);
+            }
             else
+            {
                LineVertical(x, local_Y1, local_Y2, travelledRoadColor);
+            }
          }
          else
          {
             if (local_Y1 == local_Y2)
+            {
                LineHorizontal(x, x + dx, local_Y1, travelledRoadColor);
+            }
             else
+            {
                SafeSlopingLine(x, local_Y1, x + dx, local_Y2, travelledRoadColor);
+            }
          }
          if (counter == 1)
          {
@@ -938,27 +1012,43 @@ void CTickChart::DrawData(const uint index)
          int local_Y2 = m_data_area.bottom - (ticksArrived[i] * 2);
 
          if (local_Y1 < minY)
+         {
             local_Y1 = minY;
+         }
          else if (local_Y1 > maxY)
+         {
             local_Y1 = maxY;
+         }
          if (local_Y2 < minY)
+         {
             local_Y2 = minY;
+         }
          else if (local_Y2 > maxY)
+         {
             local_Y2 = maxY;
+         }
 
          if (tickSampleWidth == 1)
          {
             if (local_Y1 == local_Y2)
+            {
                PixelSet(x, local_Y1, ticksArrivedColor);
+            }
             else
+            {
                LineVertical(x, local_Y1, local_Y2, ticksArrivedColor);
+            }
          }
          else
          {
             if (local_Y1 == local_Y2)
+            {
                LineHorizontal(x, x + dx, local_Y1, ticksArrivedColor);
+            }
             else
+            {
                SafeSlopingLine(x, local_Y1, x + dx, local_Y2, ticksArrivedColor);
+            }
          }
          if (!travelledRoadVis)
          {
@@ -978,7 +1068,9 @@ void CTickChart::DrawData(const uint index)
          //(A / B) == ((A * precalc) >> 32)
          uint prevTickIdx = i - 1; // times[i-1];
          if (tickSampleWidth == 1 && counter > 1)
+         {
             --prevTickIdx; // times[i-2];
+         }
 
          time_t _tm = times[i];
          ulong secs = _tm - dayHourSeconds1;
@@ -1027,31 +1119,40 @@ void CTickChart::DrawData(const uint index)
       if (drawVerticalGrid)
       {
          if (((tickSampleWidth == 1) && (counter % 40 == 0)) || ((tickSampleWidth == 2) && (counter % 20 == 0)) || ((tickSampleWidth == 4) && (counter % 10 == 0)))
+         {
             LineVerticalDott(rectDt1, 10, m_data_area.bottom, verticalGridColor);
+         }
       }
 
       if (mTimeParameterVis)
       {
          bool cond = timeParameters[i] > 0;
          if (tickSampleWidth == 1)
+         {
             cond = cond || (timeParameters[i - 1] > 0);
+         }
 
          if (cond)
          {
             int colorIdx = 0; // grey
             if (mColorTimeParameter)
+            {
                colorIdx = 1; // color
+            }
 
             ulong timeParamDiff = 0;
             if (tickSampleWidth == 1)
+            {
                timeParamDiff = ((timeParameters[i - 1] + timeParameters[i]) >> 1) - tmParamMin + 1;
+            }
             else
+            {
                timeParamDiff = timeParameters[i] - tmParamMin + 1;
+            }
 
             ulong _tmp_value = ((timeParamDiff * tmParamFactor) >> 21);
 
-            if (_tmp_value > 255)
-               _tmp_value = 255;
+            _tmp_value = std::min<ulong>(_tmp_value, 255);
 
             ulong tmParamIdx = 255 - _tmp_value;
 
@@ -1059,8 +1160,8 @@ void CTickChart::DrawData(const uint index)
             ulong fillValue = *tmParamPaddingClr;
             fillValue = fillValue << 32 | tmParamClr;
 
-            uint index = (m_data_area.bottom - (LONG)tmParamFigureHight) * m_width + tmParamAnchorPt;
-            for (uint i = tmParamFigureHight + 1; i--; index += m_width)
+            uint index = ((m_data_area.bottom - (LONG)tmParamFigureHight) * m_width) + tmParamAnchorPt;
+            for (uint i = tmParamFigureHight + 1; (i--) != 0u; index += m_width)
             {
                *(ulong *)(&m_pixels[index]) = fillValue;
             }
@@ -1081,10 +1182,12 @@ void CTickChart::DrawData(const uint index)
                   int extremumInd = abs(maxAskInd) > abs(minAskInd) ? abs(maxAskInd) : abs(minAskInd);
 
                   int anchorPoint1 = 60;
-                  int anchorPoint2 = anchorPoint1 - (mCumulativeCountDataAsk[i] * 20) / extremumInd;
+                  int anchorPoint2 = anchorPoint1 - ((mCumulativeCountDataAsk[i] * 20) / extremumInd);
 
                   if (tickSampleWidth == 4)
+                  {
                      FillRectangle(rectDt1, anchorPoint1, rectDt2, anchorPoint2, cumulativeAskDataColor);
+                  }
                   else
                   {
                      if (anchorPoint1 > anchorPoint2)
@@ -1111,11 +1214,15 @@ void CTickChart::DrawData(const uint index)
                   int extremumInd = abs(maxBidInd) > abs(minBidInd) ? abs(maxBidInd) : abs(minBidInd);
                   int anchorPoint1 = 60;
                   if (chartVisibility[0] == 1 && mCumulativeDataAskVis)
+                  {
                      anchorPoint1 = 100;
+                  }
 
-                  int anchorPoint2 = anchorPoint1 - (mCumulativeCountDataBid[i] * 20) / extremumInd;
+                  int anchorPoint2 = anchorPoint1 - ((mCumulativeCountDataBid[i] * 20) / extremumInd);
                   if (tickSampleWidth == 4)
+                  {
                      FillRectangle(rectDt1, anchorPoint1, rectDt2, anchorPoint2, cumulativeBidDataColor);
+                  }
                   else
                   {
                      if (anchorPoint1 > anchorPoint2)
@@ -1146,7 +1253,7 @@ void CTickChart::DrawData(const uint index)
                   if (std::cmp_less((y1_ask - minY - 1), valid_range))
                   {
                      uint clr = askLineColor;
-                     uint *data = &m_pixels[y1_ask * m_width + x];
+                     uint *data = &m_pixels[(y1_ask * m_width) + x];
                      *data = clr;
                      *(data + 1) = clr;
                      if (dx > 1)
@@ -1171,23 +1278,35 @@ void CTickChart::DrawData(const uint index)
                   currentAsk[1] = y2_ask;
 
                   if (currentAsk[1] < lastAsk[0])
+                  {
                      SafeSortedLineVertical(x, currentAsk[0], lastAsk[0], askLineColor);
+                  }
                   else if (currentAsk[0] > lastAsk[1])
+                  {
                      SafeSortedLineVertical(x, lastAsk[1], currentAsk[1], askLineColor);
+                  }
                   else
                   {
                      if (y1_ask != y2_ask)
+                     {
                         SafeSortedLineVertical(x, y1_ask, y2_ask, askLineColor);
+                     }
                      else if (std::cmp_less((y1_ask - minY - 1), valid_range))
-                        m_pixels[y1_ask * m_width + x] = askLineColor;
+                     {
+                        m_pixels[(y1_ask * m_width) + x] = askLineColor;
+                     }
                   }
                }
                else
                {
                   if (y1_ask != y2_ask)
+                  {
                      SafeSortedLineVertical(x, y1_ask, y2_ask, askLineColor);
+                  }
                   else if (std::cmp_less((y1_ask - minY - 1), valid_range))
-                     m_pixels[y1_ask * m_width + x] = askLineColor;
+                  {
+                     m_pixels[(y1_ask * m_width) + x] = askLineColor;
+                  }
                }
                lastAsk[0] = y1_ask;
                lastAsk[1] = y2_ask;
@@ -1206,7 +1325,7 @@ void CTickChart::DrawData(const uint index)
                   if (std::cmp_less((y1_bid - minY - 1), valid_range))
                   {
                      uint clr = bidLineColor;
-                     uint *data = &m_pixels[y1_bid * m_width + x];
+                     uint *data = &m_pixels[(y1_bid * m_width) + x];
                      *data = clr;
                      *(data + 1) = clr;
                      if (dx > 1)
@@ -1230,23 +1349,35 @@ void CTickChart::DrawData(const uint index)
                   currentBid[1] = y2_bid;
 
                   if (currentBid[1] < lastBid[0])
+                  {
                      SafeSortedLineVertical(x, currentBid[0], lastBid[0], bidLineColor);
+                  }
                   else if (currentBid[0] > lastBid[1])
+                  {
                      SafeSortedLineVertical(x, lastBid[1], currentBid[1], bidLineColor);
+                  }
                   else
                   {
                      if (y1_bid != y2_bid)
+                     {
                         SafeSortedLineVertical(x, y1_bid, y2_bid, bidLineColor);
+                     }
                      else if (std::cmp_less((y1_bid - minY - 1), valid_range))
-                        m_pixels[y1_bid * m_width + x] = bidLineColor;
+                     {
+                        m_pixels[(y1_bid * m_width) + x] = bidLineColor;
+                     }
                   }
                }
                else
                {
                   if (y1_bid != y2_bid)
+                  {
                      SafeSortedLineVertical(x, y1_bid, y2_bid, bidLineColor);
+                  }
                   else if (std::cmp_less((y1_bid - minY - 1), valid_range))
-                     m_pixels[y1_bid * m_width + x] = bidLineColor;
+                  {
+                     m_pixels[(y1_bid * m_width) + x] = bidLineColor;
+                  }
                }
                lastBid[0] = y1_bid;
                lastBid[1] = y2_bid;
@@ -1266,7 +1397,7 @@ void CTickChart::DrawData(const uint index)
    uint hr = (t1 * 1193047) >> 32;
    t1 -= (ulong)hr * 3600;
    uint mn = t1 * 71582789 >> 32;
-   uint sec = (uint)(t1 - (ulong)mn * 60);
+   uint sec = (uint)(t1 - ((ulong)mn * 60));
 
    TIMESTAMP_SHORT[0] = TIMETABLE_A[hr][0];
    TIMESTAMP_SHORT[1] = TIMETABLE_A[hr][1];
@@ -1285,7 +1416,7 @@ void CTickChart::DrawData(const uint index)
    hr = (t2 * 1193047) >> 32;
    t2 -= (ulong)hr * 3600;
    mn = t2 * 71582789 >> 32;
-   sec = (int)(t2 - (ulong)mn * 60);
+   sec = (int)(t2 - ((ulong)mn * 60));
 
    TIMESTAMP_SHORT[0] = TIMETABLE_A[hr][0];
    TIMESTAMP_SHORT[1] = TIMETABLE_A[hr][1];
@@ -1308,25 +1439,31 @@ void CTickChart::DrawSignedLevels()
    rct.left = m_data_area.left + 1;
    double vvvOffst = 0;
    if (m_v_scale_min > 0)
+   {
       vvvOffst = m_v_scale_min;
+   }
 
    for (int j = 0; j < signedLevelsArraySize; j++)
    {
       if (signedLevels[j] < m_v_scale_min)
+      {
          continue;
-      else if (signedLevels[j] > m_v_scale_max)
+      }
+      if (signedLevels[j] > m_v_scale_max)
          continue;
 
       double y_raw = signedLevels[j];
       y_raw -= vvvOffst;
-      int y_val = (int)(m_y_0 - y_raw * m_scale_y + 0.5);
+      int y_val = (int)(m_y_0 - (y_raw * m_scale_y) + 0.5);
 
       SafeSortedLineHorizontalDott(m_data_area.left + 1, m_data_area.right - 1, y_val, signedLevelsObjColor);
       if (isSignedLevelsDescriptions)
       {
          rct.top = y_val - 11;
          if (rct.top > 1 && rct.top < m_height - 12)
+         {
             DrawBitText_12(signedLevelsDescriptions[j], 42, m_data_area.left + 1, rct.top, true, m_data_area.left + 1, m_data_area.right - 1);
+         }
       }
       FillTriangle(m_data_area.right - 1, y_val + 4, m_data_area.right - 1, y_val - 4, m_data_area.right - 10, y_val, signedLevelsObjColor);
    }
@@ -1337,7 +1474,7 @@ void CTickChart::DrawMProfile(int dataStartIndex)
    {
       bool showAsk = mProfileDataAskVis && (chartVisibility[0] == 1);
       bool showBid = mProfileDataBidVis && (chartVisibility[1] == 1);
-      if (showAsk | showBid)
+      if (static_cast<int>((showAsk) | static_cast<int>(showBid) != 0))
       {
          int rangeHeight = m_y_min + 1;
          ulong dyRaw = (((long)m_y_min - (long)m_y_max) * mProfileSizeFactor) >> 31;
@@ -1347,11 +1484,13 @@ void CTickChart::DrawMProfile(int dataStartIndex)
 
          double vvvOffst = 0;
          if (m_v_scale_min > 0)
+         {
             vvvOffst = m_v_scale_min;
+         }
 
          if (dy == 0)
          {
-            if (std::cmp_not_equal(rangeHeight , rescaledMProfileTabSize))
+            if (std::cmp_not_equal(rangeHeight, rescaledMProfileTabSize))
             {
                delete[] rescaledMProfileAsk;
                delete[] rescaledMProfileBid;
@@ -1364,34 +1503,42 @@ void CTickChart::DrawMProfile(int dataStartIndex)
             memset(rescaledMProfileBid, 0, rangeHeight * sizeof(double));
 
             double mostSignificantPricePart = int((bidPrices[dataStartIndex] * _DigitsMultiplier) / 100000) * POWER_OF_10[5 - _Digits];
-            double vvv = NormalizeDouble(mProfileStartIndex * _Point + mostSignificantPricePart, _Digits);
+            double vvv = NormalizeDouble((mProfileStartIndex * _Point) + mostSignificantPricePart, _Digits);
 
             vvv -= vvvOffst;
 
-            int yInd = (int)(m_y_0 - vvv * m_scale_y + 0.5);
+            int yInd = (int)(m_y_0 - (vvv * m_scale_y) + 0.5);
 
             if ((uint)yInd < (uint)rangeHeight)
             {
                if (showAsk)
+               {
                   rescaledMProfileAsk[yInd] += mProfileDataAsk[mProfileStartIndex];
+               }
 
                if (showBid)
+               {
                   rescaledMProfileBid[yInd] += mProfileDataBid[mProfileStartIndex];
+               }
             }
 
             for (int i = mProfileStartIndex + 1; i < mProfileSize + mProfileStartIndex; i++)
             {
                vvv = i * _Point + mostSignificantPricePart;
                vvv -= vvvOffst;
-               yInd = (int)(m_y_0 - vvv * m_scale_y + 0.5);
+               yInd = (int)(m_y_0 - (vvv * m_scale_y) + 0.5);
 
                if ((uint)yInd < (uint)rangeHeight)
                {
                   if (showAsk)
+                  {
                      rescaledMProfileAsk[yInd] += mProfileDataAsk[i];
+                  }
 
                   if (showBid)
+                  {
                      rescaledMProfileBid[yInd] += mProfileDataBid[i];
+                  }
                }
             }
 
@@ -1448,12 +1595,12 @@ void CTickChart::DrawMProfile(int dataStartIndex)
                {
                   if (showAsk && rescaledMProfileAsk[i] > 0)
                   {
-                     new_x = (m_data_area.left + (int)(((double)rescaledMProfileAsk[i] * multiplier) * 200.0 + 0.5));
+                     new_x = (m_data_area.left + (int)(((rescaledMProfileAsk[i] * multiplier) * 200.0) + 0.5));
                      SafeSortedLineHorizontal(m_data_area.left + 1, new_x, i, mProfileAskColor);
                   }
                   if (showBid && rescaledMProfileBid[i] > 0)
                   {
-                     new_x = (m_data_area.left + (int)(((double)rescaledMProfileBid[i] * multiplier) * 200.0 + 0.5));
+                     new_x = (m_data_area.left + (int)(((rescaledMProfileBid[i] * multiplier) * 200.0) + 0.5));
                      SafeSortedLineHorizontal(m_data_area.left + 1, new_x, i, mProfileBidColor);
                   }
                }
@@ -1461,21 +1608,21 @@ void CTickChart::DrawMProfile(int dataStartIndex)
             else
             {
                double mostSignificantPricePart = int((bidPrices[dataStartIndex] * _DigitsMultiplier) / 100000) * POWER_OF_10[5 - _Digits];
-               double vvv = mProfileStartIndex * _Point + mostSignificantPricePart;
+               double vvv = (mProfileStartIndex * _Point) + mostSignificantPricePart;
 
                vvv -= vvvOffst;
-               int yyy2 = (int)(m_y_0 - vvv * m_scale_y + 0.5);
+               int yyy2 = (int)(m_y_0 - (vvv * m_scale_y) + 0.5);
 
                int new_x = 0;
 
                if (showAsk && mProfileDataAsk[mProfileStartIndex] > 0)
                {
-                  new_x = (m_data_area.left + (int)(((double)mProfileDataAsk[mProfileStartIndex] * multiplier) * 200.0 + 0.5));
+                  new_x = (m_data_area.left + (int)((((double)mProfileDataAsk[mProfileStartIndex] * multiplier) * 200.0) + 0.5));
                   SafeSortedFillRectangle(m_data_area.left + 1, yyy2 + 1 - dy, new_x, yyy2, mProfileAskColor);
                }
                if (showBid && mProfileDataBid[mProfileStartIndex] > 0)
                {
-                  new_x = (m_data_area.left + (int)(((double)mProfileDataBid[mProfileStartIndex] * multiplier) * 200.0 + 0.5));
+                  new_x = (m_data_area.left + (int)((((double)mProfileDataBid[mProfileStartIndex] * multiplier) * 200.0) + 0.5));
                   SafeSortedFillRectangle(m_data_area.left + 1, yyy2 + 1 - dy, new_x, yyy2, mProfileBidColor);
                }
 
@@ -1485,7 +1632,7 @@ void CTickChart::DrawMProfile(int dataStartIndex)
                   vvv = 0;
                   vvv = i * _Point + mostSignificantPricePart;
                   vvv -= m_v_scale_min;
-                  yyy2 = (int)(m_y_0 - vvv * m_scale_y + 0.5);
+                  yyy2 = (int)(m_y_0 - (vvv * m_scale_y) + 0.5);
 
                   int finalY1 = yyy1 - dy;
                   int finalY2 = yyy2 + 1 - dy;
@@ -1498,12 +1645,12 @@ void CTickChart::DrawMProfile(int dataStartIndex)
 
                   if (showAsk && mProfileDataAsk[i] > 0)
                   {
-                     new_x = (m_data_area.left + (int)(((double)mProfileDataAsk[i] * multiplier) * 200.0 + 0.5));
+                     new_x = (m_data_area.left + (int)((((double)mProfileDataAsk[i] * multiplier) * 200.0) + 0.5));
                      SafeSortedFillRectangle(m_data_area.left + 1, finalY1, new_x, finalY2, mProfileAskColor);
                   }
                   if (showBid && mProfileDataBid[i] > 0)
                   {
-                     new_x = (m_data_area.left + (int)(((double)mProfileDataBid[i] * multiplier) * 200.0 + 0.5));
+                     new_x = (m_data_area.left + (int)((((double)mProfileDataBid[i] * multiplier) * 200.0) + 0.5));
                      SafeSortedFillRectangle(m_data_area.left + 1, finalY1, new_x, finalY2, mProfileBidColor);
                   }
                }
@@ -1521,31 +1668,31 @@ void CTickChart::DrawTravelledDistanceScales()
 
       txt[0] = '-';
       txt[1] = '2';
-      DrawBitText_12(txt, 2, m_data_area.left - 2 - 7 * 2, m_data_area.top + 45, false);
+      DrawBitText_12(txt, 2, m_data_area.left - 2 - (7 * 2), m_data_area.top + 45, false);
 
       txt[0] = '2';
-      DrawBitText_12(txt, 1, m_data_area.left - 2 - 7 * 1, m_data_area.top + 25, false);
+      DrawBitText_12(txt, 1, m_data_area.left - 2 - (7 * 1), m_data_area.top + 25, false);
 
       txt[0] = '-';
       txt[1] = '4';
-      DrawBitText_12(txt, 2, m_data_area.left - 2 - 7 * 2, m_data_area.top + 55, false);
+      DrawBitText_12(txt, 2, m_data_area.left - 2 - (7 * 2), m_data_area.top + 55, false);
 
       txt[0] = '4';
-      DrawBitText_12(txt, 1, m_data_area.left - 2 - 7 * 1, m_data_area.top + 15, false);
+      DrawBitText_12(txt, 1, m_data_area.left - 2 - (7 * 1), m_data_area.top + 15, false);
 
       txt[0] = '-';
       txt[1] = '2';
-      DrawBitText_12(txt, 2, m_data_area.right + 6 - 7 * 2, m_data_area.top + 45, false);
+      DrawBitText_12(txt, 2, m_data_area.right + 6 - (7 * 2), m_data_area.top + 45, false);
 
       txt[0] = '2';
-      DrawBitText_12(txt, 1, m_data_area.right + 6 - 7 * 1, m_data_area.top + 25, false);
+      DrawBitText_12(txt, 1, m_data_area.right + 6 - (7 * 1), m_data_area.top + 25, false);
 
       txt[0] = '-';
       txt[1] = '4';
-      DrawBitText_12(txt, 2, m_data_area.right + 6 - 7 * 2, m_data_area.top + 55, false);
+      DrawBitText_12(txt, 2, m_data_area.right + 6 - (7 * 2), m_data_area.top + 55, false);
 
       txt[0] = '4';
-      DrawBitText_12(txt, 1, m_data_area.right + 6 - 7 * 1, m_data_area.top + 15, false);
+      DrawBitText_12(txt, 1, m_data_area.right + 6 - (7 * 1), m_data_area.top + 15, false);
 
       travelledDistanceScaleDrawn = true;
    }
@@ -1559,7 +1706,9 @@ void CTickChart::DrawTravelledDistanceScales()
 void CTickChart::DrawTravelledRoadScales()
 {
    if (travelledRoadScaleDrawn && !vScaleParamsChanged)
+   {
       return;
+   }
 
    DrawingHelper();
    travelledRoadScaleDrawn = true;
@@ -1568,7 +1717,9 @@ void CTickChart::DrawTravelledRoadScales()
 void CTickChart::DrawTicksArrivedScales()
 {
    if (ticksArrivedScaleDrawn && !vScaleParamsChanged)
+   {
       return;
+   }
 
    DrawingHelper();
    ticksArrivedScaleDrawn = true;
@@ -1646,13 +1797,15 @@ void CTickChart::SafeSlopingLine(int x1, int y1, int x2, int y2, const uint clr)
       if ((unsigned)x1 < (unsigned)m_width &&
           (unsigned)(y1 - 2) < (unsigned)(m_height - 1))
       {
-         m_pixels[y1 * m_width + x1] = clr;
+         m_pixels[(y1 * m_width) + x1] = clr;
          draw = true;
       }
       else
       {
          if (draw)
+         {
             return;
+         }
       }
       int er2 = er << 1;
       if (er2 > -dy)
@@ -1666,5 +1819,5 @@ void CTickChart::SafeSlopingLine(int x1, int y1, int x2, int y2, const uint clr)
          y1 += sy;
       }
    }
-   m_pixels[y2 * m_width + x2] = clr;
+   m_pixels[(y2 * m_width) + x2] = clr;
 }

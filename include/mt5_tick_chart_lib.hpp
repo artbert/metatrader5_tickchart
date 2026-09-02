@@ -12,7 +12,7 @@
 
 // Exported functions
 DLL_EXPORT bool DLL_CALL SetSymbolParameters(SYMBOLSETS &sets, char *date, int dateChars);
-DLL_EXPORT bool DLL_CALL Initialize(long long parent, wchar_t *dataPath, wchar_t *appTitle);
+DLL_EXPORT bool DLL_CALL Initialize(long long parent, const wchar_t *dataPath, const wchar_t *appTitle);
 DLL_EXPORT void DLL_CALL SignedLevelsAppend(const double levels[], const int levelsSize,
                                             char (*descriptions)[100], const int descrSize,
                                             const bool update);

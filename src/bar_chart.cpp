@@ -1,5 +1,6 @@
 #include "bar_chart.hpp"
 
+#include <algorithm>
 #include <utility>
 
 CBarChart::CBarChart() : DarkMode(true), workSpaceChartHeightInPx(270), pointsPerPx(0), mDataAreaStartPoint(0), initialized(false), interval(5), mainPlotVis(true), barsDataMultiplier(1), barChartTickSize(30), mProfileStartIndex(-1), mProfileSize(0), mProfileSizeFactor(1), totalMProfileSize(100000), drawVerticalGrid(false), mProfileDataVis(false), seriesSize(10000), chartWidthInSamples(1000), barChartBarWidth(4), extremumCount(chartWidthInSamples), extremumStartIndex(0), isCalendarEvents(false), showCalendarEvents(false), isSignedLevelsDescriptions(false), pipsDivider(1), transactionsDescriptions(nullptr), transactionsTab(nullptr), transactionsTabSize(0), signedLevelsDescriptions(nullptr), signedLevelsArraySize(0), signedLevels(nullptr), calendarEvents(nullptr), calendarEventsTabSize(0)
@@ -54,29 +55,25 @@ CBarChart::CBarChart() : DarkMode(true), workSpaceChartHeightInPx(270), pointsPe
 CBarChart::~CBarChart()
 {
    delete[] times;
-   if (transactionsTab != nullptr)
-      delete[] transactionsTab;
-   if (calendarEvents != nullptr)
-      delete[] calendarEvents;
-   if (signedLevelsDescriptions != nullptr)
-      delete[] signedLevelsDescriptions;
-   if (signedLevels != nullptr)
-      delete[] signedLevels;
+   delete[] transactionsTab;
+   delete[] calendarEvents;
+   delete[] signedLevelsDescriptions;
+   delete[] signedLevels;
    delete[] mProfileData;
    delete[] openPrices;
    delete[] closePrices;
    delete[] highPrices;
    delete[] lowPrices;
    delete[] timeParameters;
-   if (transactionsDescriptions != nullptr)
-      delete[] transactionsDescriptions;
-
+   delete[] transactionsDescriptions;
    delete[] rescaledMProfile;
 }
 bool CBarChart::Create(HWND hWnd, const int width, const int height, double pointValue, int digits)
 {
    if (!ChartCanvas::Create(hWnd, width, height))
+   {
       return (false);
+   }
 
    _Digits = digits;
    _Point = pointValue;
@@ -146,9 +143,13 @@ void CBarChart::AppendPricesTimeAndParameters(const double open, const double cl
    lowPrices[seriesPointer] = low;
    times[seriesPointer] = time;
    if (timeParameter != 0)
+   {
       timeParameters[seriesPointer] = ((1024UL * 1000UL) / timeParameter) + 1;
+   }
    else
+   {
       timeParameters[seriesPointer] = 1;
+   }
 
    initialized = true;
 }
@@ -174,12 +175,14 @@ void CBarChart::FillSeries(const double open, const double close, const double h
    initialized = false;
 
    if (update)
+   {
       Redraw();
+   }
 }
 void CBarChart::UpdateMarketProfile(const double askPrice, const double bidPrice)
 {
    double midPrice = (askPrice + bidPrice) / 2.0;
-   int midInd = (int)(midPrice * _DigitsMultiplier + 0.5) % 100000;
+   int midInd = (int)((midPrice * _DigitsMultiplier) + 0.5) % 100000;
 
    mProfileData[midInd]++;
 }
@@ -192,7 +195,9 @@ void CBarChart::AppendSignedLevels(const double levels[], const int levelsSize, 
       if (descrSize > 0)
       {
          if (descrSize != levelsSize)
+         {
             return;
+         }
 
          if (signedLevelsArraySize != descrSize)
          {
@@ -247,7 +252,9 @@ void CBarChart::AppendCalendarEvents(CalendarEvent clEvents[], int tabSize, cons
       isCalendarEvents = true;
    }
    if (update)
+   {
       Redraw();
+   }
 }
 void CBarChart::AppendTransactionsPoints(const long transactions[][4], char (*descriptions)[64], const int size, const bool update)
 {
@@ -258,8 +265,9 @@ void CBarChart::AppendTransactionsPoints(const long transactions[][4], char (*de
          delete[] transactionsTab;
          transactionsTab = new long long[size][4];
 
-         if (transactionsDescriptions != nullptr)
+         {
             delete[] transactionsDescriptions;
+         }
 
          transactionsDescriptions = new char[size][64];
       }
@@ -275,7 +283,9 @@ void CBarChart::AppendTransactionsPoints(const long transactions[][4], char (*de
    vScaleParamsChanged = true;
 
    if (update)
+   {
       Redraw();
+   }
 }
 void CBarChart::SetActualBidPrice(const double currentPrice, const double currentHigh, const double currentLow)
 {
@@ -304,11 +314,13 @@ void CBarChart::UpdateCurrentPriceLevel()
          {
             _prLvl -= m_v_scale_min;
          }
-         _prLvlPt = (int)(m_y_0 - _prLvl * m_scale_y + 0.5);
+         _prLvlPt = (int)(m_y_0 - (_prLvl * m_scale_y) + 0.5);
       }
       if (_prLvlPt != _lastPrLvlPt)
       {
-         int _cl_prLvlPt = 0, _bar_prHighPt = 0, _bar_prLowPt = 0;
+         int _cl_prLvlPt = 0;
+         int _bar_prHighPt = 0;
+         int _bar_prLowPt = 0;
          int x1 = 1072;
          // clear previous price level sign
          if (previousBidPrice != 0)
@@ -318,7 +330,7 @@ void CBarChart::UpdateCurrentPriceLevel()
             {
                _prlvl -= m_v_scale_min;
             }
-            _cl_prLvlPt = (int)(m_y_0 - _prlvl * m_scale_y + 0.5);
+            _cl_prLvlPt = (int)(m_y_0 - (_prlvl * m_scale_y) + 0.5);
             SafeSortedLineHorizontal(x1, x1 + 6, _cl_prLvlPt, ColorBackground());
          }
          // draw current bar on chart
@@ -331,8 +343,8 @@ void CBarChart::UpdateCurrentPriceLevel()
                _prHigh -= m_v_scale_min;
                _prLow -= m_v_scale_min;
             }
-            _bar_prHighPt = (int)(m_y_0 - _prHigh * m_scale_y + 0.5);
-            _bar_prLowPt = (int)(m_y_0 - _prLow * m_scale_y + 0.5);
+            _bar_prHighPt = (int)(m_y_0 - (_prHigh * m_scale_y) + 0.5);
+            _bar_prLowPt = (int)(m_y_0 - (_prLow * m_scale_y) + 0.5);
             SafeSortedLineVertical(x1, _bar_prHighPt, _bar_prLowPt, bearCandleColor);
          }
          // draw current price level Sign on chart
@@ -340,9 +352,13 @@ void CBarChart::UpdateCurrentPriceLevel()
          // Note about plot indexing values: x increasing from left to right,
          // y increasing from top to bottom (as oposite to price values on chart)
          if (_cl_prLvlPt > _bar_prLowPt)
+         {
             _bar_prLowPt = _cl_prLvlPt;
+         }
          else if (_cl_prLvlPt < _bar_prHighPt)
+         {
             _bar_prHighPt = _cl_prLvlPt;
+         }
 
          Update(x1, _bar_prHighPt, 7, _bar_prLowPt - _bar_prHighPt + 1, x1, _bar_prHighPt);
       }
@@ -354,29 +370,31 @@ void CBarChart::UpdateChart(bool vScaleParChanged)
    if (initialized)
    {
       if (vScaleParChanged)
+      {
          vScaleParamsChanged = vScaleParChanged;
+      }
 
       extremumStartIndex = seriesPointer - extremumCount + 1;
 
       double maximum = MaxInArray(highPrices, extremumStartIndex, extremumCount);
       double minimum = MinInArray(lowPrices, extremumStartIndex, extremumCount);
 
-      if (actualBidHigh > maximum)
-         maximum = actualBidHigh;
-      if (actualBidLow < minimum)
-         minimum = actualBidLow;
+      maximum = std::max(actualBidHigh, maximum);
+      minimum = std::min(actualBidLow, minimum);
 
       if (maximum != lastChartPriceMax || minimum != lastChartPriceMin)
       {
-         double maxVal = NormalizeDouble(maximum + 10 * _Point, _Digits - 1);
-         double minVal = NormalizeDouble(minimum - 10 * _Point, _Digits - 1);
+         double maxVal = NormalizeDouble(maximum + (10 * _Point), _Digits - 1);
+         double minVal = NormalizeDouble(minimum - (10 * _Point), _Digits - 1);
 
          int noOfLevels = (int)((maxVal - minVal) * _DigitsMultiplier / 10.0);
          int limit = noOfLevels / 10;
          if (noOfLevels % 10 != 0)
+         {
             limit += 1;
+         }
 
-         double maxEvenVal = minVal + (double)(limit * 100.0 * _Point);
+         double maxEvenVal = minVal + (limit * 100.0 * _Point);
 
          if (m_v_scale_max != maxEvenVal || m_v_scale_min != minVal)
          {
@@ -385,14 +403,18 @@ void CBarChart::UpdateChart(bool vScaleParChanged)
             VScaleParams(maxEvenVal, minVal, 10, false);
          }
 
-         mProfileStartIndex = ((int)(minVal * _DigitsMultiplier + 0.5) % 100000);
-         int endInd = ((int)(maxEvenVal * _DigitsMultiplier + 0.5) % 100000);
+         mProfileStartIndex = ((int)((minVal * _DigitsMultiplier) + 0.5) % 100000);
+         int endInd = ((int)((maxEvenVal * _DigitsMultiplier) + 0.5) % 100000);
          mProfileSize = endInd - mProfileStartIndex;
 
          if (mProfileSize > 1)
+         {
             mProfileSizeFactor = 2147483648 / (mProfileSize - 1);
+         }
          else
+         {
             mProfileSizeFactor = 2147483648 / (mProfileSize);
+         }
       }
       lastChartPriceMax = maximum;
       lastChartPriceMin = minimum;
@@ -424,7 +446,9 @@ void CBarChart::DrawData(const uint index)
 
    RECT rct;
    if (vScaleParamsChanged)
+   {
       DrawBitTimeSepStamp_09(DESCRIPTION, 10, 2, 2, 1, 100);
+   }
 
    if (mProfileDataVis)
    {
@@ -437,7 +461,9 @@ void CBarChart::DrawData(const uint index)
 
    double y_scale_shift = 0;
    if (m_v_scale_min > 0)
+   {
       y_scale_shift = m_v_scale_min;
+   }
 
    ulong tmParamMax = 0;
    ulong tmParamMin = 0;
@@ -447,7 +473,9 @@ void CBarChart::DrawData(const uint index)
    {
       MinMax(timeParameters, extremumStartIndex, extremumCount, tmParamMin, tmParamMax);
       if (tmParamMax == tmParamMin)
+      {
          ++tmParamMax;
+      }
 
       // 2^21 = 2097152
       // 255: max index from colorArray
@@ -460,27 +488,33 @@ void CBarChart::DrawData(const uint index)
    int calEvStartInd = -1;
    int calEvEndInd = -1;
 
-   if (isCalendarEvents & showCalendarEvents)
+   if (static_cast<int>((isCalendarEvents) & static_cast<int>(showCalendarEvents) != 0))
    {
       int firstValidRateIndex = i;
       while (times[firstValidRateIndex] == 0)
       {
          firstValidRateIndex++;
          if (firstValidRateIndex >= seriesPointer)
+         {
             break;
+         }
       }
       for (int j = 0; j < calendarEventsTabSize; j++)
       {
          if (calEvStartInd == -1)
          {
             if (calendarEvents[j].eventDateTime >= times[firstValidRateIndex])
+            {
                calEvStartInd = j;
+            }
          }
 
          if (calEvEndInd == -1)
          {
             if (calendarEvents[calendarEventsTabSize - 1 - j].eventDateTime <= times[seriesPointer])
+            {
                calEvEndInd = calendarEventsTabSize - 1 - j;
+            }
          }
       }
    }
@@ -495,20 +529,26 @@ void CBarChart::DrawData(const uint index)
       {
          firstValidRateIndex++;
          if (firstValidRateIndex >= seriesPointer)
+         {
             break;
+         }
       }
       for (int j = 0; j < transactionsTabSize; j++)
       {
          if (transactionPStartInd == -1)
          {
             if (transactionsTab[j][0] >= times[firstValidRateIndex])
+            {
                transactionPStartInd = j;
+            }
          }
 
          if (transactionPEndInd == -1)
          {
             if (transactionsTab[transactionsTabSize - 1 - j][0] <= times[seriesPointer])
+            {
                transactionPEndInd = transactionsTabSize - 1 - j;
+            }
          }
       }
    }
@@ -516,7 +556,7 @@ void CBarChart::DrawData(const uint index)
    bool once = false;
 
    rct.left = m_data_area.left;
-   uint intevalSepVLineOffst = (barChartBarWidth & 4) != 0;
+   uint intevalSepVLineOffst = static_cast<uint>((barChartBarWidth & 4) != 0);
    unsigned long long interval_factor = intervals_quot[interval_idx];
    int counter = 0;
 
@@ -535,9 +575,11 @@ void CBarChart::DrawData(const uint index)
       double low = lowPrices[i];
 
       if (oPr == 0 || cPr == 0 || high == 0 || low == 0)
+      {
          continue;
+      }
 
-      if (isCalendarEvents & showCalendarEvents)
+      if (static_cast<int>((isCalendarEvents) & static_cast<int>(showCalendarEvents) != 0))
       {
          if (((calEvStartInd & 0x80000000) | (calEvEndInd & 0x80000000)) == 0)
          {
@@ -548,9 +590,13 @@ void CBarChart::DrawData(const uint index)
                if (times[i] >= calendarEvents[calEvStartInd].eventDateTime)
                {
                   if (calendarEvents[calEvStartInd].importance == 2)
+                  {
                      gross = 0;
+                  }
                   else if (calendarEvents[calEvStartInd].importance == 3)
+                  {
                      gross = 3;
+                  }
                   if (calendarEvents[calEvStartInd].eventChange > 0)
                   {
                      FillTriangle(x - 4 - gross, calendarSignOffset + 10 + gross, x + 6 + gross, calendarSignOffset + 10 + gross, x + 1, calendarSignOffset - gross, orderPointBuyColor);
@@ -587,7 +633,9 @@ void CBarChart::DrawData(const uint index)
                   }
 
                   if (rct.top > 1 && rct.top < m_height - 9)
-                     DrawBitTimeSepStamp_09(INFOSTRING, idx, x - 9 - idx * 5, calendarSignOffset + 5 - 4, m_data_area.left, m_data_area.right);
+                  {
+                     DrawBitTimeSepStamp_09(INFOSTRING, idx, x - 9 - (idx * 5), calendarSignOffset + 5 - 4, m_data_area.left, m_data_area.right);
+                  }
 
                   calEvStartInd++;
                   calendarSignOffset += 20;
@@ -615,7 +663,7 @@ void CBarChart::DrawData(const uint index)
                   double pointPrice = transactionsTab[transactionPStartInd][2] * _Point;
                   pointPrice -= y_scale_shift;
 
-                  int baseAnchorPt = (int)(m_y_0 - pointPrice * m_scale_y + 0.5);
+                  int baseAnchorPt = (int)(m_y_0 - (pointPrice * m_scale_y) + 0.5);
                   if (initializing)
                   {
                      if (baseAnchorPt < (m_data_area.bottom - m_data_area.top) / 2)
@@ -629,16 +677,22 @@ void CBarChart::DrawData(const uint index)
                   int _pt = x - 11;
                   uint _clr = orderPointBuyColor;
                   if (transactionsTab[transactionPStartInd][1] > 1)
+                  {
                      _pt = x + 13;
-                  if (transactionsTab[transactionPStartInd][1] & 1) // If odd number
+                  }
+                  if ((transactionsTab[transactionPStartInd][1] & 1) != 0)
+                  { // If odd number
                      _clr = orderPointSellColor;
+                  }
                   FillTriangle(_pt, baseAnchorPt + 8, _pt, baseAnchorPt - 8, x + 1, baseAnchorPt, _clr);
 
                   LineVertical(x + 1, baseAnchorPt + transactionPointOffset, baseAnchorPt, orderPointLineColor);
 
                   rct.top = baseAnchorPt + transactionPointOffset - 8;
                   if (rct.top > 1 && rct.top < m_height - 9)
+                  {
                      DrawBitTimeSepStamp_09(transactionsDescriptions[transactionPStartInd], (int)transactionsTab[transactionPStartInd][3], x - (((int)transactionsTab[transactionPStartInd][3] * 8) / 2), rct.top, m_data_area.left, m_data_area.right);
+                  }
 
                   transactionPStartInd++;
                   transactionPointOffset += 10 * transactionPointOffsetMultiplier;
@@ -654,7 +708,9 @@ void CBarChart::DrawData(const uint index)
       if (drawVerticalGrid)
       {
          if (counter % 10 == 0)
+         {
             LineVerticalDott(x + 1, 10, m_data_area.bottom, verticalGridColor);
+         }
       }
 
       if (i > 0)
@@ -749,18 +805,23 @@ void CBarChart::DrawData(const uint index)
          {
             int colorIdx = 0; // grey
             if (mColorTimeParameter)
+            {
                colorIdx = 1; // color
+            }
 
             ulong timeParamDiff = timeParameters[i] - tmParamMin + 1;
             ulong _tmp_value = ((timeParamDiff * tmParamFactor) >> 21);
-            if (_tmp_value > 255)
-               _tmp_value = 255;
+            _tmp_value = std::min<ulong>(_tmp_value, 255);
             ulong tmParamIdx = 255 - _tmp_value;
 
             if (barChartBarWidth == 4)
+            {
                SafeSortedFillRectangle(x, (m_data_area.bottom - tmParamFigureHight), x + 2, m_data_area.bottom, timeParamColors[tmParamIdx][colorIdx]);
+            }
             else
+            {
                SafeSortedLineVertical(x, (m_data_area.bottom - tmParamFigureHight), m_data_area.bottom, timeParamColors[tmParamIdx][colorIdx]);
+            }
          }
       }
 
@@ -774,10 +835,10 @@ void CBarChart::DrawData(const uint index)
             high -= y_scale_shift;
             low -= y_scale_shift;
 
-            int openPr = (int)(m_y_0 - oPr * m_scale_y + 0.5);
-            int closePr = (int)(m_y_0 - cPr * m_scale_y + 0.5);
-            int highPr = (int)(m_y_0 - high * m_scale_y + 0.5);
-            int lowPr = (int)(m_y_0 - low * m_scale_y + 0.5);
+            int openPr = (int)(m_y_0 - (oPr * m_scale_y) + 0.5);
+            int closePr = (int)(m_y_0 - (cPr * m_scale_y) + 0.5);
+            int highPr = (int)(m_y_0 - (high * m_scale_y) + 0.5);
+            int lowPr = (int)(m_y_0 - (low * m_scale_y) + 0.5);
 
             if (direction)
             {
@@ -795,8 +856,8 @@ void CBarChart::DrawData(const uint index)
          {
             high -= y_scale_shift;
             low -= y_scale_shift;
-            int highPr = (int)(m_y_0 - high * m_scale_y + 0.5);
-            int lowPr = (int)(m_y_0 - low * m_scale_y + 0.5);
+            int highPr = (int)(m_y_0 - (high * m_scale_y) + 0.5);
+            int lowPr = (int)(m_y_0 - (low * m_scale_y) + 0.5);
             SafeSortedLineVertical(x, highPr, lowPr, bearCandleColor);
          }
       }
@@ -813,8 +874,8 @@ void CBarChart::DrawData(const uint index)
          _prHigh -= m_v_scale_min;
          _prLow -= m_v_scale_min;
       }
-      int _prHighPt = (int)(m_y_0 - _prHigh * m_scale_y + 0.5);
-      int _prLowPt = (int)(m_y_0 - _prLow * m_scale_y + 0.5);
+      int _prHighPt = (int)(m_y_0 - (_prHigh * m_scale_y) + 0.5);
+      int _prLowPt = (int)(m_y_0 - (_prLow * m_scale_y) + 0.5);
       LineVertical(x, _prHighPt, _prLowPt, bearCandleColor);
    }
    // draw current price level sign on chart
@@ -825,7 +886,7 @@ void CBarChart::DrawData(const uint index)
       {
          _prLvl -= m_v_scale_min;
       }
-      int _prLvlPt = (int)(m_y_0 - _prLvl * m_scale_y + 0.5);
+      int _prLvlPt = (int)(m_y_0 - (_prLvl * m_scale_y) + 0.5);
       LineHorizontal(x, x + 6, _prLvlPt, bearCandleColor);
    }
 
@@ -837,25 +898,31 @@ void CBarChart::DrawSignedLevels()
    rct.left = m_data_area.left + 1;
    double vvvOffst = 0;
    if (m_v_scale_min > 0)
+   {
       vvvOffst = m_v_scale_min;
+   }
 
    for (int j = 0; j < signedLevelsArraySize; j++)
    {
       if (signedLevels[j] < m_v_scale_min)
+      {
          continue;
-      else if (signedLevels[j] > m_v_scale_max)
+      }
+      if (signedLevels[j] > m_v_scale_max)
          continue;
 
       double y_raw = signedLevels[j];
       y_raw -= vvvOffst;
-      int y_val = (int)(m_y_0 - y_raw * m_scale_y + 0.5);
+      int y_val = (int)(m_y_0 - (y_raw * m_scale_y) + 0.5);
 
       SafeSortedLineHorizontalDott(m_data_area.left + 1, m_data_area.right - 1, y_val, signedLevelsObjColor);
       if (isSignedLevelsDescriptions)
       {
          rct.top = y_val - 11;
          if (rct.top > 1 && rct.top < m_height - 12)
+         {
             DrawBitText_12(signedLevelsDescriptions[j], 42, m_data_area.left + 1, rct.top, true, m_data_area.left + 1, m_data_area.right - 1);
+         }
       }
       FillTriangle(m_data_area.right - 1, y_val + 4, m_data_area.right - 1, y_val - 4, m_data_area.right - 10, y_val, signedLevelsObjColor);
    }
@@ -873,11 +940,13 @@ void CBarChart::DrawMProfile(int dataStartIndex)
 
       double vvvOffst = 0;
       if (m_v_scale_min > 0)
+      {
          vvvOffst = m_v_scale_min;
+      }
 
       if (dy == 0)
       {
-         if (std::cmp_not_equal(rangeHeight , rescaledMProfileTabSize))
+         if (std::cmp_not_equal(rangeHeight, rescaledMProfileTabSize))
          {
             delete[] rescaledMProfile;
             rescaledMProfile = new double[rangeHeight];
@@ -887,10 +956,10 @@ void CBarChart::DrawMProfile(int dataStartIndex)
          memset(rescaledMProfile, 0, rangeHeight * sizeof(double));
 
          double mostSignificantPricePart = int((openPrices[dataStartIndex] * _DigitsMultiplier) / 100000) * POWER_OF_10[5 - _Digits];
-         double vvv = NormalizeDouble(mProfileStartIndex * _Point + mostSignificantPricePart, _Digits);
+         double vvv = NormalizeDouble((mProfileStartIndex * _Point) + mostSignificantPricePart, _Digits);
 
          vvv -= vvvOffst;
-         int yInd = (int)(m_y_0 - vvv * m_scale_y + 0.5);
+         int yInd = (int)(m_y_0 - (vvv * m_scale_y) + 0.5);
 
          if ((uint)yInd < (uint)rangeHeight)
          {
@@ -902,12 +971,14 @@ void CBarChart::DrawMProfile(int dataStartIndex)
          {
             vvv = i * _Point + mostSignificantPricePart;
             vvv -= vvvOffst;
-            yInd = (int)(m_y_0 - vvv * m_scale_y + 0.5);
+            yInd = (int)(m_y_0 - (vvv * m_scale_y) + 0.5);
 
             if ((uint)yInd < (uint)rangeHeight)
             {
                if (mProfileData[i] > 0)
+               {
                   rescaledMProfile[yInd] += mProfileData[i];
+               }
             }
          }
 
@@ -941,7 +1012,7 @@ void CBarChart::DrawMProfile(int dataStartIndex)
             {
                if (rescaledMProfile[i] > 0)
                {
-                  new_x = (m_data_area.left + (int)(((double)rescaledMProfile[i] * multiplier) * 200.0 + 0.5));
+                  new_x = (m_data_area.left + (int)(((rescaledMProfile[i] * multiplier) * 200.0) + 0.5));
                   SafeSortedLineHorizontal(m_data_area.left + 1, new_x, i, mProfileColor);
                }
             }
@@ -949,16 +1020,16 @@ void CBarChart::DrawMProfile(int dataStartIndex)
          else
          {
             double mostSignificantPricePart = int((openPrices[dataStartIndex] * _DigitsMultiplier) / 100000) * POWER_OF_10[5 - _Digits];
-            double vvv = mProfileStartIndex * _Point + mostSignificantPricePart;
+            double vvv = (mProfileStartIndex * _Point) + mostSignificantPricePart;
 
             vvv -= vvvOffst;
-            int yyy2 = (int)(m_y_0 - vvv * m_scale_y + 0.5);
+            int yyy2 = (int)(m_y_0 - (vvv * m_scale_y) + 0.5);
 
             int new_x = 0;
 
             if (mProfileData[mProfileStartIndex] > 0)
             {
-               new_x = (m_data_area.left + (int)(((double)mProfileData[mProfileStartIndex] * multiplier) * 200.0 + 0.5));
+               new_x = (m_data_area.left + (int)((((double)mProfileData[mProfileStartIndex] * multiplier) * 200.0) + 0.5));
                SafeSortedFillRectangle(m_data_area.left + 1, yyy2 + 1 - dy, new_x, yyy2, mProfileColor);
             }
 
@@ -968,7 +1039,7 @@ void CBarChart::DrawMProfile(int dataStartIndex)
                vvv = i * _Point + mostSignificantPricePart;
                vvv -= vvvOffst;
 
-               yyy2 = (int)(m_y_0 - vvv * m_scale_y + 0.5);
+               yyy2 = (int)(m_y_0 - (vvv * m_scale_y) + 0.5);
 
                int finalY1 = yyy1 - dy;
                int finalY2 = yyy2 + 1 - dy;
@@ -980,7 +1051,7 @@ void CBarChart::DrawMProfile(int dataStartIndex)
                }
                if (mProfileData[i] > 0)
                {
-                  new_x = (m_data_area.left + (int)(((double)mProfileData[i] * multiplier) * 200.0 + 0.5));
+                  new_x = (m_data_area.left + (int)((((double)mProfileData[i] * multiplier) * 200.0) + 0.5));
                   SafeSortedFillRectangle(m_data_area.left + 1, finalY1, new_x, finalY2, mProfileColor);
                }
             }

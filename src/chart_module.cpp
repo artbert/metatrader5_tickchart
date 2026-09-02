@@ -1,4 +1,5 @@
 #include "chart_module.hpp"
+#include <algorithm>
 #include <ctime>
 #include <utility>
 
@@ -8,15 +9,10 @@ CTickChartModule::CTickChartModule() : rootWnd(nullptr), tChHWnd(nullptr), bChHW
 
 CTickChartModule::~CTickChartModule()
 {
-   if (timesTabInMs != nullptr)
-      delete[] timesTabInMs;
-   if (bidsTab != nullptr)
-      delete[] bidsTab;
-   if (asksTab != nullptr)
-      delete[] asksTab;
-   if (realTempoValsTab != nullptr)
-      delete[] realTempoValsTab;
-
+   delete[] timesTabInMs;
+   delete[] bidsTab;
+   delete[] asksTab;
+   delete[] realTempoValsTab;
    DeleteObject(m_simplePen);
 
    tickChart1.Destroy();
@@ -26,15 +22,10 @@ CTickChartModule::~CTickChartModule()
 bool CTickChartModule::Initialize(HWND terminalParent, HWND rootWindow, HWND tickChartHWnd, HWND barChartHWnd, HWND toolBoxHWnd)
 {
    dataSize = 1000000;
-
-   if (timesTabInMs != nullptr)
-      delete[] timesTabInMs;
-   if (bidsTab != nullptr)
-      delete[] bidsTab;
-   if (asksTab != nullptr)
-      delete[] asksTab;
-   if (realTempoValsTab != nullptr)
-      delete[] realTempoValsTab;
+   delete[] timesTabInMs;
+   delete[] bidsTab;
+   delete[] asksTab;
+   delete[] realTempoValsTab;
 
    timesTabInMs = new __int64[dataSize];
    bidsTab = new double[dataSize];
@@ -49,8 +40,8 @@ bool CTickChartModule::Initialize(HWND terminalParent, HWND rootWindow, HWND tic
       asksTab[i] = last_tick.ask;
    }
    double midPrice = NormalizeDouble((last_tick.bid + last_tick.ask) / 2.0, _Digits);
-   upRangeLineValue = NormalizeDouble(midPrice + 100 * _Point, _Digits);
-   downRangeLineValue = NormalizeDouble(midPrice - 100 * _Point, _Digits);
+   upRangeLineValue = NormalizeDouble(midPrice + (100 * _Point), _Digits);
+   downRangeLineValue = NormalizeDouble(midPrice - (100 * _Point), _Digits);
 
    TerminalParentChartHWnd = terminalParent;
    rootWnd = rootWindow;
@@ -71,7 +62,7 @@ bool CTickChartModule::Initialize(HWND terminalParent, HWND rootWindow, HWND tic
    tickChart1.ShowGrid(true, false);
    tickChart1.SetScaleDigits(_Digits);
    tickChart1.ShowDescriptors(false, false);
-   tickChart1.SetPipsDivider((int)PipsDivider);
+   tickChart1.SetPipsDivider(PipsDivider);
    doubleSignificantPlaces = (int)log10((double)PipsDivider);
 
    char charBuffer[50];
@@ -108,7 +99,7 @@ bool CTickChartModule::Initialize(HWND terminalParent, HWND rootWindow, HWND tic
    barChart1.ShowGrid(true, false);
    barChart1.SetScaleDigits(_Digits);
    barChart1.ShowDescriptors(false, false);
-   barChart1.SetPipsDivider((int)PipsDivider);
+   barChart1.SetPipsDivider(PipsDivider);
 
    if (DarkMode)
    {
@@ -252,8 +243,8 @@ void CTickChartModule::LoadFromServerBtnClicked()
 void CTickChartModule::LoadFromServerPartialBtnClicked()
 {
    BOOL success = 0;
-   uint minutes = (uint)GetDlgItemInt(hWnd, IDC_MAIN_EDT, &success, false);
-   if (success)
+   uint minutes = (uint)GetDlgItemInt(hWnd, IDC_MAIN_EDT, &success, 0);
+   if (success != 0)
    {
       if (minutes > 0)
       {
@@ -273,12 +264,16 @@ void CTickChartModule::ChartAutoScrollChBxChanged()
 void CTickChartModule::StepForwardBtnClicked()
 {
    if (seriesIndex == -1)
+   {
       return;
+   }
 
    if (!(*appSets).chartAutoScroll)
    {
       if (seriesIndex == chartSearchIndex)
+      {
          return;
+      }
 
       if (chartSearchIndex == -1)
       {
@@ -294,14 +289,18 @@ void CTickChartModule::StepForwardBtnClicked()
       int i = chartSearchIndex + 1;
       int lastEndIndex = -1;
       if (chartSearchIndex > -1)
+      {
          lastEndIndex = chartSearchIndex;
+      }
 
       bool updateBarChart = false;
       uint parameter = 0;
       for (; i <= seriesIndex; i++)
       {
          if (tickCounter >= noOfTicks)
+         {
             break;
+         }
 
          chartSearchIndex++;
          barChartTickSizeCounter++;
@@ -316,14 +315,22 @@ void CTickChartModule::StepForwardBtnClicked()
             parameter = (uint)(timesTabInMs[i] - timesTabInMs[i - 1]);
 
             if (bidsTab[i] > bidsTab[i - 1])
+            {
                bidChange = 1;
+            }
             else if (bidsTab[i] < bidsTab[i - 1])
+            {
                bidChange = -1;
+            }
 
             if (asksTab[i] > asksTab[i - 1])
+            {
                askChange = 1;
+            }
             else if (asksTab[i] < asksTab[i - 1])
+            {
                askChange = -1;
+            }
 
             if (EnableSpeedStats)
             {
@@ -341,11 +348,9 @@ void CTickChartModule::StepForwardBtnClicked()
          }
          tickChart1.AppendPricesTimeAndParameters(asksTab[i], bidsTab[i], timesTabInMs[i] / 1000, parameter, askChange, bidChange, (short)wholeRoad, priceDistance, ticksElapsed);
 
-         if (barChartHigh < bidsTab[i])
-            barChartHigh = bidsTab[i];
+         barChartHigh = std::max(barChartHigh, bidsTab[i]);
 
-         if (barChartLow > bidsTab[i])
-            barChartLow = bidsTab[i];
+         barChartLow = std::min(barChartLow, bidsTab[i]);
 
          if (barChartTickSizeCounter == (*appSets).barChartTickSize)
          {
@@ -384,12 +389,16 @@ void CTickChartModule::StepForwardBtnClicked()
 
       barChart1.SetActualBidPrice(bidsTab[chartSearchIndex], barChartHigh, barChartLow);
       if (updateBarChart)
+      {
          barChart1.UpdateChart();
+      }
       else
+      {
          barChart1.UpdateCurrentPriceLevel();
+      }
 
       time_t _time = timesTabInMs[chartSearchIndex] / 1000;
-      tm timeinfo = {.tm_sec=0};
+      tm timeinfo = {.tm_sec = 0};
       localtime_s(&timeinfo, &_time);
       char date[20];
       strftime(date, sizeof(date), "%Y.%m.%d", &timeinfo);
@@ -401,7 +410,9 @@ void CTickChartModule::StepForwardBtnClicked()
 void CTickChartModule::StepBackwardBtnClicked(bool rewind, bool forceVScaleUpdate)
 {
    if (seriesIndex == -1)
+   {
       return;
+   }
 
    if (!(*appSets).chartAutoScroll)
    {
@@ -411,7 +422,9 @@ void CTickChartModule::StepBackwardBtnClicked(bool rewind, bool forceVScaleUpdat
          for (int n = 1; n < seriesIndex; n++)
          {
             if ((timesTabInMs[n] >= TimeSepVLine) && (timesTabInMs[n - 1] <= TimeSepVLine))
+            {
                upLimit = n;
+            }
          }
       }
       else
@@ -419,8 +432,7 @@ void CTickChartModule::StepBackwardBtnClicked(bool rewind, bool forceVScaleUpdat
          upLimit = chartSearchIndex - (*appSets).tickOffsetValue + 1;
       }
 
-      if (upLimit <= 1)
-         upLimit = 1;
+      upLimit = std::max(upLimit, 1);
 
       tickChart1.FillSeries(asksTab[0], bidsTab[0], 0, 0, 0, 0);
       barChart1.FillSeries(bidsTab[0], bidsTab[0], bidsTab[0], bidsTab[0], 0, 0, false);
@@ -437,7 +449,9 @@ void CTickChartModule::StepBackwardBtnClicked(bool rewind, bool forceVScaleUpdat
 
       int lastEndIndex = -1;
       if (chartSearchIndex > -1)
+      {
          lastEndIndex = chartSearchIndex;
+      }
 
       int i = 0;
       uint parameter = 0;
@@ -458,14 +472,22 @@ void CTickChartModule::StepBackwardBtnClicked(bool rewind, bool forceVScaleUpdat
             parameter = (uint)(timesTabInMs[i] - timesTabInMs[i - 1]);
 
             if (bidsTab[i] > bidsTab[i - 1])
+            {
                bidChange = 1;
+            }
             else if (bidsTab[i] < bidsTab[i - 1])
+            {
                bidChange = -1;
+            }
 
             if (asksTab[i] > asksTab[i - 1])
+            {
                askChange = 1;
+            }
             else if (asksTab[i] < asksTab[i - 1])
+            {
                askChange = -1;
+            }
 
             if (EnableSpeedStats)
             {
@@ -483,11 +505,9 @@ void CTickChartModule::StepBackwardBtnClicked(bool rewind, bool forceVScaleUpdat
          }
          tickChart1.AppendPricesTimeAndParameters(asksTab[i], bidsTab[i], timesTabInMs[i] / 1000, parameter, askChange, bidChange, (short)(wholeRoad * _DigitsMultiplier), priceDistance, ticksElapsed);
 
-         if (barChartHigh < bidsTab[i])
-            barChartHigh = bidsTab[i];
+         barChartHigh = std::max(barChartHigh, bidsTab[i]);
 
-         if (barChartLow > bidsTab[i])
-            barChartLow = bidsTab[i];
+         barChartLow = std::min(barChartLow, bidsTab[i]);
 
          if (barChartTickSizeCounter == (*appSets).barChartTickSize)
          {
@@ -524,7 +544,7 @@ void CTickChartModule::StepBackwardBtnClicked(bool rewind, bool forceVScaleUpdat
       barChart1.UpdateChart(forceVScaleUpdate);
 
       time_t _time = timesTabInMs[chartSearchIndex] / 1000;
-      tm timeinfo = {.tm_sec=0};
+      tm timeinfo = {.tm_sec = 0};
       localtime_s(&timeinfo, &_time);
       char date[20];
       strftime(date, sizeof(date), "%Y.%m.%d", &timeinfo);
@@ -569,18 +589,23 @@ void CTickChartModule::TickChartTTipChanged(int posX, int posY, short LBUTTON_st
          int shift = 0;
 
          if ((*appSets).tickChartZoom == 1)
+         {
             shift = (posX - startPoint - 1000) * 2;
+         }
          else if ((*appSets).tickChartZoom == 2)
+         {
             shift = (posX - startPoint - 1000);
+         }
          else
+         {
             shift = (posX - startPoint - 1000) / 2;
+         }
 
          int calculatedIndex = chartSearchIndex + (shift);
 
-         if (calculatedIndex < 0)
-            calculatedIndex = 0;
+         calculatedIndex = std::max(calculatedIndex, 0);
 
-         if (!LBUTTON_state)
+         if (LBUTTON_state == 0)
          {
             if (partialToRefresh)
             {
@@ -601,11 +626,11 @@ void CTickChartModule::TickChartTTipChanged(int posX, int posY, short LBUTTON_st
             time_t t0 = timesTabInMs[calculatedIndex];
             time_t t1 = t0 / 1000;
             uint days = (((t1 * 1158050442) >> 32) + t1 * 49710) >> 32;
-            ulong _sc = t1 - days * 24 * 60 * 60;
+            ulong _sc = t1 - (days * 24 * 60 * 60);
             uint hr = (_sc * 1193047) >> 32;
             _sc -= hr * 3600;
             uint mn = _sc * 71582789 >> 32;
-            uint sec = (uint)(_sc - mn * 60);
+            uint sec = (uint)(_sc - (mn * 60));
 
             TOOLTIPLABELCONTENT[0] = TIMETABLE_A[hr][0];
             TOOLTIPLABELCONTENT[1] = TIMETABLE_A[hr][1];
@@ -617,7 +642,7 @@ void CTickChartModule::TickChartTTipChanged(int posX, int posY, short LBUTTON_st
             TOOLTIPLABELCONTENT[7] = TIMETABLE_A[sec][1];
             TOOLTIPLABELCONTENT[8] = '.';
 
-            uint mil = (uint)(t0 - t1 * 1000);
+            uint mil = (uint)(t0 - (t1 * 1000));
 
             TOOLTIPLABELCONTENT[9] = mil / 100 + '0';
             TOOLTIPLABELCONTENT[10] = (mil % 100) / 10 + '0';
@@ -650,7 +675,7 @@ void CTickChartModule::TickChartTTipChanged(int posX, int posY, short LBUTTON_st
          {
             ulong actualPreciseTime = timesTabInMs[calculatedIndex];
             ulong timeDiff = 0;
-            if (std::cmp_greater_equal(actualPreciseTime ,mouseDnTime))
+            if (std::cmp_greater_equal(actualPreciseTime, mouseDnTime))
             {
                timeDiff = actualPreciseTime - mouseDnTime;
             }
@@ -661,17 +686,21 @@ void CTickChartModule::TickChartTTipChanged(int posX, int posY, short LBUTTON_st
 
             int ticksCount = abs(mouseDnPosX - posX);
             if ((*appSets).tickChartZoom == 1)
+            {
                ticksCount *= 2;
+            }
             else if ((*appSets).tickChartZoom == 4)
+            {
                ticksCount /= 2;
+            }
 
             time_t td = timeDiff / 1000;
             uint days = (((td * 1158050442) >> 32) + td * 49710) >> 32;
-            ulong _sc = td - days * 24 * 60 * 60;
+            ulong _sc = td - (days * 24 * 60 * 60);
             uint hr = (_sc * 1193047) >> 32;
             _sc -= hr * 3600;
             uint mn = _sc * 71582789 >> 32;
-            uint sec = (uint)(_sc - mn * 60);
+            uint sec = (uint)(_sc - (mn * 60));
 
             TOOLTIPLABELCONTENT[0] = TIMETABLE_A[hr][0];
             TOOLTIPLABELCONTENT[1] = TIMETABLE_A[hr][1];
@@ -683,7 +712,7 @@ void CTickChartModule::TickChartTTipChanged(int posX, int posY, short LBUTTON_st
             TOOLTIPLABELCONTENT[7] = TIMETABLE_A[sec][1];
             TOOLTIPLABELCONTENT[8] = '.';
 
-            uint mil = (uint)(timeDiff - td * 1000);
+            uint mil = (uint)(timeDiff - (td * 1000));
             TOOLTIPLABELCONTENT[9] = mil / 100 + '0';
             TOOLTIPLABELCONTENT[10] = (mil % 100) / 10 + '0';
             TOOLTIPLABELCONTENT[11] = (mil % 10) + '0';
@@ -760,7 +789,9 @@ void CTickChartModule::TickChartTTipChanged(int posX, int posY, short LBUTTON_st
       else
       {
          if (defTitleChanged)
+         {
             SetWindowText(rootWnd, defaultRootTitle);
+         }
 
          defTitleChanged = false;
       }
@@ -784,14 +815,13 @@ void CTickChartModule::BarChartTTipChanged(int posX, int posY, short LBUTTON_sta
          static int mouseDnBarPosY = 0;
 
          int shift = (posX - startPoint - 999) / (*appSets).barChartCandleWidth;
-         int calculatedIndex = chartSearchIndex / (*appSets).barChartTickSize + (shift)-1;
+         int calculatedIndex = (chartSearchIndex / (*appSets).barChartTickSize) + (shift)-1;
 
-         if (calculatedIndex < 0)
-            calculatedIndex = 0;
+         calculatedIndex = std::max(calculatedIndex, 0);
 
          calculatedIndex *= (*appSets).barChartTickSize;
 
-         if (!LBUTTON_state)
+         if (LBUTTON_state == 0)
          {
             if (partialToRefresh)
             {
@@ -812,11 +842,11 @@ void CTickChartModule::BarChartTTipChanged(int posX, int posY, short LBUTTON_sta
             time_t t0 = timesTabInMs[calculatedIndex];
             time_t t1 = t0 / 1000;
             uint days = (((t1 * 1158050442) >> 32) + t1 * 49710) >> 32;
-            ulong _sc = t1 - days * 24 * 60 * 60;
+            ulong _sc = t1 - (days * 24 * 60 * 60);
             uint hr = (_sc * 1193047) >> 32;
             _sc -= hr * 3600;
             uint mn = _sc * 71582789 >> 32;
-            uint sec = (uint)(_sc - mn * 60);
+            uint sec = (uint)(_sc - (mn * 60));
 
             TOOLTIPLABELCONTENT[0] = TIMETABLE_A[hr][0];
             TOOLTIPLABELCONTENT[1] = TIMETABLE_A[hr][1];
@@ -828,7 +858,7 @@ void CTickChartModule::BarChartTTipChanged(int posX, int posY, short LBUTTON_sta
             TOOLTIPLABELCONTENT[7] = TIMETABLE_A[sec][1];
             TOOLTIPLABELCONTENT[8] = '.';
 
-            uint mil = (uint)(t0 - t1 * 1000);
+            uint mil = (uint)(t0 - (t1 * 1000));
             TOOLTIPLABELCONTENT[9] = mil / 100 + '0';
             TOOLTIPLABELCONTENT[10] = (mil % 100) / 10 + '0';
             TOOLTIPLABELCONTENT[11] = (mil % 10) + '0';
@@ -844,7 +874,8 @@ void CTickChartModule::BarChartTTipChanged(int posX, int posY, short LBUTTON_sta
          }
          else
          {
-            int ind1 = 0, ind2 = 0;
+            int ind1 = 0;
+            int ind2 = 0;
             if (barStartIndex < calculatedIndex)
             {
                ind1 = barStartIndex;
@@ -873,11 +904,11 @@ void CTickChartModule::BarChartTTipChanged(int posX, int posY, short LBUTTON_sta
 
             time_t td = timeDiff / 1000;
             uint days = (((td * 1158050442) >> 32) + td * 49710) >> 32;
-            ulong _sc = td - days * 24 * 60 * 60;
+            ulong _sc = td - (days * 24 * 60 * 60);
             uint hr = (_sc * 1193047) >> 32;
             _sc -= hr * 3600;
             uint mn = _sc * 71582789 >> 32;
-            uint sec = (uint)(_sc - mn * 60);
+            uint sec = (uint)(_sc - (mn * 60));
 
             TOOLTIPLABELCONTENT[6] = TIMETABLE_A[hr][0];
             TOOLTIPLABELCONTENT[7] = TIMETABLE_A[hr][1];
@@ -889,7 +920,7 @@ void CTickChartModule::BarChartTTipChanged(int posX, int posY, short LBUTTON_sta
             TOOLTIPLABELCONTENT[13] = TIMETABLE_A[sec][1];
             TOOLTIPLABELCONTENT[14] = '.';
 
-            uint mil = (uint)(timeDiff - td * 1000);
+            uint mil = (uint)(timeDiff - (td * 1000));
             TOOLTIPLABELCONTENT[15] = mil / 100 + '0';
             TOOLTIPLABELCONTENT[16] = (mil % 100) / 10 + '0';
             TOOLTIPLABELCONTENT[17] = (mil % 10) + '0';
@@ -958,7 +989,9 @@ void CTickChartModule::BarChartTTipChanged(int posX, int posY, short LBUTTON_sta
       else
       {
          if (defTitleChanged)
+         {
             SetWindowText(rootWnd, defaultRootTitle);
+         }
 
          defTitleChanged = false;
       }
@@ -970,7 +1003,7 @@ void CTickChartModule::ReplayBtnClicked()
    {
       if ((*appSets).realTempo)
       {
-         if ((appSets->tickChartZoom) & 1) // tickSampleWidth==1
+         if (((appSets->tickChartZoom) & 1) != 0) // tickSampleWidth==1
          {
             // Step forward == 2, to avoid tick chart flickering
             (*appSets).tickOffsetValue = 2;
@@ -987,8 +1020,8 @@ void CTickChartModule::ReplayBtnClicked()
       if ((*appSets).realTempo)
       {
          BOOL success = 0;
-         uint tickInterv = (uint)GetDlgItemInt(hWnd, IDC_STEP_SIZE_EDT, &success, false);
-         if (success)
+         uint tickInterv = (uint)GetDlgItemInt(hWnd, IDC_STEP_SIZE_EDT, &success, 0);
+         if (success != 0)
          {
             if (tickInterv > 1)
             {
@@ -1001,10 +1034,12 @@ void CTickChartModule::ReplayBtnClicked()
 void CTickChartModule::SetRangeBtnClicked()
 {
    if (chartSearchIndex == -1)
+   {
       return;
+   }
    BOOL success = 0;
-   uint newRange = (uint)GetDlgItemInt(hWnd, IDC_MAIN_EDT, &success, false);
-   if (success)
+   uint newRange = (uint)GetDlgItemInt(hWnd, IDC_MAIN_EDT, &success, 0);
+   if (success != 0)
    {
       if (newRange > 1)
       {
@@ -1037,8 +1072,8 @@ void CTickChartModule::SetRangeBtnClicked()
 void CTickChartModule::SetBarTickSizeBtnClicked()
 {
    BOOL success = 0;
-   uint newVal = (uint)GetDlgItemInt(hWnd, IDC_MAIN_EDT, &success, false);
-   if (success)
+   uint newVal = (uint)GetDlgItemInt(hWnd, IDC_MAIN_EDT, &success, 0);
+   if (success != 0)
    {
       if (newVal > 1)
       {
@@ -1050,7 +1085,9 @@ void CTickChartModule::SetBarTickSizeBtnClicked()
             barChart1.UpdateChart(true);
          }
          else
+         {
             barChart1.SetBarChartTickSize((*appSets).barChartTickSize, false);
+         }
       }
    }
 }
@@ -1067,11 +1104,9 @@ void CTickChartModule::RecalculateBarChart(int endInd, bool redraw)
    for (; i < endInd; i++)
    {
       barChartTickSizeCounter++;
-      if (barChartHigh < bidsTab[i])
-         barChartHigh = bidsTab[i];
+      barChartHigh = std::max(barChartHigh, bidsTab[i]);
 
-      if (barChartLow > bidsTab[i])
-         barChartLow = bidsTab[i];
+      barChartLow = std::min(barChartLow, bidsTab[i]);
 
       if (barChartTickSizeCounter == (*appSets).barChartTickSize)
       {
@@ -1089,16 +1124,20 @@ void CTickChartModule::RecalculateBarChart(int endInd, bool redraw)
 void CTickChartModule::MoveRangeUpBtnClicked()
 {
    if (seriesIndex == -1)
+   {
       return;
+   }
    BOOL success = 0;
-   uint valueToMove = (uint)GetDlgItemInt(hWnd, IDC_MAIN_EDT, &success, false);
-   if (success)
+   uint valueToMove = (uint)GetDlgItemInt(hWnd, IDC_MAIN_EDT, &success, 0);
+   if (success != 0)
    {
       if (valueToMove > 0)
       {
-         upRangeLineValue = NormalizeDouble(upRangeLineValue + valueToMove * _Point, _Digits);
+         upRangeLineValue = NormalizeDouble(upRangeLineValue + (valueToMove * _Point), _Digits);
          if ((*appSets).freezeRanges)
-            downRangeLineValue = NormalizeDouble(downRangeLineValue + valueToMove * _Point, _Digits);
+         {
+            downRangeLineValue = NormalizeDouble(downRangeLineValue + (valueToMove * _Point), _Digits);
+         }
 
          tickChart1.MoveMarketProfileRange(downRangeLineValue, upRangeLineValue);
          tickChart1.VScaleParams(upRangeLineValue, downRangeLineValue, 10);
@@ -1110,16 +1149,20 @@ void CTickChartModule::MoveRangeUpBtnClicked()
 void CTickChartModule::MoveRangeDownBtnClicked()
 {
    if (seriesIndex == -1)
+   {
       return;
+   }
    BOOL success = 0;
-   uint valueToMove = (uint)GetDlgItemInt(hWnd, IDC_MAIN_EDT, &success, false);
-   if (success)
+   uint valueToMove = (uint)GetDlgItemInt(hWnd, IDC_MAIN_EDT, &success, 0);
+   if (success != 0)
    {
       if (valueToMove > 0)
       {
-         upRangeLineValue = NormalizeDouble(upRangeLineValue - valueToMove * _Point, _Digits);
+         upRangeLineValue = NormalizeDouble(upRangeLineValue - (valueToMove * _Point), _Digits);
          if ((*appSets).freezeRanges)
-            downRangeLineValue = NormalizeDouble(downRangeLineValue - valueToMove * _Point, _Digits);
+         {
+            downRangeLineValue = NormalizeDouble(downRangeLineValue - (valueToMove * _Point), _Digits);
+         }
 
          tickChart1.MoveMarketProfileRange(downRangeLineValue, upRangeLineValue);
          tickChart1.VScaleParams(upRangeLineValue, downRangeLineValue, 10);
@@ -1134,13 +1177,17 @@ void CTickChartModule::SignedLevelsEditChBxChanged()
 void CTickChartModule::AddSignedLevelBtnClicked()
 {
    if (seriesIndex == -1)
+   {
       return;
+   }
    PostMessage(TerminalParentChartHWnd, WM_LBUTTONUP, 0, -ADD_SIGNED_LEVEL);
 }
 void CTickChartModule::DeleteSignedLevelsBtnClicked()
 {
    if (seriesIndex == -1)
+   {
       return;
+   }
    if (MessageBox(hWnd, L"Delete all '_TT' HLine objects?", L"Deleting HLine objects", MB_YESNOCANCEL | MB_ICONQUESTION) == IDYES)
    {
       PostMessage(TerminalParentChartHWnd, WM_LBUTTONUP, 0, -DELETE_ALL_SIGNED_LEVELS);
@@ -1151,7 +1198,9 @@ void CTickChartModule::TickChartZoomChanged()
    tickChart1.SetTickSampleWidth((*appSets).tickChartZoom, false);
 
    if (seriesIndex == -1)
+   {
       return;
+   }
 
    tickChart1.UpdateChart();
 }
@@ -1204,10 +1253,14 @@ void CTickChartModule::BidLineVisChanged()
 void CTickChartModule::SignedLevelsVisChanged()
 {
    if (seriesIndex == -1)
+   {
       return;
+   }
 
    if ((*appSets).signedLevelsVis)
+   {
       PostMessage(TerminalParentChartHWnd, WM_LBUTTONUP, 0, -SHOW_SIGNED_LEVELS);
+   }
 
    tickChart1.ShowSignedLevels((*appSets).signedLevelsVis, !(*appSets).signedLevelsVis);
    barChart1.ShowSignedLevels((*appSets).signedLevelsVis, !(*appSets).signedLevelsVis);
@@ -1260,17 +1313,23 @@ void CTickChartModule::CumulativeBidVisChanged()
 void CTickChartModule::DistanceVisChanged()
 {
    if (EnableSpeedStats)
+   {
       tickChart1.ShowTravelledDistance((*appSets).distanceVis, seriesIndex > -1);
+   }
 }
 void CTickChartModule::RoadVisChanged()
 {
    if (EnableSpeedStats)
+   {
       tickChart1.ShowTravelledRoad((*appSets).roadVis, seriesIndex > -1);
+   }
 }
 void CTickChartModule::TicksArrivedVisChanged()
 {
    if (EnableSpeedStats)
+   {
       tickChart1.ShowTicksArrived((*appSets).ticksArrivedVis, seriesIndex > -1);
+   }
 }
 void CTickChartModule::EventsOnTickChartVisChanged()
 {
@@ -1281,7 +1340,9 @@ void CTickChartModule::EventsOnBarChartVisChanged()
 void CTickChartModule::OrdersVisChanged()
 {
    if ((*appSets).ordersVis)
+   {
       PostMessage(TerminalParentChartHWnd, WM_LBUTTONUP, 0, -SHOW_ORDERS);
+   }
    else
    {
       tickChart1.ShowOrderPoint(false, seriesIndex > -1);
@@ -1308,7 +1369,7 @@ bool CTickChartModule::SaveTicksClicked(LPCTSTR pszFileName)
    {
       DWORD dwFileSize = 0;
 
-      std::string strContent = "";
+      std::string strContent;
       char temp[1000];
 
       for (int i = 0; i < seriesIndex; i++)
@@ -1330,7 +1391,7 @@ bool CTickChartModule::SaveTicksClicked(LPCTSTR pszFileName)
       dwFileSize = (DWORD)strContent.size();
       DWORD dwWritten = 0;
 
-      if (WriteFile(hFile, strContent.c_str(), dwFileSize, &dwWritten, nullptr))
+      if (WriteFile(hFile, strContent.c_str(), dwFileSize, &dwWritten, nullptr) != 0)
       {
          bSuccess = true;
          SetDlgItemTextA(hWnd, IDC_MAIN_EDT, "File Saved");
@@ -1346,11 +1407,15 @@ int CTickChartModule::GetEncoderClsid(const WCHAR *format, CLSID *pClsid)
    UINT size = 0;
    Gdiplus::GetImageEncodersSize(&num, &size);
    if (size == 0)
+   {
       return -1;
+   }
 
    auto *pImageCodecInfo = (Gdiplus::ImageCodecInfo *)(malloc(size));
    if (pImageCodecInfo == nullptr)
+   {
       return -1;
+   }
 
    Gdiplus::GetImageEncoders(num, size, pImageCodecInfo);
 
@@ -1429,7 +1494,7 @@ bool CTickChartModule::ReadTickDataFromFile(LPCTSTR pszFileName)
          {
             DWORD dwRead = 0;
 
-            if (ReadFile(hFile, pszFileText, dwFileSize, &dwRead, nullptr))
+            if (ReadFile(hFile, pszFileText, dwFileSize, &dwRead, nullptr) != 0)
             {
                auto *lngPtr = (long long *)pszFileText;
                auto *dblPtr = (double *)pszFileText;
@@ -1438,14 +1503,10 @@ bool CTickChartModule::ReadTickDataFromFile(LPCTSTR pszFileName)
 
                if (dataSize > 0)
                {
-                  if (timesTabInMs != nullptr)
-                     delete[] timesTabInMs;
-                  if (bidsTab != nullptr)
-                     delete[] bidsTab;
-                  if (asksTab != nullptr)
-                     delete[] asksTab;
-                  if (realTempoValsTab != nullptr)
-                     delete[] realTempoValsTab;
+                  delete[] timesTabInMs;
+                  delete[] bidsTab;
+                  delete[] asksTab;
+                  delete[] realTempoValsTab;
 
                   timesTabInMs = new __int64[dataSize];
                   bidsTab = new double[dataSize];
@@ -1461,9 +1522,11 @@ bool CTickChartModule::ReadTickDataFromFile(LPCTSTR pszFileName)
                      asksTab[dataIterator] = dblPtr[i + 2];
                      bidsTab[dataIterator] = dblPtr[i + 3];
                      if (dataIterator > 0)
+                     {
                         realTempoValsTab[dataIterator] = (int)(timesTabInMs[dataIterator] - timesTabInMs[dataIterator - 1]);
+                     }
                   }
-                  SetDlgItemInt(hWnd, IDC_INFOLABEL, (UINT)dataIterator, false);
+                  SetDlgItemInt(hWnd, IDC_INFOLABEL, (UINT)dataIterator, 0);
                   SetDlgItemText(hWnd, IDC_DATELABEL, L"0000.00.00");
                   TimeSepVLine = timesTabInMs[0];
                }
@@ -1491,7 +1554,9 @@ void CTickChartModule::UpdateBiggerBarsData(bool updateChart)
 {
    uint newMultiplier = 1;
    if ((*appSets).zoomTimeParam)
+   {
       newMultiplier = 4;
+   }
 
    tickChart1.BiggerBarsData(newMultiplier, updateChart);
    barChart1.BiggerBarsData(newMultiplier, updateChart);
@@ -1504,7 +1569,9 @@ int CTickChartModule::OnTimer()
    {
       if (chartSearchIndex > -1)
       {
-         LARGE_INTEGER StartingTime, EndingTime, ElapsedMicroseconds;
+         LARGE_INTEGER StartingTime;
+         LARGE_INTEGER EndingTime;
+         LARGE_INTEGER ElapsedMicroseconds;
          LARGE_INTEGER Frequency;
          QueryPerformanceFrequency(&Frequency);
          QueryPerformanceCounter(&StartingTime);
@@ -1516,7 +1583,7 @@ int CTickChartModule::OnTimer()
          auto interval = static_cast<long long>(ElapsedMicroseconds.QuadPart * 1000 / (Frequency.QuadPart));
 
          nextInterval = realTempoValsTab[chartSearchIndex] - (int)(interval);
-         if ((appSets->tickChartZoom) & 1) // tickSampleWidth==1 Step forward == 2, to avoid tick chart flickering
+         if (((appSets->tickChartZoom) & 1) != 0) // tickSampleWidth==1 Step forward == 2, to avoid tick chart flickering
          {
             if (chartSearchIndex < seriesIndex)
             {
@@ -1524,7 +1591,9 @@ int CTickChartModule::OnTimer()
             }
          }
          if (nextInterval <= 0)
+         {
             nextInterval = 1;
+         }
       }
    }
    else
@@ -1569,7 +1638,7 @@ bool CTickChartModule::GetTimeAndPriceData(double &priceValue, time_t &timeValue
    }
    return (true);
 }
-bool CTickChartModule::GetRangeValData(double &upRangeVal, double &downRangeVal)
+bool CTickChartModule::GetRangeValData(double &upRangeVal, double &downRangeVal) const
 {
    upRangeVal = upRangeLineValue;
    downRangeVal = downRangeLineValue;
@@ -1578,7 +1647,9 @@ bool CTickChartModule::GetRangeValData(double &upRangeVal, double &downRangeVal)
 bool CTickChartModule::RangeLineDragged(double &newValue, int index)
 {
    if (seriesIndex == -1)
+   {
       return (true);
+   }
 
    if (index == 0)
    {
@@ -1608,7 +1679,9 @@ bool CTickChartModule::RangeLineDragged(double &newValue, int index)
 bool CTickChartModule::TimeSepVLineDragged(__int64 &newValue)
 {
    if (seriesIndex == -1)
+   {
       return (true);
+   }
 
    if (newValue >= timesTabInMs[0] && newValue <= timesTabInMs[seriesIndex])
    {
@@ -1646,7 +1719,8 @@ bool CTickChartModule::TickDataLoaded(MqlTick tckArray[], int arrSize, char *dat
 {
    seriesIndex = -1;
    chartSearchIndex = -1;
-   int _dstInd = 0, _srcInd = 0;
+   int _dstInd = 0;
+   int _srcInd = 0;
 
    long long _lastTimeInMs = (*appSets).timerInterval;
 
@@ -1673,7 +1747,9 @@ bool CTickChartModule::TickDataLoaded(MqlTick tckArray[], int arrSize, char *dat
    SetDlgItemTextA(hWnd, IDC_DATELABEL, date);
 
    if (seriesIndex > 0)
+   {
       PostMessageA(rootWnd, AUTO_SCROLL_UPDATE, 0, 1);
+   }
 
    return (true);
 }
@@ -1690,9 +1766,13 @@ bool CTickChartModule::TickDataPartialLoaded(MqlTick tckArray[], int arrSize)
          bidsTab[seriesIndex] = tckArray[0].bid;
          asksTab[seriesIndex] = tckArray[0].ask;
          if (seriesIndex > 0)
+         {
             realTempoValsTab[seriesIndex] = (int)(timesTabInMs[seriesIndex] - timesTabInMs[seriesIndex - 1]);
+         }
          else
+         {
             realTempoValsTab[0] = (*appSets).timerInterval;
+         }
 
          int stopIdx = (seriesIndex + arrSize - 1) < dataSize ? arrSize : dataSize - seriesIndex;
          for (int ind = 1; ind < arrSize; ind++)
@@ -1707,7 +1787,9 @@ bool CTickChartModule::TickDataPartialLoaded(MqlTick tckArray[], int arrSize)
       }
    }
    if (seriesIndex > 0)
+   {
       PostMessageA(rootWnd, AUTO_SCROLL_UPDATE, 0, 1);
+   }
    return (true);
 }
 bool CTickChartModule::OnNewTick(MqlTick &lastTick)
@@ -1715,23 +1797,30 @@ bool CTickChartModule::OnNewTick(MqlTick &lastTick)
    if (readyToUse)
    {
       if (seriesIndex < dataSize - 1)
+      {
          seriesIndex++;
-
+      }
       // Critical error: throws assembly code in the MT5 terminal
       timesTabInMs[seriesIndex] = lastTick.time_msc;
       bidsTab[seriesIndex] = lastTick.bid;
       asksTab[seriesIndex] = lastTick.ask;
       if (seriesIndex > 0)
+      {
          realTempoValsTab[seriesIndex] = (int)(timesTabInMs[seriesIndex] - timesTabInMs[seriesIndex - 1]);
+      }
       else
+      {
          realTempoValsTab[0] = (*appSets).timerInterval;
+      }
 
       if ((*appSets).chartAutoScroll)
       {
-         if ((appSets->tickChartZoom) & 1) // tickSampleWidth==1
+         if (((appSets->tickChartZoom) & 1) != 0) // tickSampleWidth==1
          {
-            if (seriesIndex & 1) // seriesIndex&1 - when index is odd (update every 2 ticks)
+            if ((seriesIndex & 1) != 0)
+            { // seriesIndex&1 - when index is odd (update every 2 ticks)
                PostMessageA(rootWnd, AUTO_SCROLL_UPDATE, 0, 0);
+            }
             return (true);
          }
          PostMessageA(rootWnd, AUTO_SCROLL_UPDATE, 0, 0);
@@ -1746,14 +1835,20 @@ bool CTickChartModule::NewRatesLoaded(MqlTick tckArray[], int arrSize)
       if (arrSize == 1)
       {
          if (seriesIndex < dataSize - 1)
+         {
             seriesIndex++;
+         }
          timesTabInMs[seriesIndex] = tckArray[0].time_msc;
          bidsTab[seriesIndex] = tckArray[0].bid;
          asksTab[seriesIndex] = tckArray[0].ask;
          if (seriesIndex > 0)
+         {
             realTempoValsTab[seriesIndex] = (int)(timesTabInMs[seriesIndex] - timesTabInMs[seriesIndex - 1]);
+         }
          else
+         {
             realTempoValsTab[0] = (*appSets).timerInterval;
+         }
       }
       else
       {
@@ -1765,9 +1860,13 @@ bool CTickChartModule::NewRatesLoaded(MqlTick tckArray[], int arrSize)
             bidsTab[seriesIndex] = tckArray[ind].bid;
             asksTab[seriesIndex] = tckArray[ind].ask;
             if (seriesIndex > 0)
+            {
                realTempoValsTab[seriesIndex] = (int)(timesTabInMs[seriesIndex] - timesTabInMs[seriesIndex - 1]);
+            }
             else
+            {
                realTempoValsTab[0] = (*appSets).timerInterval;
+            }
          }
       }
 
@@ -1814,14 +1913,22 @@ void CTickChartModule::AutoScrollUpdate(bool forceVScaleUpdate)
          parameter = (ulong)(timesTabInMs[i] - timesTabInMs[i - 1]);
 
          if (bidsTab[i] > bidsTab[i - 1])
+         {
             bidChange = 1;
+         }
          else if (bidsTab[i] < bidsTab[i - 1])
+         {
             bidChange = -1;
+         }
 
          if (asksTab[i] > asksTab[i - 1])
+         {
             askChange = 1;
+         }
          else if (asksTab[i] < asksTab[i - 1])
+         {
             askChange = -1;
+         }
 
          if (EnableSpeedStats)
          {
@@ -1839,11 +1946,9 @@ void CTickChartModule::AutoScrollUpdate(bool forceVScaleUpdate)
       }
       tickChart1.AppendPricesTimeAndParameters(asksTab[i], bidsTab[i], timesTabInMs[i] / 1000, parameter, askChange, bidChange, (short)wholeRoad, priceDistance, ticksElapsed);
 
-      if (barChartHigh < bidsTab[i])
-         barChartHigh = bidsTab[i];
+      barChartHigh = std::max(barChartHigh, bidsTab[i]);
 
-      if (barChartLow > bidsTab[i])
-         barChartLow = bidsTab[i];
+      barChartLow = std::min(barChartLow, bidsTab[i]);
 
       if (barChartTickSizeCounter == (*appSets).barChartTickSize)
       {
@@ -1878,9 +1983,13 @@ void CTickChartModule::AutoScrollUpdate(bool forceVScaleUpdate)
 
    barChart1.SetActualBidPrice(bidsTab[chartSearchIndex], barChartHigh, barChartLow);
    if (updateBarChart)
+   {
       barChart1.UpdateChart(forceVScaleUpdate);
+   }
    else
+   {
       barChart1.UpdateCurrentPriceLevel();
+   }
 }
 bool CTickChartModule::UpdateCharts(byte mode, bool forceVScaleUpdate)
 {

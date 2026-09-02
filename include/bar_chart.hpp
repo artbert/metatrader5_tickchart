@@ -87,7 +87,7 @@ public:
    CBarChart();
    ~CBarChart();
 
-   virtual bool Create(HWND hWnd, const int width, const int height, double pointValue, int digits);
+   virtual bool Create(HWND hWnd, int width, int height, double pointValue, int digits);
    void UpdateChart(bool vScaleParChanged = false);
    void RefreshWindow(int nXDest, int nYDest, int nWidth, int nHeight, int nXSrc, int nYSrc);
    void RefreshWindow();
@@ -134,7 +134,7 @@ public:
       pipsDivider = value;
       doubleSignificantPlaces = (int)log10((double)pipsDivider);
    }
-   void SetColorMode(const bool value);
+   void SetColorMode(bool value);
    void SetBarChartTickSize(const int value, const bool update = true)
    {
       barChartTickSize = value;
@@ -199,7 +199,7 @@ public:
          Redraw();
       }
    }
-   void AppendSignedLevels(const double levels[], const int levelsSize, char (*descriptions)[100], const int descrSize, const bool update);
+   void AppendSignedLevels(const double levels[], int levelsSize, char (*descriptions)[100], int descrSize, bool update);
    void BiggerBarsData(uint value, const bool update = true)
    {
       barsDataMultiplier = value;
@@ -216,11 +216,11 @@ public:
          UpdateChart();
       }
    }
-   void UpdateMarketProfile(const double askPrice, const double bidPrice);
-   void AppendPricesTimeAndParameters(const double open, const double close, const double high, const double low, const time_t time, const ulong timeParameter);
-   void FillSeries(const double open, const double close, const double high, const double low, const time_t time, const ulong timeParameter, const bool update = true);
+   void UpdateMarketProfile(double askPrice, double bidPrice);
+   void AppendPricesTimeAndParameters(double open, double close, double high, double low, time_t time, ulong timeParameter);
+   void FillSeries(double open, double close, double high, double low, time_t time, ulong timeParameter, bool update = true);
 
-   void AppendCalendarEvents(CalendarEvent clEvents[], int tabSize, const bool update = true);
+   void AppendCalendarEvents(CalendarEvent clEvents[], int tabSize, bool update = true);
    void ShowCalendarEvents(bool value, const bool update = true)
    {
       showCalendarEvents = value;
@@ -229,22 +229,22 @@ public:
          UpdateChart();
       }
    }
-   void AppendTransactionsPoints(const long transactions[][4], char (*descriptions)[64], const int size, const bool update = true);
-   uint GetDataAreaStartPoint()
+   void AppendTransactionsPoints(const long transactions[][4], char (*descriptions)[64], int size, bool update = true);
+   uint GetDataAreaStartPoint() const
    {
       return (mDataAreaStartPoint);
    }
-   double GetPointsPerPixel()
+   double GetPointsPerPixel() const
    {
       return (pointsPerPx);
    }
 
-   void SetActualBidPrice(const double currentPrice, const double currentHigh, const double currentLow);
+   void SetActualBidPrice(double currentPrice, double currentHigh, double currentLow);
    void UpdateCurrentPriceLevel();
 
 protected:
    void DrawChart() override;
-   void DrawData(const uint index = 0) override;
+   void DrawData(uint index = 0) override;
    void DrawMProfile(int dataStartIndex);
    void DrawSignedLevels();
 };

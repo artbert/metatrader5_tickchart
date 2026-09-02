@@ -1,4 +1,5 @@
 #include "chart_canvas.hpp"
+#include <algorithm>
 #include <cstdio>
 #include <utility>
 
@@ -16,19 +17,16 @@ ChartCanvas::ChartCanvas() : m_color_background(XRGB_gdi(0xFF, 0xFF, 0xFF)),
                              m_scale_text(nullptr),
                              m_scale_text_size(0)
 {
-   
-   
+
    blendFunctionParams.BlendOp = AC_SRC_OVER;
    blendFunctionParams.BlendFlags = 0;
    blendFunctionParams.AlphaFormat = 0;          // use source alpha
    blendFunctionParams.SourceConstantAlpha = 50; // use constant alpha, with
-   
 }
 
 ChartCanvas::~ChartCanvas()
 {
-   if (m_scale_text != nullptr)
-      delete[] m_scale_text;
+   delete[] m_scale_text;
 }
 
 bool ChartCanvas::Create(HWND hWnd, const int width, const int height)
@@ -55,7 +53,9 @@ bool ChartCanvas::Create(HWND hWnd, const int width, const int height)
 void ChartCanvas::PrepareAlphaBlend(HWND hWnd)
 {
    if (alphaBlendHDc != nullptr)
+   {
       DeleteDC(alphaBlendHDc);
+   }
 
    HDC hDC = GetDC(hWnd);
    alphaBlendHDc = CreateCompatibleDC(hDC);
@@ -108,17 +108,25 @@ void ChartCanvas::Redraw()
    DrawBackground();
 
    if (IS_SHOW_SCALES && vScaleParamsChanged)
+   {
       DrawScales();
+   }
 
    if (IS_SHOW_GRID)
+   {
       DrawGrid();
+   }
 
    DrawChart();
 
    if (updateWhole)
+   {
       Update();
+   }
    else
+   {
       Update(m_data_area.left + 1, 1, (m_data_area.right - m_data_area.left) - 10, m_height - 2, m_data_area.left + 1, 1);
+   }
 }
 void ChartCanvas::Redraw(int nXDest, int nYDest, int nWidth, int nHeight, int nXSrc, int nYSrc)
 {
@@ -134,9 +142,13 @@ void ChartCanvas::Redraw(int nXDest, int nYDest, int nWidth, int nHeight, int nX
    DrawBackground();
 
    if (IS_SHOW_SCALES && vScaleParamsChanged)
+   {
       DrawScales();
+   }
    if (IS_SHOW_GRID)
+   {
       DrawGrid();
+   }
    //--- draw data
    DrawChart();
    //--- fix changes
@@ -156,7 +168,7 @@ void ChartCanvas::DrawBackground()
    {
       int len = (m_data_area.right - m_data_area.left) - 10;
       uint *offst = &m_pixels[m_data_area.left + 1];
-      for (int i = m_height - 2; i--;)
+      for (int i = m_height - 2; (i--) != 0;)
       {
          offst += m_width;
          memset(offst, m_color_background, len * 4);
@@ -169,13 +181,21 @@ void ChartCanvas::DrawScales()
    CalcScales();
    //--- redraw scales
    if (IS_SHOW_SCALE_LEFT)
+   {
       DrawScaleLeft();
+   }
    if (IS_SHOW_SCALE_RIGHT)
+   {
       DrawScaleRight();
+   }
    if (IS_SHOW_SCALE_TOP)
+   {
       DrawScaleTop();
+   }
    if (IS_SHOW_SCALE_BOTTOM)
+   {
       DrawScaleBottom();
+   }
 }
 void ChartCanvas::CalcScales()
 {
@@ -187,24 +207,31 @@ void ChartCanvas::CalcScales()
    //--- additional
    m_dy_grid = (int)((m_y_min - m_y_max) / m_num_grid);
    m_y_max += (int)(((m_y_min - m_y_max) - m_dy_grid * m_num_grid) / 2);
-   m_y_min = (int)(m_y_max + m_dy_grid * m_num_grid);
+   m_y_min = (int)(m_y_max + (m_dy_grid * m_num_grid));
    //--- normalize
    if (m_v_scale_min >= 0.0)
+   {
       m_y_0 = m_y_min;
+   }
    else
    {
       if (m_v_scale_max <= 0.0)
+      {
          m_y_0 = m_y_max;
+      }
       else
-         m_y_0 = (int)(m_y_max + (m_y_min - m_y_max) * m_v_scale_max / (m_v_scale_max - m_v_scale_min));
+      {
+         m_y_0 = (int)(m_y_max + ((m_y_min - m_y_max) * m_v_scale_max / (m_v_scale_max - m_v_scale_min)));
+      }
    }
    //--- scale
    m_scale_y = (m_v_scale_max != m_v_scale_min) ? (m_y_min - m_y_max) / (m_v_scale_max - m_v_scale_min) : 1;
    //--- labels on scale
    if (m_scale_text_size != m_num_grid + 1)
    {
-      if (m_scale_text != nullptr)
+      {
          delete[] m_scale_text;
+      }
       m_scale_text = new char[m_num_grid + 1][50];
       m_scale_text_size = m_num_grid + 1;
    }
@@ -220,7 +247,9 @@ int ChartCanvas::DrawScaleTop(const bool draw)
 {
    int size = 0;
    if (!IS_SHOW_SCALE_TOP)
+   {
       return (0);
+   }
    if (draw)
    {
       Line(m_data_area.left, m_y_max, m_data_area.right, m_y_max, m_color_text);
@@ -231,7 +260,9 @@ int ChartCanvas::DrawScaleBottom(const bool draw)
 {
    int size = 0;
    if (!IS_SHOW_SCALE_BOTTOM)
+   {
       return (0);
+   }
    size = 10;
    if (draw)
    {
@@ -244,7 +275,9 @@ int ChartCanvas::DrawScaleLeft(const bool draw)
 {
    //--- check flag
    if (!IS_SHOW_SCALE_LEFT)
+   {
       return (0);
+   }
    //--- variables
    int x1 = m_data_area.left;
    int x2 = 0;
@@ -257,10 +290,11 @@ int ChartCanvas::DrawScaleLeft(const bool draw)
       for (; j < 50; j++)
       {
          if (m_scale_text[i][j] == '\0')
+         {
             break;
+         }
       }
-      if (size < j)
-         size = j;
+      size = std::max(size, j);
    }
    size = size * 7 + 10;
    //--- draw
@@ -288,7 +322,9 @@ int ChartCanvas::DrawScaleRight(const bool draw)
 {
    //--- check flag
    if (!IS_SHOW_SCALE_RIGHT)
+   {
       return (0);
+   }
    //--- variables
    int x1 = 0;
    int x2 = m_data_area.right;
@@ -297,8 +333,7 @@ int ChartCanvas::DrawScaleRight(const bool draw)
    int size = 0;
    for (uint i = 0; i <= m_num_grid; i++)
    {
-      if (size < TextWidth_A(m_scale_text[i]))
-         size = TextWidth_A(m_scale_text[i]);
+      size = std::max(size, TextWidth_A(m_scale_text[i]));
    }
    //--- add indent and graduation mark (for now 5 pixels)
    size += 5 + 5;
@@ -331,7 +366,9 @@ void ChartCanvas::DrawGrid()
 {
    //--- check flag
    if (!IS_SHOW_GRID)
+   {
       return;
+   }
    //--- variables
    int x1 = m_data_area.left;
    int x2 = m_data_area.right;
@@ -344,20 +381,28 @@ void ChartCanvas::DrawGrid()
       j--;
    }
    for (uint i = 0; i <= j; i++, y -= m_dy_grid)
+   {
       LineHorizontalDott(x1, x2, y, m_color_grid);
+   }
 }
 void ChartCanvas::DrawChart()
 {
    for (uint i = 0; i < m_data_total; i++)
+   {
       DrawData(i);
+   }
 }
 void ChartCanvas::VScaleParams(const double max, const double min, const uint grid, const bool redraw)
 {
    //--- check
    if (grid == 0)
+   {
       return;
+   }
    if (max <= min)
+   {
       return;
+   }
    if (m_v_scale_max != max || m_v_scale_min != min || m_num_grid != grid)
    {
       vScaleParamsChanged = true;
@@ -367,19 +412,27 @@ void ChartCanvas::VScaleParams(const double max, const double min, const uint gr
    }
    //--- redraw
    if (m_data_total > 0 && redraw)
+   {
       Redraw();
+   }
 }
 void ChartCanvas::ShowScaleTop(const bool flag, const bool redraw)
 {
    if ((m_allowed_show_flags & FLAG_SHOW_SCALE_TOP) != 0)
    {
       if (flag)
+      {
          m_show_flags |= FLAG_SHOW_SCALE_TOP;
+      }
       else
+      {
          m_show_flags &= ~FLAG_SHOW_SCALE_TOP;
+      }
       //--- redraw
       if (m_data_total > 0 && redraw)
+      {
          Redraw();
+      }
    }
 }
 void ChartCanvas::ShowScaleRight(const bool flag, const bool redraw)
@@ -387,12 +440,18 @@ void ChartCanvas::ShowScaleRight(const bool flag, const bool redraw)
    if ((m_allowed_show_flags & FLAG_SHOW_SCALE_RIGHT) != 0)
    {
       if (flag)
+      {
          m_show_flags |= FLAG_SHOW_SCALE_RIGHT;
+      }
       else
+      {
          m_show_flags &= ~FLAG_SHOW_SCALE_RIGHT;
+      }
       //--- redraw
       if (m_data_total > 0 && redraw)
+      {
          Redraw();
+      }
    }
 }
 void ChartCanvas::ShowScaleLeft(const bool flag, const bool redraw)
@@ -400,12 +459,18 @@ void ChartCanvas::ShowScaleLeft(const bool flag, const bool redraw)
    if ((m_allowed_show_flags & FLAG_SHOW_SCALE_LEFT) != 0)
    {
       if (flag)
+      {
          m_show_flags |= FLAG_SHOW_SCALE_LEFT;
+      }
       else
+      {
          m_show_flags &= ~FLAG_SHOW_SCALE_LEFT;
+      }
       //--- redraw
       if (m_data_total > 0 && redraw)
+      {
          Redraw();
+      }
    }
 }
 void ChartCanvas::ShowScaleBottom(const bool flag, const bool redraw)
@@ -413,12 +478,18 @@ void ChartCanvas::ShowScaleBottom(const bool flag, const bool redraw)
    if ((m_allowed_show_flags & FLAG_SHOW_SCALE_BOTTOM) != 0)
    {
       if (flag)
+      {
          m_show_flags |= FLAG_SHOW_SCALE_BOTTOM;
+      }
       else
+      {
          m_show_flags &= ~FLAG_SHOW_SCALE_BOTTOM;
+      }
       //--- redraw
       if (m_data_total > 0 && redraw)
+      {
          Redraw();
+      }
    }
 }
 void ChartCanvas::ShowLegend(const bool flag, const bool redraw)
@@ -426,12 +497,18 @@ void ChartCanvas::ShowLegend(const bool flag, const bool redraw)
    if ((m_allowed_show_flags & FLAG_SHOW_LEGEND) != 0)
    {
       if (flag)
+      {
          m_show_flags |= FLAG_SHOW_LEGEND;
+      }
       else
+      {
          m_show_flags &= ~FLAG_SHOW_LEGEND;
+      }
       //--- redraw
       if (m_data_total > 0 && redraw)
+      {
          Redraw();
+      }
    }
 }
 void ChartCanvas::ShowGrid(const bool flag, const bool redraw)
@@ -439,12 +516,18 @@ void ChartCanvas::ShowGrid(const bool flag, const bool redraw)
    if ((m_allowed_show_flags & FLAG_SHOW_GRID) != 0)
    {
       if (flag)
+      {
          m_show_flags |= FLAG_SHOW_GRID;
+      }
       else
+      {
          m_show_flags &= ~FLAG_SHOW_GRID;
+      }
       //--- redraw
       if (m_data_total > 0 && redraw)
+      {
          Redraw();
+      }
    }
 }
 void ChartCanvas::ShowDescriptors(const bool flag, const bool redraw)
@@ -452,12 +535,18 @@ void ChartCanvas::ShowDescriptors(const bool flag, const bool redraw)
    if ((m_allowed_show_flags & FLAG_SHOW_DESCRIPTORS) != 0)
    {
       if (flag)
+      {
          m_show_flags |= FLAG_SHOW_DESCRIPTORS;
+      }
       else
+      {
          m_show_flags &= ~FLAG_SHOW_DESCRIPTORS;
+      }
       //--- redraw
       if (m_data_total > 0 && redraw)
+      {
          Redraw();
+      }
    }
 }
 void ChartCanvas::ColorBackground(const uint value, const bool redraw)
@@ -465,14 +554,18 @@ void ChartCanvas::ColorBackground(const uint value, const bool redraw)
    m_color_background = value;
    //--- redraw
    if (m_data_total > 0 && redraw)
+   {
       Redraw();
+   }
 }
 void ChartCanvas::ColorBorder(const uint value, const bool redraw)
 {
    m_color_border = value;
    //--- redraw
    if (m_data_total > 0 && redraw)
+   {
       Redraw();
+   }
 }
 void ChartCanvas::ColorText(const uint value, const bool redraw)
 {
@@ -480,12 +573,16 @@ void ChartCanvas::ColorText(const uint value, const bool redraw)
    TextColorSet(m_color_text);
    //--- redraw
    if (m_data_total > 0 && redraw)
+   {
       Redraw();
+   }
 }
 void ChartCanvas::ShowFlags(const uint flags, const bool redraw)
 {
    m_show_flags = flags & m_allowed_show_flags;
    //--- redraw
    if (m_data_total > 0 && redraw)
+   {
       Redraw();
+   }
 }

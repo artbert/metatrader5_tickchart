@@ -1,5 +1,6 @@
 #include "canvas.hpp"
 
+#include <algorithm>
 #include <cmath>
 
 WCHAR TIMETABLE[60][3] = {L"00", L"01", L"02", L"03", L"04", L"05", L"06", L"07", L"08", L"09",
@@ -21,22 +22,32 @@ char TIMETABLE_A[60][3] = {"00", "01", "02", "03", "04", "05", "06", "07", "08",
 char WNUMBERS_A[10][2] = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
 
 Canvas::Canvas() : m_width(0),
-                       m_height(0), hbm(nullptr), oldBitmap(nullptr), hDCMem(nullptr), hf_12(nullptr), hf_09(nullptr), hf_07(nullptr), olfFont(nullptr), initialized(false), m_fontsize(-120)
+                   m_height(0), hbm(nullptr), oldBitmap(nullptr), hDCMem(nullptr), hf_12(nullptr), hf_09(nullptr), hf_07(nullptr), olfFont(nullptr), initialized(false), m_fontsize(-120)
 {
 }
 
 Canvas::~Canvas()
 {
    if (hbm != nullptr)
+   {
       DeleteObject(hbm);
+   }
    if (hDCMem != nullptr)
+   {
       DeleteDC(hDCMem);
+   }
    if (hf_12 != nullptr)
+   {
       DeleteObject(hf_12);
+   }
    if (hf_09 != nullptr)
+   {
       DeleteObject(hf_09);
+   }
    if (hf_07 != nullptr)
+   {
       DeleteObject(hf_07);
+   }
 }
 bool Canvas::Create(HWND hWnd, const int width, const int height)
 {
@@ -91,11 +102,11 @@ void Canvas::CreatePixelFontSet(uint eraseColor)
       {
          for (int n = 0; n < 7; n++)
          {
-            if (m_pixels[k * m_width + n + xOffst] != eraseColor)
+            if (m_pixels[(k * m_width) + n + xOffst] != eraseColor)
             {
                nonZeroPixels++;
                lettersData[i][0][nonZeroPixels - 1] = k * m_width + n;
-               lettersData[i][1][nonZeroPixels - 1] = m_pixels[k * m_width + n + xOffst];
+               lettersData[i][1][nonZeroPixels - 1] = m_pixels[(k * m_width) + n + xOffst];
             }
          }
       }
@@ -116,11 +127,11 @@ void Canvas::CreatePixelFontSet(uint eraseColor)
       {
          for (int n = 0; n < 5; n++)
          {
-            if (m_pixels[k * m_width + n + xOffst] != eraseColor)
+            if (m_pixels[(k * m_width) + n + xOffst] != eraseColor)
             {
                nonZeroPixels++;
                lettersData_09[i][0][nonZeroPixels - 1] = k * m_width + n;
-               lettersData_09[i][1][nonZeroPixels - 1] = m_pixels[k * m_width + n + xOffst];
+               lettersData_09[i][1][nonZeroPixels - 1] = m_pixels[(k * m_width) + n + xOffst];
             }
          }
       }
@@ -176,7 +187,7 @@ void Canvas::PixelSet(const int x, const int y, const uint clr)
 {
    if ((unsigned)x < (unsigned)m_width && (unsigned)y < (unsigned)m_height)
    {
-      m_pixels[y * m_width + x] = clr;
+      m_pixels[(y * m_width) + x] = clr;
    }
 }
 void Canvas::DrawBitTimeSepStamp_09(const char arrayOfSigns[], int arrSize, int x, int y, int leftLimit, int rightLimit)
@@ -187,13 +198,19 @@ void Canvas::DrawBitTimeSepStamp_09(const char arrayOfSigns[], int arrSize, int 
    for (int j = 0; j < arrSize; j++)
    {
       if (arrayOfSigns[j] == '\0')
+      {
          break;
+      }
 
       xOfst = x + j * 5;
       if (xOfst < leftLimit)
+      {
          continue;
+      }
       if (xOfst + 16 > rightLimit)
+      {
          break;
+      }
 
       i = y * m_width + xOfst;
       switch (arrayOfSigns[j])
@@ -539,15 +556,21 @@ void Canvas::DrawBitText_12(const char arrayOfSigns[], int arrSize, int x, int y
    for (int j = 0; j < arrSize; j++)
    {
       if (arrayOfSigns[j] == '\0')
+      {
          break;
+      }
 
       xOfst = x + j * 7;
       if (safeMode)
       {
          if (xOfst < leftLimit)
+         {
             continue;
+         }
          if (xOfst + 7 > rightLimit)
+         {
             break;
+         }
       }
 
       i = y * m_width + xOfst;
@@ -897,15 +920,12 @@ void Canvas::LineVertical(int x, int y1, int y2, const uint clr)
    }
    if (y2 >= 0 && y1 < m_height && (unsigned)x < (unsigned)m_width)
    {
-      if (y1 < 0)
-      {
-         y1 = 0;
-      }
+      y1 = std::max(y1, 0);
       if (y2 >= m_height)
       {
          y2 = m_height - 1;
       }
-      int index = y1 * m_width + x;
+      int index = (y1 * m_width) + x;
       for (int i = y1; i <= y2; i++, index += m_width)
       {
          m_pixels[index] = clr;
@@ -915,7 +935,7 @@ void Canvas::LineVertical(int x, int y1, int y2, const uint clr)
 // y1 and y2 sorted. All points stay withing image boundaries
 void Canvas::SafeSortedLineVertical(int x, int y1, int y2, const uint clr)
 {
-   int index = y1 * m_width + x;
+   int index = (y1 * m_width) + x;
    for (int i = y1; i <= y2; i++, index += m_width)
    {
       m_pixels[index] = clr;
@@ -931,22 +951,19 @@ void Canvas::LineVerticalDott(int x, int y1, int y2, const uint clr)
    }
    if (y2 >= 0 && y1 < m_height && (unsigned)x < (unsigned)m_width)
    {
-      if (y1 < 0)
-      {
-         y1 = 0;
-      }
+      y1 = std::max(y1, 0);
       if (y2 >= m_height)
       {
          y2 = m_height - 1;
       }
 
-      int index = y1 * m_width + x;
+      int index = (y1 * m_width) + x;
       y2 -= 2;
       for (int i = y1; i <= y2; i += 7, index += 7 * m_width)
       {
          m_pixels[index] = clr;
          m_pixels[index + m_width] = clr;
-         m_pixels[index + 2 * m_width] = clr;
+         m_pixels[index + (2 * m_width)] = clr;
       }
    }
 }
@@ -960,15 +977,12 @@ void Canvas::LineHorizontal(int x1, int x2, int y, const uint clr)
    }
    if (x2 >= 0 && x1 < m_width && (unsigned)y < (unsigned)m_height)
    {
-      if (x1 < 0)
-      {
-         x1 = 0;
-      }
+      x1 = std::max(x1, 0);
       if (x2 >= m_width)
       {
          x2 = m_width - 1;
       }
-      ArrayFill(y * m_width + x1, (x2 - x1) + 1, clr);
+      ArrayFill((y * m_width) + x1, (x2 - x1) + 1, clr);
    }
 }
 //+------------------------------------------------------------------+
@@ -976,7 +990,7 @@ void Canvas::LineHorizontal(int x1, int x2, int y, const uint clr)
 //+------------------------------------------------------------------+
 void Canvas::SafeSortedLineHorizontal(int x1, int x2, int y, const uint clr)
 {
-   ArrayFill(y * m_width + x1, (x2 - x1) + 1, clr);
+   ArrayFill((y * m_width) + x1, (x2 - x1) + 1, clr);
 }
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -991,15 +1005,12 @@ void Canvas::LineHorizontalDott(int x1, int x2, int y, const uint clr)
    }
    if (x2 >= 0 && x1 < m_width && (unsigned)y < (unsigned)m_height)
    {
-      if (x1 < 0)
-      {
-         x1 = 0;
-      }
+      x1 = std::max(x1, 0);
       if (x2 >= m_width)
       {
          x2 = m_width - 1;
       }
-      int index = y * m_width + x1;
+      int index = (y * m_width) + x1;
       x2 -= 2;
       for (int i = x1; i <= x2; i += 7, index += 7)
       {
@@ -1011,7 +1022,7 @@ void Canvas::LineHorizontalDott(int x1, int x2, int y, const uint clr)
 }
 void Canvas::SafeSortedLineHorizontalDott(int x1, int x2, int y, const uint clr)
 {
-   int index = y * m_width + x1;
+   int index = (y * m_width) + x1;
    x2 -= 2;
    for (int i = x1; i <= x2; i += 7, index += 7)
    {
@@ -1045,7 +1056,7 @@ void Canvas::Line(int x1, int y1, int x2, int y2, const uint clr)
          if ((unsigned)x1 < (unsigned)m_width &&
              (unsigned)y1 < (unsigned)m_height)
          {
-            m_pixels[y1 * m_width + x1] = clr;
+            m_pixels[(y1 * m_width) + x1] = clr;
             draw = true;
          }
          else
@@ -1067,7 +1078,7 @@ void Canvas::Line(int x1, int y1, int x2, int y2, const uint clr)
             y1 += sy;
          }
       }
-      m_pixels[y2 * m_width + x2] = clr;
+      m_pixels[(y2 * m_width) + x2] = clr;
    }
 }
 void Canvas::Rectangle(int x1, int y1, int x2, int y2, const uint clr)
@@ -1103,14 +1114,8 @@ void Canvas::FillRectangle(int x1, int y1, int x2, int y2, const uint clr)
    //--- stay withing screen boundaries
    if (x2 >= 0 && y2 >= 0 && x1 < m_width && y1 < m_height)
    {
-      if (x1 < 0)
-      {
-         x1 = 0;
-      }
-      if (y1 < 0)
-      {
-         y1 = 0;
-      }
+      x1 = std::max(x1, 0);
+      y1 = std::max(y1, 0);
       if (x2 >= m_width)
       {
          x2 = m_width - 1;
@@ -1123,7 +1128,7 @@ void Canvas::FillRectangle(int x1, int y1, int x2, int y2, const uint clr)
       //--- set pixels
       for (; y1 <= y2; y1++)
       {
-         ArrayFill(y1 * m_width + x1, len, clr);
+         ArrayFill((y1 * m_width) + x1, len, clr);
       }
    }
 }
@@ -1133,7 +1138,7 @@ void Canvas::SafeSortedFillRectangle(int x1, int y1, int x2, int y2, const uint 
    //--- set pixels
    for (; y1 <= y2; y1++)
    {
-      ArrayFill(y1 * m_width + x1, len, clr);
+      ArrayFill((y1 * m_width) + x1, len, clr);
    }
 }
 //+------------------------------------------------------------------+
@@ -1141,8 +1146,13 @@ void Canvas::SafeSortedFillRectangle(int x1, int y1, int x2, int y2, const uint 
 //+------------------------------------------------------------------+
 void Canvas::FillTriangle(int x1, int y1, int x2, int y2, int x3, int y3, const uint clr)
 {
-   int xx1 = 0, xx2 = 0, tmp = 0;
-   double k1 = 0, k2 = 0, xd1 = NAN, xd2 = NAN;
+   int xx1 = 0;
+   int xx2 = 0;
+   int tmp = 0;
+   double k1 = 0;
+   double k2 = 0;
+   double xd1 = NAN;
+   double xd2 = NAN;
    //--- sort vertexes from lesser to greater
    if (y1 > y2)
    {
@@ -1230,16 +1240,13 @@ void Canvas::FillTriangle(int x1, int y1, int x2, int y2, int x3, int y3, const 
          continue;
       }
       //--- draw only what is within screen boundaries
-      if (xx1 < 0)
-      {
-         xx1 = 0;
-      }
+      xx1 = std::max(xx1, 0);
       if (xx2 >= m_width)
       {
          xx2 = m_width - 1;
       }
       //--- draw horizontal line of triangle
-      ArrayFill(i * m_width + xx1, xx2 - xx1, clr);
+      ArrayFill((i * m_width) + xx1, xx2 - xx1, clr);
    }
 }
 void Canvas::FillCircle(int x, int y, int r, const uint clr)

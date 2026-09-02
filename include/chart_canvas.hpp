@@ -77,24 +77,24 @@ public:
    ChartCanvas();
    ~ChartCanvas();
 
-   bool Create(HWND hWnd, const int width, const int height) override;
-   void ShowFlags(const uint flags, const bool redraw = true);
+   bool Create(HWND hWnd, int width, int height) override;
+   void ShowFlags(uint flags, bool redraw = true);
 
-   void VScaleParams(const double max, const double min, const uint grid, const bool redraw = true);
-   void ShowScaleTop(const bool flag, const bool redraw = true);
-   void ShowScaleRight(const bool flag, const bool redraw = true);
-   void ShowScaleLeft(const bool flag, const bool redraw = true);
-   void ShowScaleBottom(const bool flag, const bool redraw = true);
-   void ShowLegend(const bool flag, const bool redraw = true);
-   void ShowGrid(const bool flag = true, const bool redraw = true);
+   void VScaleParams(double max, double min, uint grid, bool redraw = true);
+   void ShowScaleTop(bool flag, bool redraw = true);
+   void ShowScaleRight(bool flag, bool redraw = true);
+   void ShowScaleLeft(bool flag, bool redraw = true);
+   void ShowScaleBottom(bool flag, bool redraw = true);
+   void ShowLegend(bool flag, bool redraw = true);
+   void ShowGrid(bool flag = true, bool redraw = true);
    void SetScaleDigits(const int digits)
    {
       m_scale_digits = digits;
    }
-   void ShowDescriptors(const bool flag = true, const bool redraw = true);
-   void ColorBackground(const uint value, const bool redraw = true);
-   void ColorBorder(const uint value, const bool redraw = true);
-   void ColorText(const uint value, const bool redraw = true);
+   void ShowDescriptors(bool flag = true, bool redraw = true);
+   void ColorBackground(uint value, bool redraw = true);
+   void ColorBorder(uint value, bool redraw = true);
+   void ColorText(uint value, bool redraw = true);
    void ColorGrid(const uint value, const bool redraw = true)
    {
       m_color_grid = value;
@@ -134,10 +134,10 @@ protected:
    virtual void DrawBackground();
    virtual void DrawScales();
    virtual void CalcScales();
-   virtual int DrawScaleTop(const bool draw = true);
-   virtual int DrawScaleBottom(const bool draw = true);
-   virtual int DrawScaleLeft(const bool draw = true);
-   virtual int DrawScaleRight(const bool draw = true);
+   virtual int DrawScaleTop(bool draw = true);
+   virtual int DrawScaleBottom(bool draw = true);
+   virtual int DrawScaleLeft(bool draw = true);
+   virtual int DrawScaleRight(bool draw = true);
    virtual void DrawGrid();
    virtual void DrawChart();
    virtual void DrawData(const uint idx = 0) {}

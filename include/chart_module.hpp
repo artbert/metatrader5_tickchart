@@ -119,10 +119,10 @@ public:
 
   bool ReadTickDataFromFile(LPCTSTR pszFileName);
 
-  void AppendLevels(const double levels[], const int levelsSize, char (*descriptions)[100], const int descrSize, const bool update);
-  void AppendTransactionsPoints(const long transactions[][4], char (*descriptions)[64], const int size, const bool update);
+  void AppendLevels(const double levels[], int levelsSize, char (*descriptions)[100], int descrSize, bool update);
+  void AppendTransactionsPoints(const long transactions[][4], char (*descriptions)[64], int size, bool update);
   bool GetSignedLevelData(double &levelValue, char *levelText, int arrSize);
-  bool GetRangeValData(double &upRangeVal, double &downRangeVal);
+  bool GetRangeValData(double &upRangeVal, double &downRangeVal) const;
   bool RangeLineDragged(double &newValue, int index);
   bool TimeSepVLineDragged(time_t &newValue);
   bool SetSymbolParameters(SYMBOLSETS &sets, char *date, int dateChars);
@@ -139,5 +139,5 @@ private:
   void RecalculateBarChart(int endInd, bool redraw);
   void UpdateBiggerBarsData(bool updateChart);
   void UpdateVisLevels(bool updateChart);
-  int GetEncoderClsid(const WCHAR *format, CLSID *pClsid);
+  static int GetEncoderClsid(const WCHAR *format, CLSID *pClsid);
 };

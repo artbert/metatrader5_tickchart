@@ -4,15 +4,16 @@
 #include <cmath>
 #include <algorithm>
 
-enum {
-IS_MPROFILEDATABID = 1,
-IS_MPROFILEDATAASK = 2,
-IS_CUMULATIVEDATAASK = 4,
-IS_CUMULATIVEDATABID = 8,
-IS_TRAVELLEDDISTANCE = 16,
-IS_TRAVELLEDROAD = 32,
-IS_TICKSARRIVED = 64,
-IS_SHOW_TRANSACTIONS = 128
+enum
+{
+   IS_MPROFILEDATABID = 1,
+   IS_MPROFILEDATAASK = 2,
+   IS_CUMULATIVEDATAASK = 4,
+   IS_CUMULATIVEDATABID = 8,
+   IS_TRAVELLEDDISTANCE = 16,
+   IS_TRAVELLEDROAD = 32,
+   IS_TICKSARRIVED = 64,
+   IS_SHOW_TRANSACTIONS = 128
 };
 
 using std::string;
@@ -127,7 +128,7 @@ public:
    CTickChart();
    ~CTickChart();
 
-   virtual bool Create(HWND hWnd, const int width, const int height, double pointValue, int digits);
+   virtual bool Create(HWND hWnd, int width, int height, double pointValue, int digits);
 
    void SetInterval(const int value, const bool update = true)
    {
@@ -167,11 +168,15 @@ public:
          Redraw();
       }
       if (value)
+      {
          erase_flags |= IS_SHOW_TRANSACTIONS;
+      }
       else
+      {
          erase_flags &= ~IS_SHOW_TRANSACTIONS;
+      }
    }
-   void SetColorMode(const bool value);
+   void SetColorMode(bool value);
    void SetTickSampleWidth(const int value, const bool update = true)
    {
       tickSampleWidth = value;
@@ -211,7 +216,7 @@ public:
    {
       drawVerticalGrid = value;
    }
-   void ChartVisibility(const uint pos, const int value, const bool update = true);
+   void ChartVisibility(uint pos, int value, bool update = true);
    void ShowMProfileDataBid(bool value, const bool update = true)
    {
       mProfileDataBidVis = value;
@@ -220,9 +225,13 @@ public:
          Redraw();
       }
       if (value)
+      {
          erase_flags |= IS_MPROFILEDATABID;
+      }
       else
+      {
          erase_flags &= ~IS_MPROFILEDATABID;
+      }
    }
    void ShowMProfileDataAsk(bool value, const bool update = true)
    {
@@ -232,9 +241,13 @@ public:
          Redraw();
       }
       if (value)
+      {
          erase_flags |= IS_MPROFILEDATAASK;
+      }
       else
+      {
          erase_flags &= ~IS_MPROFILEDATAASK;
+      }
    }
    void ShowCumulativeDataAsk(bool value, const bool update = true)
    {
@@ -244,9 +257,13 @@ public:
          Redraw();
       }
       if (value)
+      {
          erase_flags |= IS_CUMULATIVEDATAASK;
+      }
       else
+      {
          erase_flags &= ~IS_CUMULATIVEDATAASK;
+      }
    }
    void ShowCumulativeDataBid(bool value, const bool update = true)
    {
@@ -256,9 +273,13 @@ public:
          Redraw();
       }
       if (value)
+      {
          erase_flags |= IS_CUMULATIVEDATABID;
+      }
       else
+      {
          erase_flags &= ~IS_CUMULATIVEDATABID;
+      }
    }
    void ShowTimeParameter(bool value, const bool update = true)
    {
@@ -285,7 +306,7 @@ public:
          Redraw();
       }
    }
-   void AppendSignedLevels(const double levels[], const int levelsSize, char (*descriptions)[100], const int descrSize, const bool update);
+   void AppendSignedLevels(const double levels[], int levelsSize, char (*descriptions)[100], int descrSize, bool update);
    void ShowMainPlot(bool value, const bool update = true)
    {
       mainPlotVis = value;
@@ -302,11 +323,11 @@ public:
          Redraw();
       }
    }
-   void FillSeries(const double askPrice, const double bidPrice, const time_t time, const uint timeParameter, const int cumulativeDataAsk, const int cumulativeDataBid);
-   void AppendPricesTimeAndParameters(const double askPrice, const double bidPrice, const time_t time, const ulong timeParameter, const int askChange, const int bidChange, const short road, const short distance, const short ticks);
-   void UpdateMarketProfile(const double askPrice, const double bidPrice);
-   void MoveMarketProfileRange(const double lowRange, const double highRange);
-   int GetSeriesSize()
+   void FillSeries(double askPrice, double bidPrice, time_t time, uint timeParameter, int cumulativeDataAsk, int cumulativeDataBid);
+   void AppendPricesTimeAndParameters(double askPrice, double bidPrice, time_t time, ulong timeParameter, int askChange, int bidChange, short road, short distance, short ticks);
+   void UpdateMarketProfile(double askPrice, double bidPrice);
+   void MoveMarketProfileRange(double lowRange, double highRange);
+   int GetSeriesSize() const
    {
       return (chartWidthInSamples);
    }
@@ -320,7 +341,7 @@ public:
          Redraw();
       }
    }
-   void AppendTransactionsPoints(const long transactions[][4], char (*descriptions)[64], const int size);
+   void AppendTransactionsPoints(const long transactions[][4], char (*descriptions)[64], int size);
    void ShowTravelledDistance(bool value, const bool update = true)
    {
       travelledDistanceVis = value;
@@ -330,9 +351,13 @@ public:
          Redraw();
       }
       if (value)
+      {
          erase_flags |= IS_TRAVELLEDDISTANCE;
+      }
       else
+      {
          erase_flags &= ~IS_TRAVELLEDDISTANCE;
+      }
    }
    void ShowTravelledRoad(bool value, const bool update = true)
    {
@@ -343,9 +368,13 @@ public:
          Redraw();
       }
       if (value)
+      {
          erase_flags |= IS_TRAVELLEDROAD;
+      }
       else
+      {
          erase_flags &= ~IS_TRAVELLEDROAD;
+      }
    }
    void ShowTicksArrived(bool value, const bool update = true)
    {
@@ -356,22 +385,26 @@ public:
          Redraw();
       }
       if (value)
+      {
          erase_flags |= IS_TICKSARRIVED;
+      }
       else
+      {
          erase_flags &= ~IS_TICKSARRIVED;
+      }
    }
-   uint GetDataAreaStartPoint()
+   uint GetDataAreaStartPoint() const
    {
       return (mDataAreaStartPoint);
    }
 
 protected:
    void DrawChart() override;
-   void DrawData(const uint index = 0) override;
+   void DrawData(uint index = 0) override;
    void DrawBackground() override;
 
 private:
-   void SafeSlopingLine(int x1, int y1, int x2, int y2, const uint clr);
+   void SafeSlopingLine(int x1, int y1, int x2, int y2, uint clr);
    void DrawSignedLevels();
    void DrawMProfile(int dataStartIndex);
    void DrawTravelledDistanceScales();

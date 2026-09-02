@@ -2,8 +2,9 @@
 #include "chart_module.hpp"
 #include <commdlg.h>
 
-enum {
-MAX_LOADSTRING = 100
+enum
+{
+   MAX_LOADSTRING = 100
 };
 // Global Variables:
 HINSTANCE hInst;                     // current instance
@@ -12,8 +13,8 @@ TCHAR szWindowClass[MAX_LOADSTRING]; // the main window class name
 
 // Forward declarations of functions included in this code module:
 ATOM MyRegisterClass(HINSTANCE hInstance);
-BOOL InitInstance(HINSTANCE, int nCmdShow, HWND parentChart = nullptr);
-LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
+BOOL InitInstance(HINSTANCE /*hInstance*/, int nCmdShow, HWND parentChart = nullptr);
+LRESULT CALLBACK WndProc(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/);
 
 INT_PTR CALLBACK ToolDlgProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
 void ToolDlgFunctionsPanelProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
@@ -73,7 +74,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow, HWND parentChart)
    mainWindowHandle = CreateWindowEx(WS_EX_CLIENTEDGE, szWindowClass, szTitle, WS_OVERLAPPEDWINDOW & ~dwRemove,
                                      CW_USEDEFAULT, CW_USEDEFAULT, 1120, 789, parentChart, nullptr, hInstance, nullptr);
 
-   if (!mainWindowHandle)
+   if (mainWindowHandle == nullptr)
    {
       return FALSE;
    }
@@ -84,7 +85,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow, HWND parentChart)
    tickChartHWnd = CreateWindowEx(WS_EX_TRANSPARENT, L"STATIC", L"", WS_CHILD | WS_VISIBLE | SS_NOTIFY | SS_OWNERDRAW,
                                   0, 0, 1100, 428, mainWindowHandle, (HMENU) nullptr, hInstance, nullptr);
 
-   if (!tickChartHWnd)
+   if (tickChartHWnd == nullptr)
    {
       MessageBox(tickChartHWnd, L"Cannot Create window", L"Error", MB_OK);
       return FALSE;
@@ -96,7 +97,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow, HWND parentChart)
    barChartHWnd = CreateWindowEx(WS_EX_TRANSPARENT, L"STATIC", L"", WS_CHILD | WS_VISIBLE | SS_NOTIFY | SS_OWNERDRAW,
                                  0, 427, 1100, 300, mainWindowHandle, (HMENU) nullptr, hInstance, nullptr);
 
-   if (!barChartHWnd)
+   if (barChartHWnd == nullptr)
    {
       MessageBox(barChartHWnd, L"Cannot Create window", L"Error", MB_OK);
       return FALSE;
@@ -134,7 +135,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
          ShowWindow(toolBarHWnd, SW_SHOW);
          HWND editCntrl = GetDlgItem(toolBarHWnd, IDC_STEP_SIZE_EDT);
          if (editCntrl != nullptr)
+         {
             OldEditControlProc = SetWindowLongPtr(editCntrl, GWLP_WNDPROC, (LONG_PTR)EditControlProc);
+         }
       }
       else
       {
@@ -145,7 +148,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
    break;
    case WM_COMMAND:
       if (MenuItemsActivationProc(hWnd, message, wParam, lParam))
+      {
          return DefWindowProc(hWnd, message, wParam, lParam);
+      }
       break;
    case UPDATE_CHARTS:
       chartModule.UpdateCharts((byte)wParam, lParam != 0);
@@ -162,7 +167,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
       {
       case 'm':
       case 'M':
-         if (GetAsyncKeyState(VK_CONTROL))
+         if (GetAsyncKeyState(VK_CONTROL) != 0)
          {
             RECT rect;
             GetWindowRect(hWnd, &rect);
@@ -170,12 +175,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             {
                hideShowHMenu = GetMenu(hWnd);
                SetMenu(hWnd, nullptr);
-               MoveWindow(hWnd, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top - 20, false);
+               MoveWindow(hWnd, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top - 20, 0);
             }
             else
             {
                SetMenu(hWnd, hideShowHMenu);
-               MoveWindow(hWnd, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top + 20, false);
+               MoveWindow(hWnd, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top + 20, 0);
                hideShowHMenu = nullptr;
             }
          }
@@ -224,14 +229,7 @@ void ToolDlgFunctionsPanelProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lP
       chartModule.LoadFromServerPartialBtnClicked();
       break;
    case IDC_CHART_AUTO_SCRL_CHBX:
-      if (IsDlgButtonChecked(hwnd, IDC_CHART_AUTO_SCRL_CHBX))
-      {
-         appSets.chartAutoScroll = true;
-      }
-      else
-      {
-         appSets.chartAutoScroll = false;
-      }
+      appSets.chartAutoScroll = IsDlgButtonChecked(hwnd, IDC_CHART_AUTO_SCRL_CHBX) != 0;
       chartModule.ChartAutoScrollChBxChanged();
       break;
    case IDC_STEP_FORWRD_BTN:
@@ -245,10 +243,7 @@ void ToolDlgFunctionsPanelProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lP
    }
    break;
    case IDC_MEASURE_CHBX:
-      if (IsDlgButtonChecked(hwnd, IDC_MEASURE_CHBX))
-         appSets.measurementTool = true;
-      else
-         appSets.measurementTool = false;
+      appSets.measurementTool = IsDlgButtonChecked(hwnd, IDC_MEASURE_CHBX) != 0;
       chartModule.MeasureChBxChanged();
 
       break;
@@ -269,7 +264,9 @@ void ToolDlgFunctionsPanelProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lP
          SetDlgItemTextA(toolBarHWnd, IDC_REPLAY_BTN, "| |");
          int mode = TIME_PERIODIC;
          if (appSets.realTempo)
+         {
             mode = TIME_ONESHOT;
+         }
 
          timerHandle = timeSetEvent(appSets.timerInterval, 0, TimerFunction, 0, mode);
       }
@@ -294,16 +291,16 @@ void ToolDlgFunctionsPanelProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lP
    }
    break;
    case IDC_LVLS_EDIT_CHBX:
-      if (IsDlgButtonChecked(hwnd, IDC_LVLS_EDIT_CHBX))
+      if (IsDlgButtonChecked(hwnd, IDC_LVLS_EDIT_CHBX) != 0u)
       {
-         EnableWindow(GetDlgItem(hwnd, IDC_LEVEL_ADD_BTN), true);
-         EnableWindow(GetDlgItem(hwnd, IDC_LEVELS_DEL_BTN), true);
+         EnableWindow(GetDlgItem(hwnd, IDC_LEVEL_ADD_BTN), 1);
+         EnableWindow(GetDlgItem(hwnd, IDC_LEVELS_DEL_BTN), 1);
          PostMessage(MT5ParentChart, WM_LBUTTONUP, 0, -SELECT_SIGNED_LEVELS);
       }
       else
       {
-         EnableWindow(GetDlgItem(hwnd, IDC_LEVEL_ADD_BTN), false);
-         EnableWindow(GetDlgItem(hwnd, IDC_LEVELS_DEL_BTN), false);
+         EnableWindow(GetDlgItem(hwnd, IDC_LEVEL_ADD_BTN), 0);
+         EnableWindow(GetDlgItem(hwnd, IDC_LEVELS_DEL_BTN), 0);
          PostMessage(MT5ParentChart, WM_LBUTTONUP, 0, -UNSELECT_SIGNED_LEVELS);
       }
       chartModule.SignedLevelsEditChBxChanged();
@@ -327,11 +324,13 @@ bool MenuItemsActivationProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
    case IDM_TICK_CHART_ZOOM_2:
    case IDM_TICK_CHART_ZOOM_4:
    {
-      CheckMenuItem(mainMenu, (UINT)(appSets.tickChartZoom / 2 + 200), MF_UNCHECKED);
+      CheckMenuItem(mainMenu, (UINT)((appSets.tickChartZoom / 2) + 200), MF_UNCHECKED);
 
       appSets.tickChartZoom = (wmId - 200) * 2;
       if (wmId == 200)
+      {
          appSets.tickChartZoom += 1;
+      }
       CheckMenuItem(mainMenu, wmId, MF_CHECKED);
       chartModule.TickChartZoomChanged();
    }
@@ -340,11 +339,13 @@ bool MenuItemsActivationProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
    case IDM_BAR_CHART_CANDLE_WIDTH_2:
    case IDM_BAR_CHART_CANDLE_WIDTH_1:
    {
-      CheckMenuItem(mainMenu, (UINT)(appSets.barChartCandleWidth / 2 + 203), MF_UNCHECKED);
+      CheckMenuItem(mainMenu, (UINT)((appSets.barChartCandleWidth / 2) + 203), MF_UNCHECKED);
 
       appSets.barChartCandleWidth = (wmId - 203) * 2;
       if (wmId == 203)
+      {
          appSets.barChartCandleWidth += 1;
+      }
       CheckMenuItem(mainMenu, wmId, MF_CHECKED);
       chartModule.BarChartCandleWidthChanged();
    }
@@ -460,7 +461,7 @@ bool MenuItemsActivationProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
    }
    break;
    case IDM_FREEZE_RANGES:
-      if (GetMenuState(mainMenu, IDM_FREEZE_RANGES, 0))
+      if (GetMenuState(mainMenu, IDM_FREEZE_RANGES, 0) != 0u)
       {
          appSets.freezeRanges = false;
          CheckMenuItem(mainMenu, wmId, MF_UNCHECKED);
@@ -477,7 +478,7 @@ bool MenuItemsActivationProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
       break;
    case IDM_VIS_BID:
    {
-      if (GetMenuState(mainMenu, IDM_VIS_BID, 0))
+      if (GetMenuState(mainMenu, IDM_VIS_BID, 0) != 0u)
       {
          appSets.bidLineVis = false;
          CheckMenuItem(mainMenu, wmId, MF_UNCHECKED);
@@ -492,7 +493,7 @@ bool MenuItemsActivationProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
    break;
    case IDM_VIS_ASK:
    {
-      if (GetMenuState(mainMenu, IDM_VIS_ASK, 0))
+      if (GetMenuState(mainMenu, IDM_VIS_ASK, 0) != 0u)
       {
          appSets.askLineVis = false;
          CheckMenuItem(mainMenu, wmId, MF_UNCHECKED);
@@ -506,7 +507,7 @@ bool MenuItemsActivationProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
    }
    break;
    case IDM_VIS_LEVELS:
-      if (GetMenuState(mainMenu, IDM_VIS_LEVELS, 0))
+      if (GetMenuState(mainMenu, IDM_VIS_LEVELS, 0) != 0u)
       {
          appSets.signedLevelsVis = false;
          CheckMenuItem(mainMenu, wmId, MF_UNCHECKED);
@@ -519,7 +520,7 @@ bool MenuItemsActivationProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
       chartModule.SignedLevelsVisChanged();
       break;
    case IDM_VIS_AUTO_MOV_RANGE:
-      if (GetMenuState(mainMenu, IDM_VIS_AUTO_MOV_RANGE, 0))
+      if (GetMenuState(mainMenu, IDM_VIS_AUTO_MOV_RANGE, 0) != 0u)
       {
          appSets.autoMovingRange = false;
          CheckMenuItem(mainMenu, wmId, MF_UNCHECKED);
@@ -533,7 +534,7 @@ bool MenuItemsActivationProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
       break;
    case IDM_VIS_MPROFILE_ASK:
    {
-      if (GetMenuState(mainMenu, IDM_VIS_MPROFILE_ASK, 0))
+      if (GetMenuState(mainMenu, IDM_VIS_MPROFILE_ASK, 0) != 0u)
       {
          appSets.mProfileAskVis = false;
          CheckMenuItem(mainMenu, wmId, MF_UNCHECKED);
@@ -548,7 +549,7 @@ bool MenuItemsActivationProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
    break;
    case IDM_VIS_MPROFILE_BID:
    {
-      if (GetMenuState(mainMenu, IDM_VIS_MPROFILE_BID, 0))
+      if (GetMenuState(mainMenu, IDM_VIS_MPROFILE_BID, 0) != 0u)
       {
          appSets.mProfileBidVis = false;
          CheckMenuItem(mainMenu, wmId, MF_UNCHECKED);
@@ -563,7 +564,7 @@ bool MenuItemsActivationProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
    break;
    case IDM_VIS_TICK_CHART:
    {
-      if (GetMenuState(mainMenu, IDM_VIS_TICK_CHART, 0))
+      if (GetMenuState(mainMenu, IDM_VIS_TICK_CHART, 0) != 0u)
       {
          appSets.tickChartVis = false;
          CheckMenuItem(mainMenu, wmId, MF_UNCHECKED);
@@ -578,7 +579,7 @@ bool MenuItemsActivationProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
    break;
    case IDM_VIS_BAR_CHART:
    {
-      if (GetMenuState(mainMenu, IDM_VIS_BAR_CHART, 0))
+      if (GetMenuState(mainMenu, IDM_VIS_BAR_CHART, 0) != 0u)
       {
          appSets.barChartVis = false;
          CheckMenuItem(mainMenu, wmId, MF_UNCHECKED);
@@ -593,7 +594,7 @@ bool MenuItemsActivationProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
    break;
    case IDM_VIS_TIME_PARAMETER:
    {
-      if (GetMenuState(mainMenu, IDM_VIS_TIME_PARAMETER, 0))
+      if (GetMenuState(mainMenu, IDM_VIS_TIME_PARAMETER, 0) != 0u)
       {
          appSets.timeParamVis = false;
          CheckMenuItem(mainMenu, wmId, MF_UNCHECKED);
@@ -608,7 +609,7 @@ bool MenuItemsActivationProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
    break;
    case IDM_VIS_CUMULATIVE_ASK:
    {
-      if (GetMenuState(mainMenu, IDM_VIS_CUMULATIVE_ASK, 0))
+      if (GetMenuState(mainMenu, IDM_VIS_CUMULATIVE_ASK, 0) != 0u)
       {
          appSets.cumulativeAskVis = false;
          CheckMenuItem(mainMenu, wmId, MF_UNCHECKED);
@@ -623,7 +624,7 @@ bool MenuItemsActivationProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
    break;
    case IDM_VIS_CUMULATIVE_BID:
    {
-      if (GetMenuState(mainMenu, IDM_VIS_CUMULATIVE_BID, 0))
+      if (GetMenuState(mainMenu, IDM_VIS_CUMULATIVE_BID, 0) != 0u)
       {
          appSets.cumulativeBidVis = false;
          CheckMenuItem(mainMenu, wmId, MF_UNCHECKED);
@@ -638,7 +639,7 @@ bool MenuItemsActivationProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
    break;
    case IDM_VIS_DISTANCE:
    {
-      if (GetMenuState(mainMenu, IDM_VIS_DISTANCE, 0))
+      if (GetMenuState(mainMenu, IDM_VIS_DISTANCE, 0) != 0u)
       {
          appSets.distanceVis = false;
          CheckMenuItem(mainMenu, wmId, MF_UNCHECKED);
@@ -653,7 +654,7 @@ bool MenuItemsActivationProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
    break;
    case IDM_VIS_ROAD:
    {
-      if (GetMenuState(mainMenu, IDM_VIS_ROAD, 0))
+      if (GetMenuState(mainMenu, IDM_VIS_ROAD, 0) != 0u)
       {
          appSets.roadVis = false;
          CheckMenuItem(mainMenu, wmId, MF_UNCHECKED);
@@ -668,7 +669,7 @@ bool MenuItemsActivationProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
    break;
    case IDM_VIS_TICKS:
    {
-      if (GetMenuState(mainMenu, IDM_VIS_TICKS, 0))
+      if (GetMenuState(mainMenu, IDM_VIS_TICKS, 0) != 0u)
       {
          appSets.ticksArrivedVis = false;
          CheckMenuItem(mainMenu, wmId, MF_UNCHECKED);
@@ -683,7 +684,7 @@ bool MenuItemsActivationProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
    break;
    case IDM_BAR_CHART_EVENTS:
    {
-      if (GetMenuState(mainMenu, IDM_BAR_CHART_EVENTS, 0))
+      if (GetMenuState(mainMenu, IDM_BAR_CHART_EVENTS, 0) != 0u)
       {
          appSets.eventsOnBarChartVis = false;
          CheckMenuItem(mainMenu, wmId, MF_UNCHECKED);
@@ -698,7 +699,7 @@ bool MenuItemsActivationProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
    break;
    case IDM_TICK_CHART_EVENTS:
    {
-      if (GetMenuState(mainMenu, IDM_TICK_CHART_EVENTS, 0))
+      if (GetMenuState(mainMenu, IDM_TICK_CHART_EVENTS, 0) != 0u)
       {
          appSets.eventsOnTickChartVis = false;
          CheckMenuItem(mainMenu, wmId, MF_UNCHECKED);
@@ -712,7 +713,7 @@ bool MenuItemsActivationProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
    }
    break;
    case IDM_ORDERS:
-      if (GetMenuState(mainMenu, IDM_ORDERS, 0))
+      if (GetMenuState(mainMenu, IDM_ORDERS, 0) != 0u)
       {
          appSets.ordersVis = false;
          CheckMenuItem(mainMenu, wmId, MF_UNCHECKED);
@@ -726,7 +727,7 @@ bool MenuItemsActivationProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
       break;
    case IDM_COLOR_TIME_PARAM:
    {
-      if (GetMenuState(mainMenu, IDM_COLOR_TIME_PARAM, 0))
+      if (GetMenuState(mainMenu, IDM_COLOR_TIME_PARAM, 0) != 0u)
       {
          appSets.colorTimeParam = false;
          CheckMenuItem(mainMenu, wmId, MF_UNCHECKED);
@@ -741,7 +742,7 @@ bool MenuItemsActivationProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
    break;
    case IDM_ZOOM_TIME_PARAM:
    {
-      if (GetMenuState(mainMenu, IDM_ZOOM_TIME_PARAM, 0))
+      if (GetMenuState(mainMenu, IDM_ZOOM_TIME_PARAM, 0) != 0u)
       {
          appSets.zoomTimeParam = false;
          CheckMenuItem(mainMenu, wmId, MF_UNCHECKED);
@@ -809,22 +810,30 @@ bool MenuItemsActivationProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
    case IDM_TIMER_2000:
 
       if (appSets.timerInterval == 2000)
+      {
          tmp = IDM_TIMER_2000;
+      }
       else
+      {
          tmp = appSets.timerInterval / 100 + 240;
+      }
 
       CheckMenuItem(mainMenu, (UINT)(tmp), MF_UNCHECKED);
 
       if (wmId == IDM_TIMER_2000)
+      {
          appSets.timerInterval = 2000;
+      }
       else
+      {
          appSets.timerInterval = (wmId - 240) * 100;
+      }
 
       CheckMenuItem(mainMenu, wmId, MF_CHECKED);
       chartModule.TimerIntervalChanged();
       break;
    case IDM_PLAY_REAL_TEMPO:
-      if (GetMenuState(mainMenu, IDM_PLAY_REAL_TEMPO, 0))
+      if (GetMenuState(mainMenu, IDM_PLAY_REAL_TEMPO, 0) != 0u)
       {
          appSets.realTempo = false;
          CheckMenuItem(mainMenu, wmId, MF_UNCHECKED);
@@ -838,7 +847,7 @@ bool MenuItemsActivationProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
       break;
 
    case ID_TOOLBAR_SHOW:
-      if (GetMenuState(mainMenu, ID_TOOLBAR_SHOW, 0))
+      if (GetMenuState(mainMenu, ID_TOOLBAR_SHOW, 0) != 0u)
       {
          CheckMenuItem(mainMenu, wmId, MF_UNCHECKED);
          ShowWindow(toolBarHWnd, SW_HIDE);
@@ -969,13 +978,13 @@ LRESULT CALLBACK EditControlProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
       case VK_RETURN:
       {
          BOOL success = 0;
-         uint newValue = (uint)GetDlgItemInt(toolBarHWnd, IDC_STEP_SIZE_EDT, &success, false);
-         if (success)
+         uint newValue = (uint)GetDlgItemInt(toolBarHWnd, IDC_STEP_SIZE_EDT, &success, 0);
+         if (success != 0)
          {
             if (newValue > 0)
             {
                appSets.tickOffsetValue = newValue;
-               SetDlgItemInt(toolBarHWnd, IDC_STEP_SIZE_EDT, newValue, false);
+               SetDlgItemInt(toolBarHWnd, IDC_STEP_SIZE_EDT, newValue, 0);
             }
          }
       }
@@ -1044,7 +1053,9 @@ void CALLBACK TimerFunction(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser, DWORD_PT
    // nextInterval in milliseconds
    int nextInterval = chartModule.OnTimer();
    if (nextInterval > 0)
+   {
       timerHandle = timeSetEvent(nextInterval, 0, TimerFunction, 0, TIME_ONESHOT);
+   }
 }
 DWORD WINAPI MainModuleThreadFunction(LPVOID lpParam)
 {
@@ -1062,12 +1073,12 @@ DWORD WINAPI MainModuleThreadFunction(LPVOID lpParam)
    MyRegisterClass(hModuleInstance);
 
    // Perform application initialization:
-   if (!InitInstance(hModuleInstance, SW_SHOWNORMAL, MT5ParentChart))
+   if (InitInstance(hModuleInstance, SW_SHOWNORMAL, MT5ParentChart) == 0)
    {
       return FALSE;
    }
 
-   HWND terminalWnd = GetAncestor(MT5ParentChart, 2u);
+   HWND terminalWnd = GetAncestor(MT5ParentChart, 2U);
    LPARAM iconSmall = SendMessageA(terminalWnd, WM_GETICON, ICON_SMALL, 0);
    SendMessageA(mainWindowHandle, WM_SETICON, ICON_SMALL, iconSmall);
    LPARAM iconBig = SendMessageA(terminalWnd, WM_GETICON, ICON_BIG, 0);
@@ -1112,7 +1123,7 @@ bool SaveDataFile()
       auto dwFileSize = (DWORD)sizeof(TCHMODSET);
       DWORD dwWritten = 0;
 
-      if (WriteFile(hFile, &appSets, dwFileSize, &dwWritten, nullptr))
+      if (WriteFile(hFile, &appSets, dwFileSize, &dwWritten, nullptr) != 0)
       {
          bSuccess = true;
       }
@@ -1136,7 +1147,7 @@ bool LoadDataFile()
       {
          DWORD dwRead = 0;
 
-         if (ReadFile(hFile, &appSets, dwFileSize, &dwRead, nullptr))
+         if (ReadFile(hFile, &appSets, dwFileSize, &dwRead, nullptr) != 0)
          {
             HMENU hm = GetMenu(mainWindowHandle);
 
@@ -1144,7 +1155,9 @@ bool LoadDataFile()
 
             UINT state = BST_CHECKED;
             if (!appSets.chartAutoScroll)
+            {
                state = BST_UNCHECKED;
+            }
 
             CheckDlgButton(toolBarHWnd, IDC_CHART_AUTO_SCRL_CHBX, state);
             SetDlgItemInt(toolBarHWnd, IDC_STEP_SIZE_EDT, appSets.tickOffsetValue, FALSE);
@@ -1221,47 +1234,65 @@ bool LoadDataFile()
 
             state = MF_CHECKED;
             if (!appSets.freezeRanges)
+            {
                state = MF_UNCHECKED;
+            }
             CheckMenuItem(hm, IDM_FREEZE_RANGES, state);
 
             state = MF_CHECKED;
             if (!appSets.askLineVis)
+            {
                state = MF_UNCHECKED;
+            }
             CheckMenuItem(hm, IDM_VIS_ASK, state);
 
             state = MF_CHECKED;
             if (!appSets.bidLineVis)
+            {
                state = MF_UNCHECKED;
+            }
             CheckMenuItem(hm, IDM_VIS_BID, state);
 
             state = MF_CHECKED;
             if (!appSets.signedLevelsVis)
+            {
                state = MF_UNCHECKED;
+            }
             CheckMenuItem(hm, IDM_VIS_LEVELS, state);
 
             state = MF_CHECKED;
             if (!appSets.autoMovingRange)
+            {
                state = MF_UNCHECKED;
+            }
             CheckMenuItem(hm, IDM_VIS_AUTO_MOV_RANGE, state);
 
             state = MF_CHECKED;
             if (!appSets.tickChartVis)
+            {
                state = MF_UNCHECKED;
+            }
             CheckMenuItem(hm, IDM_VIS_TICK_CHART, state);
 
             state = MF_CHECKED;
             if (!appSets.barChartVis)
+            {
                state = MF_UNCHECKED;
+            }
             CheckMenuItem(hm, IDM_VIS_BAR_CHART, state);
 
             state = MF_CHECKED;
             if (!appSets.timeParamVis)
+            {
                state = MF_UNCHECKED;
+            }
             CheckMenuItem(hm, IDM_VIS_TIME_PARAMETER, state);
 
             state = MF_UNCHECKED;
             if (appSets.zoomTimeParam)
+            {
                state = MF_CHECKED;
+            }
             CheckMenuItem(hm, IDM_ZOOM_TIME_PARAM, state);
 
             switch (appSets.timerInterval)
@@ -1305,12 +1336,16 @@ bool LoadDataFile()
 
             state = MF_CHECKED;
             if (!appSets.realTempo)
+            {
                state = MF_UNCHECKED;
+            }
             CheckMenuItem(hm, IDM_PLAY_REAL_TEMPO, state);
 
             state = MF_CHECKED;
             if (!appSets.colorTimeParam)
+            {
                state = MF_UNCHECKED;
+            }
             CheckMenuItem(hm, IDM_COLOR_TIME_PARAM, state);
 
             appSets.distanceVis = false;

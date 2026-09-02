@@ -11,7 +11,7 @@ EXT bool __stdcall SetSymbolParameters(SYMBOLSETS &sets, char *date, int dateCha
 {
    return (chartModule.SetSymbolParameters(sets, date, dateChars));
 }
-EXT bool __stdcall Initialize(long long parent, wchar_t *dataPath, wchar_t *appTitle)
+EXT bool __stdcall Initialize(long long parent, const wchar_t *dataPath, const wchar_t *appTitle)
 {
    MT5ParentChart = (HWND)parent;
    int i = 0;
@@ -21,7 +21,9 @@ EXT bool __stdcall Initialize(long long parent, wchar_t *dataPath, wchar_t *appT
       ++i;
    }
    if (i == MAX_PATH)
+   {
       i = MAX_PATH - 1;
+   }
    fullDataPath[i] = L'\0';
 
    i = 0;
@@ -31,7 +33,9 @@ EXT bool __stdcall Initialize(long long parent, wchar_t *dataPath, wchar_t *appT
       ++i;
    }
    if (i == MAX_LOADSTRING)
+   {
       i = MAX_LOADSTRING - 1;
+   }
    szTitle[i] = L'\0';
 
    if (threadHandle == nullptr)
@@ -53,9 +57,10 @@ EXT bool __stdcall Initialize(long long parent, wchar_t *dataPath, wchar_t *appT
    }
 
    if (threadHandle != nullptr)
+   {
       return (true);
-   else
-      return (false);
+   }
+   return (false);
 }
 EXT void __stdcall SignedLevelsAppend(const double levels[], const int levelsSize, char (*descriptions)[100], const int descrSize, const bool update)
 {
@@ -105,7 +110,9 @@ EXT bool __stdcall TimeSepVLineDragged(time_t &newValue)
 EXT bool __stdcall ModuleDestroy()
 {
    if (mainWindowHandle != nullptr)
+   {
       PostMessageA(mainWindowHandle, WM_CLOSE, 0, 0);
+   }
    return (true);
 }
 
@@ -124,7 +131,9 @@ BOOL APIENTRY DllMain(HMODULE hModule,
       break;
    case DLL_PROCESS_DETACH:
       if (mainWindowHandle != nullptr)
+      {
          PostMessageA(mainWindowHandle, WM_CLOSE, 0, 0);
+      }
       Sleep(1000);
       break;
    }
