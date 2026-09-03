@@ -1151,8 +1151,8 @@ void Canvas::FillTriangle(int x1, int y1, int x2, int y2, int x3, int y3, const 
    int tmp = 0;
    double k1 = 0;
    double k2 = 0;
-   double xd1 = NAN;
-   double xd2 = NAN;
+   double xd1 = std::nan("");
+   double xd2 = std::nan("");
    //--- sort vertexes from lesser to greater
    if (y1 > y2)
    {

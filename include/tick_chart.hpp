@@ -22,9 +22,9 @@ class CTickChart : public ChartCanvas
 {
 
 private:
-   double _Point{};
-   int _Digits{};
-   double _DigitsMultiplier{};
+   double symbol_point_size{};
+   uint symbol_digits{};
+   double price_multiplier{};
    bool DarkMode;
    int interval;
    bool initialized;
@@ -128,7 +128,7 @@ public:
    CTickChart();
    ~CTickChart();
 
-   virtual bool Create(HWND hWnd, int width, int height, double pointValue, int digits);
+   virtual bool Create(HWND hWnd, int width, int height, double pointValue, uint digits);
 
    void SetInterval(const int value, const bool update = true)
    {
@@ -147,7 +147,7 @@ public:
       case 30:
          interval_idx = 3;
          break;
-      case 60:
+      default:
          interval_idx = 4;
       }
       if (update)
@@ -329,7 +329,7 @@ public:
    void MoveMarketProfileRange(double lowRange, double highRange);
    int GetSeriesSize() const
    {
-      return (chartWidthInSamples);
+      return (int)chartWidthInSamples;
    }
    void AppendCalendarEvents(CalendarEvent clEvents[], int tabSize);
    void ShowCalendarEvents(bool value, const bool update = true)

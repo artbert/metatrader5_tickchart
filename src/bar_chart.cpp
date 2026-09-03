@@ -68,16 +68,16 @@ CBarChart::~CBarChart()
    delete[] transactionsDescriptions;
    delete[] rescaledMProfile;
 }
-bool CBarChart::Create(HWND hWnd, const int width, const int height, double pointValue, int digits)
+bool CBarChart::Create(HWND hWnd, const int width, const int height, double pointValue, uint digits)
 {
    if (!ChartCanvas::Create(hWnd, width, height))
    {
       return (false);
    }
 
-   _Digits = digits;
-   _Point = pointValue;
-   _DigitsMultiplier = POWER_OF_10[digits];
+   symbol_digits = digits;
+   symbol_point_size = pointValue;
+   price_multiplier = POWER_OF_10[digits];
 
    return (true);
 }
@@ -182,7 +182,7 @@ void CBarChart::FillSeries(const double open, const double close, const double h
 void CBarChart::UpdateMarketProfile(const double askPrice, const double bidPrice)
 {
    double midPrice = (askPrice + bidPrice) / 2.0;
-   int midInd = (int)((midPrice * _DigitsMultiplier) + 0.5) % 100000;
+   int midInd = (int)((midPrice * price_multiplier) + 0.5) % 100000;
 
    mProfileData[midInd]++;
 }
@@ -204,7 +204,7 @@ void CBarChart::AppendSignedLevels(const double levels[], const int levelsSize, 
             delete[] signedLevelsDescriptions;
             signedLevelsDescriptions = new char[descrSize][100];
          }
-         memcpy(signedLevelsDescriptions, descriptions, descrSize * 100 * sizeof(char));
+         memcpy(signedLevelsDescriptions, descriptions, (unsigned long long)descrSize * 100UL * sizeof(char));
          isSignedLevelsDescriptions = true;
       }
 
@@ -271,8 +271,8 @@ void CBarChart::AppendTransactionsPoints(const long transactions[][4], char (*de
 
          transactionsDescriptions = new char[size][64];
       }
-      memcpy(transactionsTab, transactions, size * 4 * sizeof(long long));
-      memcpy(transactionsDescriptions, descriptions, size * 64 * sizeof(char));
+      memcpy(transactionsTab, transactions, (unsigned long long)size * 4UL * sizeof(long long));
+      memcpy(transactionsDescriptions, descriptions, (unsigned long long)size * 64UL * sizeof(char));
       transactionsTabSize = size;
       isOrdersPoints = true;
    }
@@ -384,27 +384,31 @@ void CBarChart::UpdateChart(bool vScaleParChanged)
 
       if (maximum != lastChartPriceMax || minimum != lastChartPriceMin)
       {
-         double maxVal = NormalizeDouble(maximum + (10 * _Point), _Digits - 1);
-         double minVal = NormalizeDouble(minimum - (10 * _Point), _Digits - 1);
+         NormalizationArgs args = {maximum + (10 * symbol_point_size), symbol_digits - 1};
+         double maxVal = NormalizeDouble(args);
 
-         int noOfLevels = (int)((maxVal - minVal) * _DigitsMultiplier / 10.0);
+         args.value = minimum - (10 * symbol_point_size);
+         args.places = symbol_digits - 1;
+         double minVal = NormalizeDouble(args);
+
+         int noOfLevels = (int)((maxVal - minVal) * price_multiplier / 10.0);
          int limit = noOfLevels / 10;
          if (noOfLevels % 10 != 0)
          {
             limit += 1;
          }
 
-         double maxEvenVal = minVal + (limit * 100.0 * _Point);
+         double maxEvenVal = minVal + (limit * 100.0 * symbol_point_size);
 
          if (m_v_scale_max != maxEvenVal || m_v_scale_min != minVal)
          {
             vScaleParamsChanged = true;
-            pointsPerPx = ((maxEvenVal - minVal) * _DigitsMultiplier) / workSpaceChartHeightInPx;
+            pointsPerPx = ((maxEvenVal - minVal) * price_multiplier) / workSpaceChartHeightInPx;
             VScaleParams(maxEvenVal, minVal, 10, false);
          }
 
-         mProfileStartIndex = ((int)((minVal * _DigitsMultiplier) + 0.5) % 100000);
-         int endInd = ((int)((maxEvenVal * _DigitsMultiplier) + 0.5) % 100000);
+         mProfileStartIndex = ((int)((minVal * price_multiplier) + 0.5) % 100000);
+         int endInd = ((int)((maxEvenVal * price_multiplier) + 0.5) % 100000);
          mProfileSize = endInd - mProfileStartIndex;
 
          if (mProfileSize > 1)
@@ -454,7 +458,7 @@ void CBarChart::DrawData(const uint index)
    {
       DrawMProfile(extremumStartIndex);
    }
-   if (mSignedLevelsVis && signedLevelsArraySize > 0)
+   if (mSignedLevelsVis && (signedLevelsArraySize > 0))
    {
       DrawSignedLevels();
    }
@@ -479,7 +483,7 @@ void CBarChart::DrawData(const uint index)
 
       // 2^21 = 2097152
       // 255: max index from colorArray
-      tmParamFactor = ((2097152 * 255) / (tmParamMax - tmParamMin)) + 1;
+      tmParamFactor = ((unsigned long long)(2097152 * 255) / (tmParamMax - tmParamMin)) + 1;
    }
    uint tmParamFigureHight = (int)(10 * barsDataMultiplier);
 
@@ -488,7 +492,7 @@ void CBarChart::DrawData(const uint index)
    int calEvStartInd = -1;
    int calEvEndInd = -1;
 
-   if (static_cast<int>((isCalendarEvents) & static_cast<int>(showCalendarEvents) != 0))
+   if ((static_cast<int>((isCalendarEvents) & static_cast<int>(showCalendarEvents)) != 0))
    {
       int firstValidRateIndex = i;
       while (times[firstValidRateIndex] == 0)
@@ -579,7 +583,7 @@ void CBarChart::DrawData(const uint index)
          continue;
       }
 
-      if (static_cast<int>((isCalendarEvents) & static_cast<int>(showCalendarEvents) != 0))
+      if ((static_cast<int>((isCalendarEvents) & static_cast<int>(showCalendarEvents)) != 0))
       {
          if (((calEvStartInd & 0x80000000) | (calEvEndInd & 0x80000000)) == 0)
          {
@@ -632,7 +636,7 @@ void CBarChart::DrawData(const uint index)
                      ptr++;
                   }
 
-                  if (rct.top > 1 && rct.top < m_height - 9)
+                  if ((rct.top > 1) && (rct.top < (m_height - 9)))
                   {
                      DrawBitTimeSepStamp_09(INFOSTRING, idx, x - 9 - (idx * 5), calendarSignOffset + 5 - 4, m_data_area.left, m_data_area.right);
                   }
@@ -660,7 +664,7 @@ void CBarChart::DrawData(const uint index)
             {
                if (times[i] >= transactionsTab[transactionPStartInd][0])
                {
-                  double pointPrice = transactionsTab[transactionPStartInd][2] * _Point;
+                  double pointPrice = (double)(transactionsTab[transactionPStartInd][2]) * symbol_point_size;
                   pointPrice -= y_scale_shift;
 
                   int baseAnchorPt = (int)(m_y_0 - (pointPrice * m_scale_y) + 0.5);
@@ -721,22 +725,22 @@ void CBarChart::DrawData(const uint index)
             {
                time_t _tm = times[i];
                ulong secs = _tm - dayHourSeconds1;
-               if (secs >= 24 * 60 * 60)
+               if (secs >= (ulong)(24 * 60 * 60))
                {
                   secs = _tm;
                   ulong days = (((_tm * 1158050442) >> 32) + _tm * 49710) >> 32;
-                  secs -= days * 24 * 60 * 60;
+                  secs -= days * (ulong)(24 * 60 * 60);
                   dayHourSeconds1 = _tm - secs;
                }
                hour1 = (secs * 1193047) >> 32;
 
                _tm = times[i - 1];
                secs = _tm - dayHourSeconds2;
-               if (secs >= 24 * 60 * 60)
+               if (secs >= (ulong)(24 * 60 * 60))
                {
                   secs = _tm;
                   ulong days = (((_tm * 1158050442) >> 32) + _tm * 49710) >> 32;
-                  secs -= days * 24 * 60 * 60;
+                  secs -= days * (ulong)(24 * 60 * 60);
                   dayHourSeconds2 = _tm - secs;
                }
                ulong _hr = (secs * 1193047) >> 32;
@@ -762,7 +766,7 @@ void CBarChart::DrawData(const uint index)
                {
                   secs = _tm;
                   uint days = (((_tm * 1158050442) >> 32) + _tm * 49710) >> 32;
-                  secs -= days * 24 * 60 * 60;
+                  secs -= days * (ulong)(24 * 60 * 60);
                   hour1 = (secs * 1193047) >> 32;
                   secs -= hour1 * 3600;
                   dayHourSeconds1 = _tm - secs;
@@ -775,7 +779,7 @@ void CBarChart::DrawData(const uint index)
                {
                   secs = _tm;
                   uint days = (((_tm * 1158050442) >> 32) + _tm * 49710) >> 32;
-                  secs -= days * 24 * 60 * 60;
+                  secs -= days * (ulong)(24 * 60 * 60);
                   ulong hr2 = (secs * 1193047) >> 32;
                   secs -= hr2 * 3600;
                   dayHourSeconds2 = _tm - secs;
@@ -955,8 +959,10 @@ void CBarChart::DrawMProfile(int dataStartIndex)
 
          memset(rescaledMProfile, 0, rangeHeight * sizeof(double));
 
-         double mostSignificantPricePart = int((openPrices[dataStartIndex] * _DigitsMultiplier) / 100000) * POWER_OF_10[5 - _Digits];
-         double vvv = NormalizeDouble((mProfileStartIndex * _Point) + mostSignificantPricePart, _Digits);
+         double mostSignificantPricePart = int((openPrices[dataStartIndex] * price_multiplier) / 100000) * POWER_OF_10[5 - symbol_digits];
+
+         NormalizationArgs args = {mProfileStartIndex * symbol_point_size + mostSignificantPricePart, symbol_digits};
+         double vvv = NormalizeDouble(args);
 
          vvv -= vvvOffst;
          int yInd = (int)(m_y_0 - (vvv * m_scale_y) + 0.5);
@@ -969,7 +975,7 @@ void CBarChart::DrawMProfile(int dataStartIndex)
 
          for (int i = mProfileStartIndex + 1; i < mProfileSize + mProfileStartIndex; i++)
          {
-            vvv = i * _Point + mostSignificantPricePart;
+            vvv = i * symbol_point_size + mostSignificantPricePart;
             vvv -= vvvOffst;
             yInd = (int)(m_y_0 - (vvv * m_scale_y) + 0.5);
 
@@ -1019,8 +1025,8 @@ void CBarChart::DrawMProfile(int dataStartIndex)
          }
          else
          {
-            double mostSignificantPricePart = int((openPrices[dataStartIndex] * _DigitsMultiplier) / 100000) * POWER_OF_10[5 - _Digits];
-            double vvv = (mProfileStartIndex * _Point) + mostSignificantPricePart;
+            double mostSignificantPricePart = int((openPrices[dataStartIndex] * price_multiplier) / 100000) * POWER_OF_10[5 - symbol_digits];
+            double vvv = (mProfileStartIndex * symbol_point_size) + mostSignificantPricePart;
 
             vvv -= vvvOffst;
             int yyy2 = (int)(m_y_0 - (vvv * m_scale_y) + 0.5);
@@ -1036,7 +1042,7 @@ void CBarChart::DrawMProfile(int dataStartIndex)
             for (int i = mProfileStartIndex + 1; i < mProfileSize + mProfileStartIndex; i++)
             {
                int yyy1 = yyy2;
-               vvv = i * _Point + mostSignificantPricePart;
+               vvv = i * symbol_point_size + mostSignificantPricePart;
                vvv -= vvvOffst;
 
                yyy2 = (int)(m_y_0 - (vvv * m_scale_y) + 0.5);

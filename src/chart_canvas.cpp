@@ -199,8 +199,6 @@ void ChartCanvas::DrawScales()
 }
 void ChartCanvas::CalcScales()
 {
-   int width = m_data_area.right - m_data_area.left;
-   int height = m_data_area.bottom - m_data_area.top;
    //--- limits
    m_y_max = m_data_area.top + DrawScaleTop(false);
    m_y_min = m_data_area.bottom - DrawScaleBottom(false);

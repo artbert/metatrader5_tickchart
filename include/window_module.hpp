@@ -31,7 +31,6 @@ bool LoadDataFile();
 
 LRESULT OldTickChartProc, OldBarChartProc, OldEditControlProc;
 CTickChartModule chartModule;
-int _RandomSeed = 11111;
 
 HMENU hideShowHMenu, mainMenu;
 HWND tickChartHWnd = nullptr, barChartHWnd = nullptr, mainWindowHandle = nullptr;
@@ -912,7 +911,7 @@ LRESULT CALLBACK TickChartWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM
    }
    break;
    case WM_PAINT:
-      hdc = BeginPaint(hWnd, &ps);
+      BeginPaint(hWnd, &ps);
       chartModule.RefreshTickChartWindow((int)ps.rcPaint.left, (int)ps.rcPaint.top, (int)(ps.rcPaint.right - ps.rcPaint.left), (int)(ps.rcPaint.bottom - ps.rcPaint.top), (int)(ps.rcPaint.left), (int)(ps.rcPaint.top));
 
       EndPaint(hWnd, &ps);
@@ -960,7 +959,7 @@ LRESULT CALLBACK BarChartWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
       }
       break;
    case WM_PAINT:
-      hdc = BeginPaint(hWnd, &ps);
+      BeginPaint(hWnd, &ps);
       chartModule.RefreshBarChartWindow((int)ps.rcPaint.left, (int)ps.rcPaint.top, (int)(ps.rcPaint.right - ps.rcPaint.left), (int)(ps.rcPaint.bottom - ps.rcPaint.top), (int)(ps.rcPaint.left), (int)(ps.rcPaint.top));
       EndPaint(hWnd, &ps);
       break;
@@ -983,7 +982,7 @@ LRESULT CALLBACK EditControlProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
          {
             if (newValue > 0)
             {
-               appSets.tickOffsetValue = newValue;
+               appSets.tickOffsetValue = (int)newValue;
                SetDlgItemInt(toolBarHWnd, IDC_STEP_SIZE_EDT, newValue, 0);
             }
          }

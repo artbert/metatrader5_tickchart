@@ -7,9 +7,9 @@ using std::string;
 class CBarChart : public ChartCanvas
 {
 private:
-   double _Point{};
-   double _DigitsMultiplier{};
-   int _Digits{};
+   double symbol_point_size{};
+   double price_multiplier{};
+   uint symbol_digits{};
 
    bool DarkMode;
    int interval;
@@ -87,7 +87,7 @@ public:
    CBarChart();
    ~CBarChart();
 
-   virtual bool Create(HWND hWnd, int width, int height, double pointValue, int digits);
+   virtual bool Create(HWND hWnd, int width, int height, double pointValue, uint digits);
    void UpdateChart(bool vScaleParChanged = false);
    void RefreshWindow(int nXDest, int nYDest, int nWidth, int nHeight, int nXSrc, int nYSrc);
    void RefreshWindow();
@@ -113,7 +113,7 @@ public:
       case 30:
          interval_idx = 3;
          break;
-      case 60:
+      default:
          interval_idx = 4;
       }
       if (update)

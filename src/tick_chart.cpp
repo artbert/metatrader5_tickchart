@@ -97,7 +97,7 @@ CTickChart::~CTickChart()
    delete[] rescaledMProfileBid;
 }
 
-bool CTickChart::Create(HWND hWnd, const int width, const int height, double pointValue, int digits)
+bool CTickChart::Create(HWND hWnd, const int width, const int height, double pointValue, uint digits)
 {
    if (!ChartCanvas::Create(hWnd, width, height))
    {
@@ -113,9 +113,9 @@ bool CTickChart::Create(HWND hWnd, const int width, const int height, double poi
    memset(erase_bkg_hor, 0, m_height * 4);
    memset(erase_bkg_ver, 0, m_width * 4);
 
-   _Digits = digits;
-   _Point = pointValue;
-   _DigitsMultiplier = POWER_OF_10[digits];
+   symbol_digits = digits;
+   symbol_point_size = pointValue;
+   price_multiplier = POWER_OF_10[digits];
 
    return (true);
 }
@@ -373,8 +373,8 @@ void CTickChart::AppendPricesTimeAndParameters(const double askPrice, const doub
 
 void CTickChart::UpdateMarketProfile(const double askPrice, const double bidPrice)
 {
-   int bidInd = (int)((bidPrice * _DigitsMultiplier) + 0.5) % 100000;
-   int askInd = (int)((askPrice * _DigitsMultiplier) + 0.5) % 100000;
+   int bidInd = (int)((bidPrice * price_multiplier) + 0.5) % 100000;
+   int askInd = (int)((askPrice * price_multiplier) + 0.5) % 100000;
 
    mProfileDataBid[bidInd]++;
    mProfileDataAsk[askInd]++;
@@ -382,8 +382,8 @@ void CTickChart::UpdateMarketProfile(const double askPrice, const double bidPric
 
 void CTickChart::MoveMarketProfileRange(const double lowRange, const double highRange)
 {
-   mProfileStartIndex = ((int)((lowRange * _DigitsMultiplier) + 0.5) % 100000);
-   int endInd = ((int)((highRange * _DigitsMultiplier) + 0.5) % 100000);
+   mProfileStartIndex = ((int)((lowRange * price_multiplier) + 0.5) % 100000);
+   int endInd = ((int)((highRange * price_multiplier) + 0.5) % 100000);
 
    mProfileSize = endInd - mProfileStartIndex;
    if (mProfileSize > 1)
@@ -547,7 +547,7 @@ void CTickChart::DrawData(const uint index)
    uint extremumCount = _extremumCount;
    int extremumStartIndex = seriesPointer - extremumCount + 1;
 
-   if (static_cast<int>((mProfileDataAskVis) | static_cast<int>(mProfileDataBidVis) != 0))
+   if ((static_cast<int>((mProfileDataAskVis) | static_cast<int>(mProfileDataBidVis)) != 0))
    {
       DrawMProfile(extremumStartIndex);
    }
@@ -561,7 +561,7 @@ void CTickChart::DrawData(const uint index)
    int calEvStartInd = -1;
    int calEvEndInd = -1;
 
-   if (static_cast<int>((isCalendarEvents) & static_cast<int>(showCalendarEvents) != 0))
+   if ((static_cast<int>((isCalendarEvents) & static_cast<int>(showCalendarEvents)) != 0))
    {
       int firstValidRateIndex = i;
       while (times[firstValidRateIndex] == 0)
@@ -782,7 +782,7 @@ void CTickChart::DrawData(const uint index)
          maxPixelRealPrice = std::max(maxPixelRealPrice, y2_bid);
       }
 
-      if (static_cast<int>((isCalendarEvents) & static_cast<int>(showCalendarEvents) != 0))
+      if ((static_cast<int>((isCalendarEvents) & static_cast<int>(showCalendarEvents)) != 0))
       {
          if (((calEvStartInd & 0x80000000) | (calEvEndInd & 0x80000000)) == 0)
          {
@@ -863,7 +863,7 @@ void CTickChart::DrawData(const uint index)
             {
                if (times[i] >= transactionsTab[transactionPStartInd][0])
                {
-                  double pointPrice = transactionsTab[transactionPStartInd][2] * _Point;
+                  double pointPrice = transactionsTab[transactionPStartInd][2] * symbol_point_size;
 
                   pointPrice -= y_scale_shift;
 
@@ -1474,7 +1474,7 @@ void CTickChart::DrawMProfile(int dataStartIndex)
    {
       bool showAsk = mProfileDataAskVis && (chartVisibility[0] == 1);
       bool showBid = mProfileDataBidVis && (chartVisibility[1] == 1);
-      if (static_cast<int>((showAsk) | static_cast<int>(showBid) != 0))
+      if ((static_cast<int>((showAsk) | static_cast<int>(showBid)) != 0))
       {
          int rangeHeight = m_y_min + 1;
          ulong dyRaw = (((long)m_y_min - (long)m_y_max) * mProfileSizeFactor) >> 31;
@@ -1502,8 +1502,10 @@ void CTickChart::DrawMProfile(int dataStartIndex)
             memset(rescaledMProfileAsk, 0, rangeHeight * sizeof(double));
             memset(rescaledMProfileBid, 0, rangeHeight * sizeof(double));
 
-            double mostSignificantPricePart = int((bidPrices[dataStartIndex] * _DigitsMultiplier) / 100000) * POWER_OF_10[5 - _Digits];
-            double vvv = NormalizeDouble((mProfileStartIndex * _Point) + mostSignificantPricePart, _Digits);
+            double mostSignificantPricePart = int((bidPrices[dataStartIndex] * price_multiplier) / 100000) * POWER_OF_10[5 - symbol_digits];
+
+            NormalizationArgs args = {mProfileStartIndex * symbol_point_size + mostSignificantPricePart, symbol_digits};
+            double vvv = NormalizeDouble(args);
 
             vvv -= vvvOffst;
 
@@ -1524,7 +1526,7 @@ void CTickChart::DrawMProfile(int dataStartIndex)
 
             for (int i = mProfileStartIndex + 1; i < mProfileSize + mProfileStartIndex; i++)
             {
-               vvv = i * _Point + mostSignificantPricePart;
+               vvv = i * symbol_point_size + mostSignificantPricePart;
                vvv -= vvvOffst;
                yInd = (int)(m_y_0 - (vvv * m_scale_y) + 0.5);
 
@@ -1607,8 +1609,8 @@ void CTickChart::DrawMProfile(int dataStartIndex)
             }
             else
             {
-               double mostSignificantPricePart = int((bidPrices[dataStartIndex] * _DigitsMultiplier) / 100000) * POWER_OF_10[5 - _Digits];
-               double vvv = (mProfileStartIndex * _Point) + mostSignificantPricePart;
+               double mostSignificantPricePart = int((bidPrices[dataStartIndex] * price_multiplier) / 100000) * POWER_OF_10[5 - symbol_digits];
+               double vvv = (mProfileStartIndex * symbol_point_size) + mostSignificantPricePart;
 
                vvv -= vvvOffst;
                int yyy2 = (int)(m_y_0 - (vvv * m_scale_y) + 0.5);
@@ -1629,8 +1631,8 @@ void CTickChart::DrawMProfile(int dataStartIndex)
                for (int i = mProfileStartIndex + 1; i < mProfileSize + mProfileStartIndex; i++)
                {
                   int yyy1 = yyy2;
-                  vvv = 0;
-                  vvv = i * _Point + mostSignificantPricePart;
+
+                  vvv = i * symbol_point_size + mostSignificantPricePart;
                   vvv -= m_v_scale_min;
                   yyy2 = (int)(m_y_0 - (vvv * m_scale_y) + 0.5);
 

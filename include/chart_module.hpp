@@ -10,51 +10,42 @@ private:
   TCHMODSET *appSets{};
   HWND hWnd{};
   HWND rootWnd;
-  bool readyToUse;
-
   HWND tChHWnd, bChHWnd;
   HWND TerminalParentChartHWnd;
 
   HPEN m_simplePen{}, old_pen{};
   __int64 *timesTabInMs;
   double *bidsTab, *asksTab;
-  int dataSize;
-
-  CTickChart tickChart1;
-  CBarChart barChart1;
-  bool isCalendarDataRead;
-  int seriesIndex, chartSearchIndex;
   double upRangeLineValue, downRangeLineValue;
-  int barChartTickSizeCounter;
-
   double barChartHigh{};
   double barChartLow{};
+  int *realTempoValsTab;
+  double PipsDividerMultiplier;
+  double symbol_point_size;
+  double price_multiplier;
+  __int64 TimeSepVLine;
+  ULONG_PTR m_gdiplusToken;
+  CTickChart tick_chart;
+  CBarChart bar_chart;
+  int dataSize;
+  int seriesIndex, chartSearchIndex;
+  int barChartTickSizeCounter;
   int milisecondTimerInterval;
-  bool isTimerOn;
-  bool pointerLabelVisible{};
   int doubleSignificantPlaces{};
-
   int collectedDataSize{};
   int noOfSecondsForCalc;
-
-  int *realTempoValsTab;
-
   int PipsDivider;
-  double PipsDividerMultiplier;
+  uint symbol_digits;
+  bool readyToUse;
+  bool isCalendarDataRead;
+  bool isTimerOn;
+  bool pointerLabelVisible{};
   bool DarkMode;
-  double _Point;
-  int _Digits;
-  double _DigitsMultiplier;
-
   bool ExpandDateRange;
-  __int64 TimeSepVLine;
   bool ExcludePremarketData;
   bool EnableSpeedStats;
-
-  char TOOLTIPLABELCONTENT[1000]{};
-
   MqlTick last_tick{};
-  ULONG_PTR m_gdiplusToken;
+  char TOOLTIPLABELCONTENT[1000]{};
 
 public:
   CTickChartModule();

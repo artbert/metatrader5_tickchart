@@ -3,7 +3,7 @@
 #include <ctime>
 #include <utility>
 
-CTickChartModule::CTickChartModule() : rootWnd(nullptr), tChHWnd(nullptr), bChHWnd(nullptr), TerminalParentChartHWnd(nullptr), readyToUse(false), timesTabInMs(nullptr), bidsTab(nullptr), asksTab(nullptr), realTempoValsTab(nullptr), dataSize(0), isCalendarDataRead(false), seriesIndex(-1), chartSearchIndex(-1), upRangeLineValue(0), downRangeLineValue(0), barChartTickSizeCounter(0), milisecondTimerInterval(1000), isTimerOn(false), noOfSecondsForCalc(7), PipsDivider(10), PipsDividerMultiplier(0.1), DarkMode(true), _Point(0.00001), _DigitsMultiplier(POWER_OF_10[5]), _Digits(5), ExpandDateRange(true), ExcludePremarketData(true), EnableSpeedStats(false), TimeSepVLine(0), m_gdiplusToken(0)
+CTickChartModule::CTickChartModule() : rootWnd(nullptr), tChHWnd(nullptr), bChHWnd(nullptr), TerminalParentChartHWnd(nullptr), readyToUse(false), timesTabInMs(nullptr), bidsTab(nullptr), asksTab(nullptr), realTempoValsTab(nullptr), dataSize(0), isCalendarDataRead(false), seriesIndex(-1), chartSearchIndex(-1), upRangeLineValue(0), downRangeLineValue(0), barChartTickSizeCounter(0), milisecondTimerInterval(1000), isTimerOn(false), noOfSecondsForCalc(7), PipsDivider(10), PipsDividerMultiplier(0.1), DarkMode(true), symbol_point_size(0.00001), price_multiplier(POWER_OF_10[5]), symbol_digits(5), ExpandDateRange(true), ExcludePremarketData(true), EnableSpeedStats(false), TimeSepVLine(0), m_gdiplusToken(0)
 {
 }
 
@@ -15,8 +15,8 @@ CTickChartModule::~CTickChartModule()
    delete[] realTempoValsTab;
    DeleteObject(m_simplePen);
 
-   tickChart1.Destroy();
-   barChart1.Destroy();
+   tick_chart.Destroy();
+   bar_chart.Destroy();
 }
 
 bool CTickChartModule::Initialize(HWND terminalParent, HWND rootWindow, HWND tickChartHWnd, HWND barChartHWnd, HWND toolBoxHWnd)
@@ -39,9 +39,12 @@ bool CTickChartModule::Initialize(HWND terminalParent, HWND rootWindow, HWND tic
       bidsTab[i] = last_tick.bid;
       asksTab[i] = last_tick.ask;
    }
-   double midPrice = NormalizeDouble((last_tick.bid + last_tick.ask) / 2.0, _Digits);
-   upRangeLineValue = NormalizeDouble(midPrice + (100 * _Point), _Digits);
-   downRangeLineValue = NormalizeDouble(midPrice - (100 * _Point), _Digits);
+   NormalizationArgs args = {(last_tick.bid + last_tick.ask) / 2.0, symbol_digits};
+   double midPrice = NormalizeDouble(args);
+   args.value = midPrice + (100 * symbol_point_size);
+   upRangeLineValue = NormalizeDouble(args);
+   args.value = midPrice - (100 * symbol_point_size);
+   downRangeLineValue = NormalizeDouble(args);
 
    TerminalParentChartHWnd = terminalParent;
    rootWnd = rootWindow;
@@ -51,22 +54,22 @@ bool CTickChartModule::Initialize(HWND terminalParent, HWND rootWindow, HWND tic
 
    PipsDivider = 10;
    PipsDividerMultiplier = 0.1;
-   tickChart1.Create(tickChartHWnd, 1100, 428, _Point, _Digits);
-   barChart1.Create(barChartHWnd, 1100, 300, _Point, _Digits);
+   tick_chart.Create(tickChartHWnd, 1100, 428, symbol_point_size, symbol_digits);
+   bar_chart.Create(barChartHWnd, 1100, 300, symbol_point_size, symbol_digits);
 
-   tickChart1.ShowScaleTop(false, false);
-   tickChart1.ShowScaleRight(false, false);
-   tickChart1.ShowScaleLeft(true, false);
-   tickChart1.ShowScaleBottom(false, false);
-   tickChart1.ShowLegend(false, false);
-   tickChart1.ShowGrid(true, false);
-   tickChart1.SetScaleDigits(_Digits);
-   tickChart1.ShowDescriptors(false, false);
-   tickChart1.SetPipsDivider(PipsDivider);
+   tick_chart.ShowScaleTop(false, false);
+   tick_chart.ShowScaleRight(false, false);
+   tick_chart.ShowScaleLeft(true, false);
+   tick_chart.ShowScaleBottom(false, false);
+   tick_chart.ShowLegend(false, false);
+   tick_chart.ShowGrid(true, false);
+   tick_chart.SetScaleDigits(symbol_digits);
+   tick_chart.ShowDescriptors(false, false);
+   tick_chart.SetPipsDivider(PipsDivider);
    doubleSignificantPlaces = (int)log10((double)PipsDivider);
 
    char charBuffer[50];
-   sprintf_s(charBuffer, "%.*f", doubleSignificantPlaces, (abs(upRangeLineValue - downRangeLineValue) * _DigitsMultiplier) * PipsDividerMultiplier);
+   sprintf_s(charBuffer, "%.*f", doubleSignificantPlaces, (abs(upRangeLineValue - downRangeLineValue) * price_multiplier) * PipsDividerMultiplier);
 
    size_t len = strlen(charBuffer);
 
@@ -79,74 +82,74 @@ bool CTickChartModule::Initialize(HWND terminalParent, HWND rootWindow, HWND tic
 
    SetDlgItemTextA(hWnd, IDC_INFOLABEL, charBuffer);
 
-   tickChart1.VScaleParams(upRangeLineValue, downRangeLineValue, 10, false);
-   tickChart1.MoveMarketProfileRange(downRangeLineValue, upRangeLineValue);
+   tick_chart.VScaleParams(upRangeLineValue, downRangeLineValue, 10, false);
+   tick_chart.MoveMarketProfileRange(downRangeLineValue, upRangeLineValue);
 
    if (DarkMode)
    {
-      tickChart1.ColorBackground(XRGB_gdi(0x00, 0x00, 0x00), false);
-      tickChart1.ColorBorder(XRGB_gdi(0xFF, 0xFF, 0xFF) - tickChart1.ColorBorder(), false);
-      tickChart1.ColorText(XRGB_gdi(0xFF, 0xFF, 0xFF) - tickChart1.ColorText(), false);
-      tickChart1.ColorGrid(XRGB_gdi(0xFF, 0xFF, 0xFF) - tickChart1.ColorGrid(), false);
-      tickChart1.TextColorSet(tickChart1.ColorText());
+      tick_chart.ColorBackground(XRGB_gdi(0x00, 0x00, 0x00), false);
+      tick_chart.ColorBorder(XRGB_gdi(0xFF, 0xFF, 0xFF) - tick_chart.ColorBorder(), false);
+      tick_chart.ColorText(XRGB_gdi(0xFF, 0xFF, 0xFF) - tick_chart.ColorText(), false);
+      tick_chart.ColorGrid(XRGB_gdi(0xFF, 0xFF, 0xFF) - tick_chart.ColorGrid(), false);
+      tick_chart.TextColorSet(tick_chart.ColorText());
    }
 
-   barChart1.ShowScaleTop(false, false);
-   barChart1.ShowScaleRight(false, false);
-   barChart1.ShowScaleLeft(true, false);
-   barChart1.ShowScaleBottom(false, false);
-   barChart1.ShowLegend(false, false);
-   barChart1.ShowGrid(true, false);
-   barChart1.SetScaleDigits(_Digits);
-   barChart1.ShowDescriptors(false, false);
-   barChart1.SetPipsDivider(PipsDivider);
+   bar_chart.ShowScaleTop(false, false);
+   bar_chart.ShowScaleRight(false, false);
+   bar_chart.ShowScaleLeft(true, false);
+   bar_chart.ShowScaleBottom(false, false);
+   bar_chart.ShowLegend(false, false);
+   bar_chart.ShowGrid(true, false);
+   bar_chart.SetScaleDigits(symbol_digits);
+   bar_chart.ShowDescriptors(false, false);
+   bar_chart.SetPipsDivider(PipsDivider);
 
    if (DarkMode)
    {
-      barChart1.ColorBackground(XRGB_gdi(0x00, 0x00, 0x00), false);
-      barChart1.ColorBorder(XRGB_gdi(0xFF, 0xFF, 0xFF) - barChart1.ColorBorder(), false);
-      barChart1.ColorText(XRGB_gdi(0xFF, 0xFF, 0xFF) - barChart1.ColorText(), false);
-      barChart1.ColorGrid(XRGB_gdi(0xFF, 0xFF, 0xFF) - barChart1.ColorGrid(), false);
+      bar_chart.ColorBackground(XRGB_gdi(0x00, 0x00, 0x00), false);
+      bar_chart.ColorBorder(XRGB_gdi(0xFF, 0xFF, 0xFF) - bar_chart.ColorBorder(), false);
+      bar_chart.ColorText(XRGB_gdi(0xFF, 0xFF, 0xFF) - bar_chart.ColorText(), false);
+      bar_chart.ColorGrid(XRGB_gdi(0xFF, 0xFF, 0xFF) - bar_chart.ColorGrid(), false);
    }
 
-   tickChart1.CreatePixelFontSet(tickChart1.ColorBackground());
-   barChart1.CreatePixelFontSet(barChart1.ColorBackground());
+   tick_chart.CreatePixelFontSet(tick_chart.ColorBackground());
+   bar_chart.CreatePixelFontSet(bar_chart.ColorBackground());
 
-   m_simplePen = CreatePen(0, 1, tickChart1.ColorText());
+   m_simplePen = CreatePen(0, 1, tick_chart.ColorText());
 
-   tickChart1.ChartVisibility(0, (int)(*appSets).askLineVis, false);
-   tickChart1.ChartVisibility(1, (int)(*appSets).bidLineVis, false);
-   tickChart1.ShowCumulativeDataBid((*appSets).cumulativeBidVis, false);
-   tickChart1.ShowCumulativeDataAsk((*appSets).cumulativeAskVis, false);
+   tick_chart.ChartVisibility(0, (int)(*appSets).askLineVis, false);
+   tick_chart.ChartVisibility(1, (int)(*appSets).bidLineVis, false);
+   tick_chart.ShowCumulativeDataBid((*appSets).cumulativeBidVis, false);
+   tick_chart.ShowCumulativeDataAsk((*appSets).cumulativeAskVis, false);
 
-   if (_Digits <= 5)
+   if (symbol_digits <= 5)
    {
-      tickChart1.ShowMProfileDataAsk((*appSets).mProfileAskVis, false);
-      tickChart1.ShowMProfileDataBid((*appSets).mProfileBidVis, false);
-      barChart1.ShowMProfileData((*appSets).mProfileAskVis || (*appSets).mProfileBidVis, false);
+      tick_chart.ShowMProfileDataAsk((*appSets).mProfileAskVis, false);
+      tick_chart.ShowMProfileDataBid((*appSets).mProfileBidVis, false);
+      bar_chart.ShowMProfileData((*appSets).mProfileAskVis || (*appSets).mProfileBidVis, false);
    }
 
-   tickChart1.SetInterval((*appSets).tickChartTimeSep, false);
-   barChart1.SetInterval((*appSets).barChartTimeSep, false);
+   tick_chart.SetInterval((*appSets).tickChartTimeSep, false);
+   bar_chart.SetInterval((*appSets).barChartTimeSep, false);
 
-   barChart1.SetBarChartBarWidth((*appSets).barChartCandleWidth, false);
+   bar_chart.SetBarChartBarWidth((*appSets).barChartCandleWidth, false);
 
-   tickChart1.ShowTimeParameter((*appSets).timeParamVis, false);
-   barChart1.ShowTimeParameter((*appSets).timeParamVis, false);
-   tickChart1.ShowMainPlot((*appSets).tickChartVis, false);
-   barChart1.ShowMainPlot((*appSets).barChartVis, false);
+   tick_chart.ShowTimeParameter((*appSets).timeParamVis, false);
+   bar_chart.ShowTimeParameter((*appSets).timeParamVis, false);
+   tick_chart.ShowMainPlot((*appSets).tickChartVis, false);
+   bar_chart.ShowMainPlot((*appSets).barChartVis, false);
 
-   tickChart1.ShowSignedLevels((*appSets).signedLevelsVis, false);
-   barChart1.ShowSignedLevels((*appSets).signedLevelsVis, false);
-   tickChart1.SetTickSampleWidth((*appSets).tickChartZoom, false);
-   tickChart1.ColorTimeParameter((*appSets).colorTimeParam, false);
-   barChart1.ColorTimeParameter((*appSets).colorTimeParam, false);
-   tickChart1.ShowCalendarEvents((*appSets).eventsOnTickChartVis, false);
-   barChart1.ShowCalendarEvents((*appSets).eventsOnBarChartVis, false);
-   barChart1.SetBarChartTickSize((*appSets).barChartTickSize, false);
+   tick_chart.ShowSignedLevels((*appSets).signedLevelsVis, false);
+   bar_chart.ShowSignedLevels((*appSets).signedLevelsVis, false);
+   tick_chart.SetTickSampleWidth((*appSets).tickChartZoom, false);
+   tick_chart.ColorTimeParameter((*appSets).colorTimeParam, false);
+   bar_chart.ColorTimeParameter((*appSets).colorTimeParam, false);
+   tick_chart.ShowCalendarEvents((*appSets).eventsOnTickChartVis, false);
+   bar_chart.ShowCalendarEvents((*appSets).eventsOnBarChartVis, false);
+   bar_chart.SetBarChartTickSize((*appSets).barChartTickSize, false);
 
-   tickChart1.FillSeries(last_tick.ask, last_tick.bid, 0, 0, 0, 0);
-   barChart1.FillSeries(last_tick.bid, last_tick.bid, last_tick.bid, last_tick.bid, 0, 0, false);
+   tick_chart.FillSeries(last_tick.ask, last_tick.bid, 0, 0, 0, 0);
+   bar_chart.FillSeries(last_tick.bid, last_tick.bid, last_tick.bid, last_tick.bid, 0, 0, false);
 
    UpdateVisLevels(false);
    UpdateBiggerBarsData(false);
@@ -212,8 +215,8 @@ void CTickChartModule::ModuleDestroy()
    PipsDivider = 10;
    PipsDividerMultiplier = 0.1;
    DarkMode = true;
-   _Point = 0.00001;
-   _Digits = 5;
+   symbol_point_size = 0.00001;
+   symbol_digits = 5;
 
    ExpandDateRange = true;
    ExcludePremarketData = true;
@@ -221,8 +224,8 @@ void CTickChartModule::ModuleDestroy()
 
    TimeSepVLine = 0;
 
-   tickChart1.Destroy();
-   barChart1.Destroy();
+   tick_chart.Destroy();
+   bar_chart.Destroy();
    DeleteObject(m_simplePen);
    m_simplePen = nullptr;
 
@@ -277,8 +280,8 @@ void CTickChartModule::StepForwardBtnClicked()
 
       if (chartSearchIndex == -1)
       {
-         tickChart1.FillSeries(asksTab[0], bidsTab[0], 0, 0, 0, 0);
-         barChart1.FillSeries(bidsTab[0], bidsTab[0], bidsTab[0], bidsTab[0], 0, 0, false);
+         tick_chart.FillSeries(asksTab[0], bidsTab[0], 0, 0, 0, 0);
+         bar_chart.FillSeries(bidsTab[0], bidsTab[0], bidsTab[0], bidsTab[0], 0, 0, false);
          barChartTickSizeCounter = 0;
          barChartHigh = DBL_MAX * -1.0;
          barChartLow = DBL_MAX;
@@ -287,11 +290,6 @@ void CTickChartModule::StepForwardBtnClicked()
 
       int tickCounter = 0;
       int i = chartSearchIndex + 1;
-      int lastEndIndex = -1;
-      if (chartSearchIndex > -1)
-      {
-         lastEndIndex = chartSearchIndex;
-      }
 
       bool updateBarChart = false;
       uint parameter = 0;
@@ -336,17 +334,18 @@ void CTickChartModule::StepForwardBtnClicked()
             {
                for (int j = i - 1; j > 0; j--)
                {
-                  wholeRoad += abs(bidsTab[j] - bidsTab[j - 1]) * _DigitsMultiplier;
+                  wholeRoad += abs(bidsTab[j] - bidsTab[j - 1]) * price_multiplier;
                   if ((long)((timesTabInMs[i - 1] - timesTabInMs[j]) / 1000) >= noOfSecondsForCalc)
                   {
-                     priceDistance = (short)NormalizeDouble((bidsTab[i - 1] - bidsTab[j]) * _DigitsMultiplier, 0);
+                     NormalizationArgs args = {(bidsTab[i - 1] - bidsTab[j]) * price_multiplier, 0};
+                     priceDistance = (short)NormalizeDouble(args);
                      ticksElapsed = short(i - 1 - j);
                      break;
                   }
                }
             }
          }
-         tickChart1.AppendPricesTimeAndParameters(asksTab[i], bidsTab[i], timesTabInMs[i] / 1000, parameter, askChange, bidChange, (short)wholeRoad, priceDistance, ticksElapsed);
+         tick_chart.AppendPricesTimeAndParameters(asksTab[i], bidsTab[i], timesTabInMs[i] / 1000, parameter, askChange, bidChange, (short)wholeRoad, priceDistance, ticksElapsed);
 
          barChartHigh = std::max(barChartHigh, bidsTab[i]);
 
@@ -356,7 +355,7 @@ void CTickChartModule::StepForwardBtnClicked()
          {
             ulong parameter = timesTabInMs[i] - timesTabInMs[i - (*appSets).barChartTickSize + 1];
 
-            barChart1.AppendPricesTimeAndParameters(bidsTab[i - (*appSets).barChartTickSize + 1], bidsTab[i], barChartHigh, barChartLow, timesTabInMs[i - (*appSets).barChartTickSize + 1] / 1000, parameter);
+            bar_chart.AppendPricesTimeAndParameters(bidsTab[i - (*appSets).barChartTickSize + 1], bidsTab[i], barChartHigh, barChartLow, timesTabInMs[i - (*appSets).barChartTickSize + 1] / 1000, parameter);
 
             barChartHigh = DBL_MAX * -1.0;
             barChartLow = DBL_MAX;
@@ -366,8 +365,8 @@ void CTickChartModule::StepForwardBtnClicked()
 
          tickCounter++;
 
-         tickChart1.UpdateMarketProfile(asksTab[i], bidsTab[i]);
-         barChart1.UpdateMarketProfile(asksTab[i], bidsTab[i]);
+         tick_chart.UpdateMarketProfile(asksTab[i], bidsTab[i]);
+         bar_chart.UpdateMarketProfile(asksTab[i], bidsTab[i]);
       }
 
       if ((*appSets).autoMovingRange && i > 0)
@@ -376,25 +375,28 @@ void CTickChartModule::StepForwardBtnClicked()
          // instead of abs() for double
          (*reinterpret_cast<unsigned long long *>(&halfDistance)) &= 0xffffffffffffffff >> 1;
          double meanPrice = (bidsTab[i - 1] + asksTab[i - 1]) / 2.0;
-         double newHPrice = NormalizeDouble(meanPrice + halfDistance, _Digits);
-         double newLPrice = NormalizeDouble(meanPrice - halfDistance, _Digits);
+
+         NormalizationArgs args = {meanPrice + halfDistance, symbol_digits};
+         double newHPrice = NormalizeDouble(args);
+         args.value = meanPrice - halfDistance;
+         double newLPrice = NormalizeDouble(args);
          upRangeLineValue = newHPrice;
          downRangeLineValue = newLPrice;
-         tickChart1.VScaleParams(newHPrice, newLPrice, 10, false);
-         tickChart1.MoveMarketProfileRange(newLPrice, newHPrice);
+         tick_chart.VScaleParams(newHPrice, newLPrice, 10, false);
+         tick_chart.MoveMarketProfileRange(newLPrice, newHPrice);
          PostMessage(TerminalParentChartHWnd, WM_LBUTTONUP, 0, -SET_RANGE);
       }
 
-      tickChart1.UpdateChart();
+      tick_chart.UpdateChart();
 
-      barChart1.SetActualBidPrice(bidsTab[chartSearchIndex], barChartHigh, barChartLow);
+      bar_chart.SetActualBidPrice(bidsTab[chartSearchIndex], barChartHigh, barChartLow);
       if (updateBarChart)
       {
-         barChart1.UpdateChart();
+         bar_chart.UpdateChart();
       }
       else
       {
-         barChart1.UpdateCurrentPriceLevel();
+         bar_chart.UpdateCurrentPriceLevel();
       }
 
       time_t _time = timesTabInMs[chartSearchIndex] / 1000;
@@ -434,24 +436,18 @@ void CTickChartModule::StepBackwardBtnClicked(bool rewind, bool forceVScaleUpdat
 
       upLimit = std::max(upLimit, 1);
 
-      tickChart1.FillSeries(asksTab[0], bidsTab[0], 0, 0, 0, 0);
-      barChart1.FillSeries(bidsTab[0], bidsTab[0], bidsTab[0], bidsTab[0], 0, 0, false);
+      tick_chart.FillSeries(asksTab[0], bidsTab[0], 0, 0, 0, 0);
+      bar_chart.FillSeries(bidsTab[0], bidsTab[0], bidsTab[0], bidsTab[0], 0, 0, false);
 
       double price1 = upRangeLineValue;
       double price2 = downRangeLineValue;
-      tickChart1.VScaleParams(price1, price2, 10, false);
-      tickChart1.MoveMarketProfileRange(price2, price1);
+      tick_chart.VScaleParams(price1, price2, 10, false);
+      tick_chart.MoveMarketProfileRange(price2, price1);
 
       barChartHigh = DBL_MAX * -1.0;
       barChartLow = DBL_MAX;
       barChartTickSizeCounter = 0;
       chartSearchIndex = -1;
-
-      int lastEndIndex = -1;
-      if (chartSearchIndex > -1)
-      {
-         lastEndIndex = chartSearchIndex;
-      }
 
       int i = 0;
       uint parameter = 0;
@@ -496,14 +492,15 @@ void CTickChartModule::StepBackwardBtnClicked(bool rewind, bool forceVScaleUpdat
                   wholeRoad += abs(bidsTab[j] - bidsTab[j - 1]);
                   if ((long)((timesTabInMs[i - 1] - timesTabInMs[j]) / 1000) >= noOfSecondsForCalc)
                   {
-                     priceDistance = (short)NormalizeDouble((bidsTab[i - 1] - bidsTab[j]) * _DigitsMultiplier, 0);
+                     NormalizationArgs args = {(bidsTab[i - 1] - bidsTab[j]) * price_multiplier, 0};
+                     priceDistance = (short)NormalizeDouble(args);
                      ticksElapsed = short(i - 1 - j);
                      break;
                   }
                }
             }
          }
-         tickChart1.AppendPricesTimeAndParameters(asksTab[i], bidsTab[i], timesTabInMs[i] / 1000, parameter, askChange, bidChange, (short)(wholeRoad * _DigitsMultiplier), priceDistance, ticksElapsed);
+         tick_chart.AppendPricesTimeAndParameters(asksTab[i], bidsTab[i], timesTabInMs[i] / 1000, parameter, askChange, bidChange, (short)(wholeRoad * price_multiplier), priceDistance, ticksElapsed);
 
          barChartHigh = std::max(barChartHigh, bidsTab[i]);
 
@@ -512,15 +509,15 @@ void CTickChartModule::StepBackwardBtnClicked(bool rewind, bool forceVScaleUpdat
          if (barChartTickSizeCounter == (*appSets).barChartTickSize)
          {
             ulong parameter = timesTabInMs[i] - timesTabInMs[i - (*appSets).barChartTickSize + 1];
-            barChart1.AppendPricesTimeAndParameters(bidsTab[i - (*appSets).barChartTickSize + 1], bidsTab[i], barChartHigh, barChartLow, timesTabInMs[i - (*appSets).barChartTickSize + 1] / 1000, parameter);
+            bar_chart.AppendPricesTimeAndParameters(bidsTab[i - (*appSets).barChartTickSize + 1], bidsTab[i], barChartHigh, barChartLow, timesTabInMs[i - (*appSets).barChartTickSize + 1] / 1000, parameter);
 
             barChartHigh = DBL_MAX * -1.0;
             barChartLow = DBL_MAX;
             barChartTickSizeCounter = 0;
          }
 
-         tickChart1.UpdateMarketProfile(asksTab[i], bidsTab[i]);
-         barChart1.UpdateMarketProfile(asksTab[i], bidsTab[i]);
+         tick_chart.UpdateMarketProfile(asksTab[i], bidsTab[i]);
+         bar_chart.UpdateMarketProfile(asksTab[i], bidsTab[i]);
       }
 
       if ((*appSets).autoMovingRange && i > 0)
@@ -529,19 +526,22 @@ void CTickChartModule::StepBackwardBtnClicked(bool rewind, bool forceVScaleUpdat
          double halfDistance = (upRangeLineValue - downRangeLineValue) / 2.0;
          (*reinterpret_cast<unsigned long long *>(&halfDistance)) &= 0xffffffffffffffff >> 1;
          double meanPrice = (bidsTab[i - 1] + asksTab[i - 1]) / 2.0;
-         double newHPrice = NormalizeDouble(meanPrice + halfDistance, _Digits);
-         double newLPrice = NormalizeDouble(meanPrice - halfDistance, _Digits);
+
+         NormalizationArgs args = {meanPrice + halfDistance, symbol_digits};
+         double newHPrice = NormalizeDouble(args);
+         args.value = meanPrice - halfDistance;
+         double newLPrice = NormalizeDouble(args);
          upRangeLineValue = newHPrice;
          downRangeLineValue = newLPrice;
-         tickChart1.VScaleParams(newHPrice, newLPrice, 10, false);
-         tickChart1.MoveMarketProfileRange(newLPrice, newHPrice);
+         tick_chart.VScaleParams(newHPrice, newLPrice, 10, false);
+         tick_chart.MoveMarketProfileRange(newLPrice, newHPrice);
          PostMessage(TerminalParentChartHWnd, WM_LBUTTONUP, 0, -SET_RANGE);
       }
 
-      tickChart1.UpdateChart(forceVScaleUpdate);
+      tick_chart.UpdateChart(forceVScaleUpdate);
 
-      barChart1.SetActualBidPrice(bidsTab[chartSearchIndex], barChartHigh, barChartLow);
-      barChart1.UpdateChart(forceVScaleUpdate);
+      bar_chart.SetActualBidPrice(bidsTab[chartSearchIndex], barChartHigh, barChartLow);
+      bar_chart.UpdateChart(forceVScaleUpdate);
 
       time_t _time = timesTabInMs[chartSearchIndex] / 1000;
       tm timeinfo = {.tm_sec = 0};
@@ -557,13 +557,13 @@ void CTickChartModule::MeasureChBxChanged()
 {
    if ((*appSets).measurementTool)
    {
-      tickChart1.PrepareAlphaBlend(tChHWnd);
-      barChart1.PrepareAlphaBlend(bChHWnd);
+      tick_chart.PrepareAlphaBlend(tChHWnd);
+      bar_chart.PrepareAlphaBlend(bChHWnd);
    }
    else
    {
-      tickChart1.ReleaseAlphaBlend();
-      barChart1.ReleaseAlphaBlend();
+      tick_chart.ReleaseAlphaBlend();
+      bar_chart.ReleaseAlphaBlend();
    }
 }
 void CTickChartModule::TickChartTTipChanged(int posX, int posY, short LBUTTON_state, wchar_t *defaultRootTitle)
@@ -573,11 +573,11 @@ void CTickChartModule::TickChartTTipChanged(int posX, int posY, short LBUTTON_st
       static bool defTitleChanged = false;
       static bool partialToRefresh = false;
       static RECT refreshRect = {0, 0, 0, 0};
-      int startPoint = (int)tickChart1.GetDataAreaStartPoint();
+      int startPoint = (int)tick_chart.GetDataAreaStartPoint();
 
       if ((uint)(posX - startPoint) < 1000 && (uint)(posY - 1) < 426)
       {
-         bool insideArea = false;
+
          int ttipTextPtr = 0;
 
          static time_t mouseDnTime = 0;
@@ -651,21 +651,21 @@ void CTickChartModule::TickChartTTipChanged(int posX, int posY, short LBUTTON_st
             TOOLTIPLABELCONTENT[12] = ';';
             TOOLTIPLABELCONTENT[13] = ' ';
 
-            ttipTextPtr = 14 + sprintf_s(&TOOLTIPLABELCONTENT[14], 100, "%.*f", _Digits, mouseDnAsk);
+            ttipTextPtr = 14 + sprintf_s(&TOOLTIPLABELCONTENT[14], 100, "%.*f", symbol_digits, mouseDnAsk);
 
             TOOLTIPLABELCONTENT[ttipTextPtr] = ';';
             TOOLTIPLABELCONTENT[ttipTextPtr + 1] = ' ';
 
             ttipTextPtr += 2;
 
-            ttipTextPtr = ttipTextPtr + sprintf_s(&TOOLTIPLABELCONTENT[ttipTextPtr], 100, "%.*f", _Digits, mouseDnBid);
+            ttipTextPtr = ttipTextPtr + sprintf_s(&TOOLTIPLABELCONTENT[ttipTextPtr], 100, "%.*f", symbol_digits, mouseDnBid);
 
             TOOLTIPLABELCONTENT[ttipTextPtr] = ';';
             TOOLTIPLABELCONTENT[ttipTextPtr + 1] = ' ';
 
             ttipTextPtr += 2;
 
-            sprintf_s(&TOOLTIPLABELCONTENT[ttipTextPtr], 100, "%.*f", doubleSignificantPlaces, ((mouseDnAsk - mouseDnBid) * _DigitsMultiplier) * PipsDividerMultiplier);
+            sprintf_s(&TOOLTIPLABELCONTENT[ttipTextPtr], 100, "%.*f", doubleSignificantPlaces, ((mouseDnAsk - mouseDnBid) * price_multiplier) * PipsDividerMultiplier);
 
             SetWindowTextA(rootWnd, TOOLTIPLABELCONTENT);
 
@@ -723,7 +723,7 @@ void CTickChartModule::TickChartTTipChanged(int posX, int posY, short LBUTTON_st
             TOOLTIPLABELCONTENT[15] = ':';
             TOOLTIPLABELCONTENT[16] = ' ';
 
-            ttipTextPtr = 17 + sprintf_s(&TOOLTIPLABELCONTENT[17], 100, "%.*f", doubleSignificantPlaces, ((asksTab[calculatedIndex] - mouseDnAsk) * _DigitsMultiplier) * PipsDividerMultiplier);
+            ttipTextPtr = 17 + sprintf_s(&TOOLTIPLABELCONTENT[17], 100, "%.*f", doubleSignificantPlaces, ((asksTab[calculatedIndex] - mouseDnAsk) * price_multiplier) * PipsDividerMultiplier);
 
             TOOLTIPLABELCONTENT[ttipTextPtr] = ';';
             TOOLTIPLABELCONTENT[ttipTextPtr + 1] = ' ';
@@ -733,7 +733,7 @@ void CTickChartModule::TickChartTTipChanged(int posX, int posY, short LBUTTON_st
 
             ttipTextPtr += 5;
 
-            ttipTextPtr = ttipTextPtr + sprintf_s(&TOOLTIPLABELCONTENT[ttipTextPtr], 100, "%.*f", doubleSignificantPlaces, ((bidsTab[calculatedIndex] - mouseDnBid) * _DigitsMultiplier) * PipsDividerMultiplier);
+            ttipTextPtr = ttipTextPtr + sprintf_s(&TOOLTIPLABELCONTENT[ttipTextPtr], 100, "%.*f", doubleSignificantPlaces, ((bidsTab[calculatedIndex] - mouseDnBid) * price_multiplier) * PipsDividerMultiplier);
 
             TOOLTIPLABELCONTENT[ttipTextPtr] = ';';
             TOOLTIPLABELCONTENT[ttipTextPtr + 1] = ' ';
@@ -769,9 +769,9 @@ void CTickChartModule::TickChartTTipChanged(int posX, int posY, short LBUTTON_st
                refreshRect.right = mouseDnPosX + 1;
             }
             refreshRect.top = 1;
-            refreshRect.bottom = tickChart1.Height() - 1;
+            refreshRect.bottom = tick_chart.Height() - 1;
 
-            tickChart1.ApplyAlphaBlend(tChHWnd, refreshRect.left, refreshRect.top, (refreshRect.right - refreshRect.left), (refreshRect.bottom - refreshRect.top), refreshRect.left, refreshRect.top);
+            tick_chart.ApplyAlphaBlend(tChHWnd, refreshRect.left, refreshRect.top, (refreshRect.right - refreshRect.left), (refreshRect.bottom - refreshRect.top), refreshRect.left, refreshRect.top);
 
             HDC hDc = GetDC(tChHWnd);
             old_pen = (HPEN)SelectObject(hDc, m_simplePen);
@@ -784,7 +784,6 @@ void CTickChartModule::TickChartTTipChanged(int posX, int posY, short LBUTTON_st
 
             partialToRefresh = true;
          }
-         insideArea = true;
       }
       else
       {
@@ -805,7 +804,7 @@ void CTickChartModule::BarChartTTipChanged(int posX, int posY, short LBUTTON_sta
       static RECT refreshRect = {0, 0, 0, 0};
 
       static bool defTitleChanged = false;
-      int startPoint = (int)tickChart1.GetDataAreaStartPoint();
+      int startPoint = (int)tick_chart.GetDataAreaStartPoint();
       if ((uint)(posX - startPoint) < 1000 && (uint)(posY - 1) < 289)
       {
          int ttipTextPtr = 0;
@@ -837,7 +836,7 @@ void CTickChartModule::BarChartTTipChanged(int posX, int posY, short LBUTTON_sta
             mouseDnBarPosY = posY;
             barStartIndex = calculatedIndex;
 
-            double pointerPrice = ((286 - posY) * barChart1.GetPointsPerPixel() * _Point) + barChart1.VScaleMin();
+            double pointerPrice = ((286 - posY) * bar_chart.GetPointsPerPixel() * symbol_point_size) + bar_chart.VScaleMin();
 
             time_t t0 = timesTabInMs[calculatedIndex];
             time_t t1 = t0 / 1000;
@@ -866,8 +865,6 @@ void CTickChartModule::BarChartTTipChanged(int posX, int posY, short LBUTTON_sta
             TOOLTIPLABELCONTENT[12] = ';';
             TOOLTIPLABELCONTENT[13] = ' ';
 
-            ttipTextPtr = 14 + sprintf_s(&TOOLTIPLABELCONTENT[14], 100, "%.*f", _Digits, pointerPrice);
-
             SetWindowTextA(rootWnd, TOOLTIPLABELCONTENT);
 
             defTitleChanged = true;
@@ -893,7 +890,7 @@ void CTickChartModule::BarChartTTipChanged(int posX, int posY, short LBUTTON_sta
 
             int barsCount = abs(mouseDnBarPosX - posX) / (*appSets).barChartCandleWidth;
 
-            double priceDiff = (abs(mouseDnBarPosY - posY) * barChart1.GetPointsPerPixel()) * PipsDividerMultiplier;
+            double priceDiff = (abs(mouseDnBarPosY - posY) * bar_chart.GetPointsPerPixel()) * PipsDividerMultiplier;
 
             TOOLTIPLABELCONTENT[0] = 't';
             TOOLTIPLABELCONTENT[1] = 'm';
@@ -970,9 +967,9 @@ void CTickChartModule::BarChartTTipChanged(int posX, int posY, short LBUTTON_sta
                refreshRect.right = mouseDnBarPosX + 1;
             }
             refreshRect.top = 1;
-            refreshRect.bottom = barChart1.Height() - 1;
+            refreshRect.bottom = bar_chart.Height() - 1;
 
-            barChart1.ApplyAlphaBlend(bChHWnd, refreshRect.left, refreshRect.top, (refreshRect.right - refreshRect.left), (refreshRect.bottom - refreshRect.top), refreshRect.left, refreshRect.top);
+            bar_chart.ApplyAlphaBlend(bChHWnd, refreshRect.left, refreshRect.top, (refreshRect.right - refreshRect.left), (refreshRect.bottom - refreshRect.top), refreshRect.left, refreshRect.top);
 
             HDC hDc = GetDC(bChHWnd);
             old_pen = (HPEN)SelectObject(hDc, m_simplePen);
@@ -1043,13 +1040,17 @@ void CTickChartModule::SetRangeBtnClicked()
    {
       if (newRange > 1)
       {
-         double halfDistance = NormalizeDouble((newRange / 2.0) * _Point, _Digits);
-         double meanPrice = NormalizeDouble((bidsTab[chartSearchIndex] + asksTab[chartSearchIndex]) / 2.0, _Digits);
-         upRangeLineValue = NormalizeDouble(meanPrice + halfDistance, _Digits);
-         downRangeLineValue = NormalizeDouble(meanPrice - halfDistance, _Digits);
+         NormalizationArgs args = {(newRange / 2.0) * symbol_point_size, symbol_digits};
+         double halfDistance = NormalizeDouble(args);
+         args.value = (bidsTab[chartSearchIndex] + asksTab[chartSearchIndex]) / 2.0;
+         double meanPrice = NormalizeDouble(args);
+         args.value = meanPrice + halfDistance;
+         upRangeLineValue = NormalizeDouble(args);
+         args.value = meanPrice - halfDistance;
+         downRangeLineValue = NormalizeDouble(args);
 
          char charBuffer[50];
-         sprintf_s(charBuffer, "%.*f", doubleSignificantPlaces, (abs(upRangeLineValue - downRangeLineValue) * _DigitsMultiplier) * PipsDividerMultiplier);
+         sprintf_s(charBuffer, "%.*f", doubleSignificantPlaces, (abs(upRangeLineValue - downRangeLineValue) * price_multiplier) * PipsDividerMultiplier);
 
          size_t len = strlen(charBuffer);
 
@@ -1062,8 +1063,8 @@ void CTickChartModule::SetRangeBtnClicked()
 
          SetDlgItemTextA(hWnd, IDC_INFOLABEL, charBuffer);
 
-         tickChart1.MoveMarketProfileRange(downRangeLineValue, upRangeLineValue);
-         tickChart1.VScaleParams(upRangeLineValue, downRangeLineValue, 10, true);
+         tick_chart.MoveMarketProfileRange(downRangeLineValue, upRangeLineValue);
+         tick_chart.VScaleParams(upRangeLineValue, downRangeLineValue, 10, true);
 
          PostMessage(TerminalParentChartHWnd, WM_LBUTTONUP, 0, -SET_RANGE);
       }
@@ -1081,12 +1082,12 @@ void CTickChartModule::SetBarTickSizeBtnClicked()
          if (chartSearchIndex > -1)
          {
             RecalculateBarChart(chartSearchIndex, false);
-            barChart1.SetActualBidPrice(bidsTab[chartSearchIndex], barChartHigh, barChartLow);
-            barChart1.UpdateChart(true);
+            bar_chart.SetActualBidPrice(bidsTab[chartSearchIndex], barChartHigh, barChartLow);
+            bar_chart.UpdateChart(true);
          }
          else
          {
-            barChart1.SetBarChartTickSize((*appSets).barChartTickSize, false);
+            bar_chart.SetBarChartTickSize((*appSets).barChartTickSize, false);
          }
       }
    }
@@ -1094,7 +1095,7 @@ void CTickChartModule::SetBarTickSizeBtnClicked()
 void CTickChartModule::RecalculateBarChart(int endInd, bool redraw)
 {
    barChartTickSizeCounter = 0;
-   barChart1.FillSeries(bidsTab[0], bidsTab[0], bidsTab[0], bidsTab[0], 0, 0);
+   bar_chart.FillSeries(bidsTab[0], bidsTab[0], bidsTab[0], bidsTab[0], 0, 0);
 
    barChartHigh = DBL_MAX * -1.0;
    barChartLow = DBL_MAX;
@@ -1111,15 +1112,15 @@ void CTickChartModule::RecalculateBarChart(int endInd, bool redraw)
       if (barChartTickSizeCounter == (*appSets).barChartTickSize)
       {
          ulong parameter = timesTabInMs[i] - timesTabInMs[i - (*appSets).barChartTickSize + 1];
-         barChart1.AppendPricesTimeAndParameters(bidsTab[i - (*appSets).barChartTickSize + 1], bidsTab[i], barChartHigh, barChartLow, timesTabInMs[i - (*appSets).barChartTickSize + 1] / 1000, parameter);
+         bar_chart.AppendPricesTimeAndParameters(bidsTab[i - (*appSets).barChartTickSize + 1], bidsTab[i], barChartHigh, barChartLow, timesTabInMs[i - (*appSets).barChartTickSize + 1] / 1000, parameter);
 
          barChartHigh = DBL_MAX * -1.0;
          barChartLow = DBL_MAX;
          barChartTickSizeCounter = 0;
       }
-      barChart1.UpdateMarketProfile(asksTab[i], bidsTab[i]);
+      bar_chart.UpdateMarketProfile(asksTab[i], bidsTab[i]);
    }
-   barChart1.SetBarChartTickSize((*appSets).barChartTickSize, redraw);
+   bar_chart.SetBarChartTickSize((*appSets).barChartTickSize, redraw);
 }
 void CTickChartModule::MoveRangeUpBtnClicked()
 {
@@ -1133,14 +1134,16 @@ void CTickChartModule::MoveRangeUpBtnClicked()
    {
       if (valueToMove > 0)
       {
-         upRangeLineValue = NormalizeDouble(upRangeLineValue + (valueToMove * _Point), _Digits);
+         NormalizationArgs args = {upRangeLineValue + (valueToMove * symbol_point_size), symbol_digits};
+         upRangeLineValue = NormalizeDouble(args);
          if ((*appSets).freezeRanges)
          {
-            downRangeLineValue = NormalizeDouble(downRangeLineValue + (valueToMove * _Point), _Digits);
+            args.value = downRangeLineValue + (valueToMove * symbol_point_size);
+            downRangeLineValue = NormalizeDouble(args);
          }
 
-         tickChart1.MoveMarketProfileRange(downRangeLineValue, upRangeLineValue);
-         tickChart1.VScaleParams(upRangeLineValue, downRangeLineValue, 10);
+         tick_chart.MoveMarketProfileRange(downRangeLineValue, upRangeLineValue);
+         tick_chart.VScaleParams(upRangeLineValue, downRangeLineValue, 10);
 
          PostMessage(TerminalParentChartHWnd, WM_LBUTTONUP, 0, -MOVE_RANGE_UP);
       }
@@ -1158,14 +1161,16 @@ void CTickChartModule::MoveRangeDownBtnClicked()
    {
       if (valueToMove > 0)
       {
-         upRangeLineValue = NormalizeDouble(upRangeLineValue - (valueToMove * _Point), _Digits);
+         NormalizationArgs args = {upRangeLineValue - (valueToMove * symbol_point_size), symbol_digits};
+         upRangeLineValue = NormalizeDouble(args);
          if ((*appSets).freezeRanges)
          {
-            downRangeLineValue = NormalizeDouble(downRangeLineValue - (valueToMove * _Point), _Digits);
+            args.value = downRangeLineValue - (valueToMove * symbol_point_size);
+            downRangeLineValue = NormalizeDouble(args);
          }
 
-         tickChart1.MoveMarketProfileRange(downRangeLineValue, upRangeLineValue);
-         tickChart1.VScaleParams(upRangeLineValue, downRangeLineValue, 10);
+         tick_chart.MoveMarketProfileRange(downRangeLineValue, upRangeLineValue);
+         tick_chart.VScaleParams(upRangeLineValue, downRangeLineValue, 10);
 
          PostMessage(TerminalParentChartHWnd, WM_LBUTTONUP, 0, -MOVE_RANGE_DOWN);
       }
@@ -1195,26 +1200,26 @@ void CTickChartModule::DeleteSignedLevelsBtnClicked()
 }
 void CTickChartModule::TickChartZoomChanged()
 {
-   tickChart1.SetTickSampleWidth((*appSets).tickChartZoom, false);
+   tick_chart.SetTickSampleWidth((*appSets).tickChartZoom, false);
 
    if (seriesIndex == -1)
    {
       return;
    }
 
-   tickChart1.UpdateChart();
+   tick_chart.UpdateChart();
 }
 void CTickChartModule::BarChartCandleWidthChanged()
 {
-   barChart1.SetBarChartBarWidth((*appSets).barChartCandleWidth, seriesIndex > -1);
+   bar_chart.SetBarChartBarWidth((*appSets).barChartCandleWidth, seriesIndex > -1);
 }
 void CTickChartModule::TickChartTimeSepChanged()
 {
-   tickChart1.SetInterval((*appSets).tickChartTimeSep, seriesIndex > -1);
+   tick_chart.SetInterval((*appSets).tickChartTimeSep, seriesIndex > -1);
 }
 void CTickChartModule::BarChartTimeSepChanged()
 {
-   barChart1.SetInterval((*appSets).barChartTimeSep, seriesIndex > -1);
+   bar_chart.SetInterval((*appSets).barChartTimeSep, seriesIndex > -1);
 }
 void CTickChartModule::FreezeRanges()
 {
@@ -1228,27 +1233,27 @@ void CTickChartModule::ResetCharts()
 }
 void CTickChartModule::RefreshTickChartWindow()
 {
-   tickChart1.RefreshWindow();
+   tick_chart.RefreshWindow();
 }
 void CTickChartModule::RefreshTickChartWindow(int nXDest, int nYDest, int nWidth, int nHeight, int nXSrc, int nYSrc)
 {
-   tickChart1.RefreshWindow(nXDest, nYDest, nWidth, nHeight, nXSrc, nYSrc);
+   tick_chart.RefreshWindow(nXDest, nYDest, nWidth, nHeight, nXSrc, nYSrc);
 }
 void CTickChartModule::RefreshBarChartWindow()
 {
-   barChart1.RefreshWindow();
+   bar_chart.RefreshWindow();
 }
 void CTickChartModule::RefreshBarChartWindow(int nXDest, int nYDest, int nWidth, int nHeight, int nXSrc, int nYSrc)
 {
-   barChart1.RefreshWindow(nXDest, nYDest, nWidth, nHeight, nXSrc, nYSrc);
+   bar_chart.RefreshWindow(nXDest, nYDest, nWidth, nHeight, nXSrc, nYSrc);
 }
 void CTickChartModule::AskLineVisChanged()
 {
-   tickChart1.ChartVisibility(0, (int)(*appSets).askLineVis, seriesIndex > -1);
+   tick_chart.ChartVisibility(0, (int)(*appSets).askLineVis, seriesIndex > -1);
 }
 void CTickChartModule::BidLineVisChanged()
 {
-   tickChart1.ChartVisibility(1, (int)(*appSets).bidLineVis, seriesIndex > -1);
+   tick_chart.ChartVisibility(1, (int)(*appSets).bidLineVis, seriesIndex > -1);
 };
 void CTickChartModule::SignedLevelsVisChanged()
 {
@@ -1262,73 +1267,73 @@ void CTickChartModule::SignedLevelsVisChanged()
       PostMessage(TerminalParentChartHWnd, WM_LBUTTONUP, 0, -SHOW_SIGNED_LEVELS);
    }
 
-   tickChart1.ShowSignedLevels((*appSets).signedLevelsVis, !(*appSets).signedLevelsVis);
-   barChart1.ShowSignedLevels((*appSets).signedLevelsVis, !(*appSets).signedLevelsVis);
+   tick_chart.ShowSignedLevels((*appSets).signedLevelsVis, !(*appSets).signedLevelsVis);
+   bar_chart.ShowSignedLevels((*appSets).signedLevelsVis, !(*appSets).signedLevelsVis);
 }
 void CTickChartModule::UpdateVisLevels(bool updateChart)
 {
-   tickChart1.ShowSignedLevels((*appSets).signedLevelsVis, updateChart);
-   barChart1.ShowSignedLevels((*appSets).signedLevelsVis, updateChart);
+   tick_chart.ShowSignedLevels((*appSets).signedLevelsVis, updateChart);
+   bar_chart.ShowSignedLevels((*appSets).signedLevelsVis, updateChart);
 }
 void CTickChartModule::AutoMovingRangeChanged()
 {
 }
 void CTickChartModule::MProfileAskVisChanged()
 {
-   if (_Digits <= 5)
+   if (symbol_digits <= 5)
    {
-      tickChart1.ShowMProfileDataAsk((*appSets).mProfileAskVis, seriesIndex > -1);
-      barChart1.ShowMProfileData((*appSets).mProfileAskVis || (*appSets).mProfileBidVis, seriesIndex > -1);
+      tick_chart.ShowMProfileDataAsk((*appSets).mProfileAskVis, seriesIndex > -1);
+      bar_chart.ShowMProfileData((*appSets).mProfileAskVis || (*appSets).mProfileBidVis, seriesIndex > -1);
    }
 }
 void CTickChartModule::MProfileBidVisChanged()
 {
-   if (_Digits <= 5)
+   if (symbol_digits <= 5)
    {
-      tickChart1.ShowMProfileDataBid((*appSets).mProfileBidVis, seriesIndex > -1);
-      barChart1.ShowMProfileData((*appSets).mProfileAskVis || (*appSets).mProfileBidVis, seriesIndex > -1);
+      tick_chart.ShowMProfileDataBid((*appSets).mProfileBidVis, seriesIndex > -1);
+      bar_chart.ShowMProfileData((*appSets).mProfileAskVis || (*appSets).mProfileBidVis, seriesIndex > -1);
    }
 }
 void CTickChartModule::TickChartVisChanged()
 {
-   tickChart1.ShowMainPlot((*appSets).tickChartVis, seriesIndex > -1);
+   tick_chart.ShowMainPlot((*appSets).tickChartVis, seriesIndex > -1);
 }
 void CTickChartModule::BarChartVisChanged()
 {
-   barChart1.ShowMainPlot((*appSets).barChartVis, seriesIndex > -1);
+   bar_chart.ShowMainPlot((*appSets).barChartVis, seriesIndex > -1);
 }
 void CTickChartModule::TimeParameterVisChanged()
 {
-   tickChart1.ShowTimeParameter((*appSets).timeParamVis, seriesIndex > -1);
-   barChart1.ShowTimeParameter((*appSets).timeParamVis, seriesIndex > -1);
+   tick_chart.ShowTimeParameter((*appSets).timeParamVis, seriesIndex > -1);
+   bar_chart.ShowTimeParameter((*appSets).timeParamVis, seriesIndex > -1);
 }
 void CTickChartModule::CumulativeAskVisChanged()
 {
-   tickChart1.ShowCumulativeDataAsk((*appSets).cumulativeAskVis, seriesIndex > -1);
+   tick_chart.ShowCumulativeDataAsk((*appSets).cumulativeAskVis, seriesIndex > -1);
 }
 void CTickChartModule::CumulativeBidVisChanged()
 {
-   tickChart1.ShowCumulativeDataBid((*appSets).cumulativeBidVis, seriesIndex > -1);
+   tick_chart.ShowCumulativeDataBid((*appSets).cumulativeBidVis, seriesIndex > -1);
 }
 void CTickChartModule::DistanceVisChanged()
 {
    if (EnableSpeedStats)
    {
-      tickChart1.ShowTravelledDistance((*appSets).distanceVis, seriesIndex > -1);
+      tick_chart.ShowTravelledDistance((*appSets).distanceVis, seriesIndex > -1);
    }
 }
 void CTickChartModule::RoadVisChanged()
 {
    if (EnableSpeedStats)
    {
-      tickChart1.ShowTravelledRoad((*appSets).roadVis, seriesIndex > -1);
+      tick_chart.ShowTravelledRoad((*appSets).roadVis, seriesIndex > -1);
    }
 }
 void CTickChartModule::TicksArrivedVisChanged()
 {
    if (EnableSpeedStats)
    {
-      tickChart1.ShowTicksArrived((*appSets).ticksArrivedVis, seriesIndex > -1);
+      tick_chart.ShowTicksArrived((*appSets).ticksArrivedVis, seriesIndex > -1);
    }
 }
 void CTickChartModule::EventsOnTickChartVisChanged()
@@ -1345,14 +1350,14 @@ void CTickChartModule::OrdersVisChanged()
    }
    else
    {
-      tickChart1.ShowOrderPoint(false, seriesIndex > -1);
-      barChart1.ShowOrderPoint(false, seriesIndex > -1);
+      tick_chart.ShowOrderPoint(false, seriesIndex > -1);
+      bar_chart.ShowOrderPoint(false, seriesIndex > -1);
    }
 }
 void CTickChartModule::ColorTimeParamChanged()
 {
-   tickChart1.ColorTimeParameter((*appSets).colorTimeParam, seriesIndex > -1);
-   barChart1.ColorTimeParameter((*appSets).colorTimeParam, seriesIndex > -1);
+   tick_chart.ColorTimeParameter((*appSets).colorTimeParam, seriesIndex > -1);
+   bar_chart.ColorTimeParameter((*appSets).colorTimeParam, seriesIndex > -1);
 }
 void CTickChartModule::ZoomTimeParamChanged()
 {
@@ -1381,10 +1386,10 @@ bool CTickChartModule::SaveTicksClicked(LPCTSTR pszFileName)
          strContent.append(temp);
          strContent += ',';
 
-         sprintf_s(temp, 100, "%.*f", _Digits, asksTab[i]);
+         sprintf_s(temp, 100, "%.*f", symbol_digits, asksTab[i]);
          strContent.append(temp);
          strContent += ',';
-         sprintf_s(temp, 100, "%.*f", _Digits, bidsTab[i]);
+         sprintf_s(temp, 100, "%.*f", symbol_digits, bidsTab[i]);
          strContent.append(temp);
          strContent += '\n';
       }
@@ -1532,7 +1537,7 @@ bool CTickChartModule::ReadTickDataFromFile(LPCTSTR pszFileName)
                }
             }
          }
-         delete pszFileText;
+         delete[] pszFileText;
       }
       CloseHandle(hFile);
    }
@@ -1547,8 +1552,8 @@ void CTickChartModule::ResetData()
    // barChartTickSizeCounter = 0;
    // chartSearchIndex = -1;
 
-   // tickChart1.FillSeries(last_tick.ask, last_tick.bid, 0, 0, 0, 0);
-   // barChart1.FillSeries(last_tick.bid, last_tick.bid, last_tick.bid, last_tick.bid, 0, 0);
+   // tick_chart.FillSeries(last_tick.ask, last_tick.bid, 0, 0, 0, 0);
+   // bar_chart.FillSeries(last_tick.bid, last_tick.bid, last_tick.bid, last_tick.bid, 0, 0);
 }
 void CTickChartModule::UpdateBiggerBarsData(bool updateChart)
 {
@@ -1558,8 +1563,8 @@ void CTickChartModule::UpdateBiggerBarsData(bool updateChart)
       newMultiplier = 4;
    }
 
-   tickChart1.BiggerBarsData(newMultiplier, updateChart);
-   barChart1.BiggerBarsData(newMultiplier, updateChart);
+   tick_chart.BiggerBarsData(newMultiplier, updateChart);
+   bar_chart.BiggerBarsData(newMultiplier, updateChart);
 }
 int CTickChartModule::OnTimer()
 {
@@ -1604,8 +1609,8 @@ int CTickChartModule::OnTimer()
 }
 void CTickChartModule::AppendLevels(const double levels[], const int levelsSize, char (*descriptions)[100], const int descrSize, const bool update)
 {
-   tickChart1.AppendSignedLevels(levels, levelsSize, descriptions, descrSize, false);
-   barChart1.AppendSignedLevels(levels, levelsSize, descriptions, descrSize, false);
+   tick_chart.AppendSignedLevels(levels, levelsSize, descriptions, descrSize, false);
+   bar_chart.AppendSignedLevels(levels, levelsSize, descriptions, descrSize, false);
    if (update && seriesIndex > -1)
    {
       PostMessageA(rootWnd, UPDATE_CHARTS, 0, 1);
@@ -1613,8 +1618,8 @@ void CTickChartModule::AppendLevels(const double levels[], const int levelsSize,
 }
 void CTickChartModule::AppendTransactionsPoints(const long transactions[][4], char (*descriptions)[64], const int size, const bool update)
 {
-   tickChart1.AppendTransactionsPoints(transactions, descriptions, size);
-   barChart1.AppendTransactionsPoints(transactions, descriptions, size);
+   tick_chart.AppendTransactionsPoints(transactions, descriptions, size);
+   bar_chart.AppendTransactionsPoints(transactions, descriptions, size);
    if (update && seriesIndex > -1)
    {
       PostMessageA(rootWnd, UPDATE_CHARTS, 0, 1);
@@ -1655,7 +1660,8 @@ bool CTickChartModule::RangeLineDragged(double &newValue, int index)
    {
       if ((*appSets).freezeRanges)
       {
-         double difference = NormalizeDouble(newValue - upRangeLineValue, _Digits);
+         NormalizationArgs args = {newValue - upRangeLineValue, symbol_digits};
+         double difference = NormalizeDouble(args);
          downRangeLineValue = downRangeLineValue + difference;
       }
       upRangeLineValue = newValue;
@@ -1664,13 +1670,14 @@ bool CTickChartModule::RangeLineDragged(double &newValue, int index)
    {
       if ((*appSets).freezeRanges)
       {
-         double difference = NormalizeDouble(newValue - downRangeLineValue, _Digits);
+         NormalizationArgs args = {newValue - downRangeLineValue, symbol_digits};
+         double difference = NormalizeDouble(args);
          upRangeLineValue = upRangeLineValue + difference;
       }
       downRangeLineValue = newValue;
    }
-   tickChart1.MoveMarketProfileRange(downRangeLineValue, upRangeLineValue);
-   tickChart1.VScaleParams(upRangeLineValue, downRangeLineValue, 10, false);
+   tick_chart.MoveMarketProfileRange(downRangeLineValue, upRangeLineValue);
+   tick_chart.VScaleParams(upRangeLineValue, downRangeLineValue, 10, false);
 
    PostMessage(TerminalParentChartHWnd, WM_LBUTTONUP, 0, -MOVE_RANGE_UP);
    PostMessageA(rootWnd, UPDATE_CHARTS, 1, 1);
@@ -1695,9 +1702,9 @@ bool CTickChartModule::SetSymbolParameters(SYMBOLSETS &sets, char *date, int dat
    PipsDivider = sets.pipsDivider;
    PipsDividerMultiplier = 1.0 / PipsDivider;
    DarkMode = sets.darkMode;
-   _Point = sets.pointValue;
-   _Digits = sets.digitsCount;
-   _DigitsMultiplier = POWER_OF_10[_Digits];
+   symbol_point_size = sets.pointValue;
+   symbol_digits = sets.digitsCount;
+   price_multiplier = POWER_OF_10[symbol_digits];
    ExpandDateRange = sets.expandDateRange;
    ExcludePremarketData = sets.excludePremarketData;
    EnableSpeedStats = sets.enableSpeedStats;
@@ -1708,10 +1715,8 @@ bool CTickChartModule::SetSymbolParameters(SYMBOLSETS &sets, char *date, int dat
    last_tick.bid = sets.initBid;
    last_tick.time = sets.initTime;
 
-   time_t midnightDt = (sets.initTime / (3600 * 24)) * (3600 * 24);
-
-   tickChart1.SetColorMode(DarkMode);
-   barChart1.SetColorMode(DarkMode);
+   tick_chart.SetColorMode(DarkMode);
+   bar_chart.SetColorMode(DarkMode);
 
    return (true);
 }
@@ -1774,7 +1779,6 @@ bool CTickChartModule::TickDataPartialLoaded(MqlTick tckArray[], int arrSize)
             realTempoValsTab[0] = (*appSets).timerInterval;
          }
 
-         int stopIdx = (seriesIndex + arrSize - 1) < dataSize ? arrSize : dataSize - seriesIndex;
          for (int ind = 1; ind < arrSize; ind++)
          {
             seriesIndex++;
@@ -1885,8 +1889,8 @@ void CTickChartModule::AutoScrollUpdate(bool forceVScaleUpdate)
       barChartHigh = DBL_MAX * -1.0;
       barChartLow = DBL_MAX;
 
-      tickChart1.FillSeries(asksTab[0], bidsTab[0], 0, 0, 0, 0);
-      barChart1.FillSeries(bidsTab[0], bidsTab[0], bidsTab[0], bidsTab[0], 0, 0, false);
+      tick_chart.FillSeries(asksTab[0], bidsTab[0], 0, 0, 0, 0);
+      bar_chart.FillSeries(bidsTab[0], bidsTab[0], bidsTab[0], bidsTab[0], 0, 0, false);
    }
 
    bool updateBarChart = false;
@@ -1934,17 +1938,18 @@ void CTickChartModule::AutoScrollUpdate(bool forceVScaleUpdate)
          {
             for (int j = i - 1; j > 0; j--)
             {
-               wholeRoad += abs(bidsTab[j] - bidsTab[j - 1]) * _DigitsMultiplier;
+               wholeRoad += abs(bidsTab[j] - bidsTab[j - 1]) * price_multiplier;
                if ((long)((timesTabInMs[i - 1] - timesTabInMs[j]) / 1000) >= noOfSecondsForCalc)
                {
-                  priceDistance = (short)NormalizeDouble((bidsTab[i - 1] - bidsTab[j]) * _DigitsMultiplier, 0);
+                  NormalizationArgs args = {(bidsTab[i - 1] - bidsTab[j]) * price_multiplier, 0};
+                  priceDistance = (short)NormalizeDouble(args);
                   ticksElapsed = short(i - 1 - j);
                   break;
                }
             }
          }
       }
-      tickChart1.AppendPricesTimeAndParameters(asksTab[i], bidsTab[i], timesTabInMs[i] / 1000, parameter, askChange, bidChange, (short)wholeRoad, priceDistance, ticksElapsed);
+      tick_chart.AppendPricesTimeAndParameters(asksTab[i], bidsTab[i], timesTabInMs[i] / 1000, parameter, askChange, bidChange, (short)wholeRoad, priceDistance, ticksElapsed);
 
       barChartHigh = std::max(barChartHigh, bidsTab[i]);
 
@@ -1953,7 +1958,7 @@ void CTickChartModule::AutoScrollUpdate(bool forceVScaleUpdate)
       if (barChartTickSizeCounter == (*appSets).barChartTickSize)
       {
          parameter = timesTabInMs[i] - timesTabInMs[i - (*appSets).barChartTickSize + 1];
-         barChart1.AppendPricesTimeAndParameters(bidsTab[i - (*appSets).barChartTickSize + 1], bidsTab[i], barChartHigh, barChartLow, timesTabInMs[i - (*appSets).barChartTickSize + 1] / 1000, parameter);
+         bar_chart.AppendPricesTimeAndParameters(bidsTab[i - (*appSets).barChartTickSize + 1], bidsTab[i], barChartHigh, barChartLow, timesTabInMs[i - (*appSets).barChartTickSize + 1] / 1000, parameter);
 
          barChartHigh = DBL_MAX * -1.0;
          barChartLow = DBL_MAX;
@@ -1961,8 +1966,8 @@ void CTickChartModule::AutoScrollUpdate(bool forceVScaleUpdate)
          updateBarChart = true;
       }
 
-      tickChart1.UpdateMarketProfile(asksTab[i], bidsTab[i]);
-      barChart1.UpdateMarketProfile(asksTab[i], bidsTab[i]);
+      tick_chart.UpdateMarketProfile(asksTab[i], bidsTab[i]);
+      bar_chart.UpdateMarketProfile(asksTab[i], bidsTab[i]);
    }
 
    if ((*appSets).autoMovingRange)
@@ -1970,25 +1975,28 @@ void CTickChartModule::AutoScrollUpdate(bool forceVScaleUpdate)
       double halfDistance = (upRangeLineValue - downRangeLineValue) / 2.0;
       (*reinterpret_cast<unsigned long long *>(&halfDistance)) &= 0xffffffffffffffff >> 1;
       double meanPrice = (bidsTab[chartSearchIndex] + asksTab[chartSearchIndex]) / 2.0;
-      double newHPrice = NormalizeDouble(meanPrice + halfDistance, _Digits);
-      double newLPrice = NormalizeDouble(meanPrice - halfDistance, _Digits);
+
+      NormalizationArgs args = {meanPrice + halfDistance, symbol_digits};
+      double newHPrice = NormalizeDouble(args);
+      args.value = meanPrice - halfDistance;
+      double newLPrice = NormalizeDouble(args);
 
       upRangeLineValue = newHPrice;
       downRangeLineValue = newLPrice;
-      tickChart1.VScaleParams(newHPrice, newLPrice, 10, false);
-      tickChart1.MoveMarketProfileRange(newLPrice, newHPrice);
+      tick_chart.VScaleParams(newHPrice, newLPrice, 10, false);
+      tick_chart.MoveMarketProfileRange(newLPrice, newHPrice);
       PostMessage(TerminalParentChartHWnd, WM_LBUTTONUP, 0, -SET_RANGE);
    }
-   tickChart1.UpdateChart(forceVScaleUpdate);
+   tick_chart.UpdateChart(forceVScaleUpdate);
 
-   barChart1.SetActualBidPrice(bidsTab[chartSearchIndex], barChartHigh, barChartLow);
+   bar_chart.SetActualBidPrice(bidsTab[chartSearchIndex], barChartHigh, barChartLow);
    if (updateBarChart)
    {
-      barChart1.UpdateChart(forceVScaleUpdate);
+      bar_chart.UpdateChart(forceVScaleUpdate);
    }
    else
    {
-      barChart1.UpdateCurrentPriceLevel();
+      bar_chart.UpdateCurrentPriceLevel();
    }
 }
 bool CTickChartModule::UpdateCharts(byte mode, bool forceVScaleUpdate)
@@ -1997,16 +2005,16 @@ bool CTickChartModule::UpdateCharts(byte mode, bool forceVScaleUpdate)
    {
    case 0:
    {
-      tickChart1.UpdateChart(forceVScaleUpdate);
-      barChart1.UpdateChart(forceVScaleUpdate);
+      tick_chart.UpdateChart(forceVScaleUpdate);
+      bar_chart.UpdateChart(forceVScaleUpdate);
    }
    break;
    case 1:
-      tickChart1.UpdateChart(forceVScaleUpdate);
+      tick_chart.UpdateChart(forceVScaleUpdate);
       break;
    // mode==2
    default:
-      barChart1.UpdateChart(forceVScaleUpdate);
+      bar_chart.UpdateChart(forceVScaleUpdate);
       break;
    }
    return (true);

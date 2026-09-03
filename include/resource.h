@@ -148,7 +148,7 @@ typedef struct TICKCHARTMODULESETTINGS
 typedef struct SYMBOLPARAMETERS
 {
    double pointValue;
-   int digitsCount;
+   unsigned int digitsCount;
    int pipsDivider;
    bool excludePremarketData;
    bool expandDateRange;

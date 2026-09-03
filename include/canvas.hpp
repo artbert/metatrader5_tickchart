@@ -9,6 +9,12 @@ using ulong = unsigned long long;
 #define XRGB(r, g, b) (0xFF000000 | (byte(r) << 16) | (byte(g) << 8) | byte(b))
 #define XRGB_gdi(r, g, b) ((byte(r) << 16) | (byte(g) << 8) | byte(b))
 
+struct NormalizationArgs
+{
+   double value;
+   uint places;
+};
+
 static double POWER_OF_10[16] =
     {
         1.0, 10.0, 100.0, 1000.0, 10000.0,
@@ -16,19 +22,19 @@ static double POWER_OF_10[16] =
         1000000000.0, 10000000000.0, 100000000000.0,
         1000000000000.0, 10000000000000.0, 100000000000000.0, 1000000000000000.0};
 
-inline double NormalizeDouble(double x, uint places)
+inline double NormalizeDouble(NormalizationArgs args)
 {
-   double powTen = NAN;
-   if (places < 16)
+   double powTen = std::nan("");
+   if (args.places < 16)
    {
-      powTen = POWER_OF_10[places];
+      powTen = POWER_OF_10[args.places];
    }
    else
    {
       powTen = POWER_OF_10[15];
    }
 
-   return (floor((x * powTen) + 0.5) / powTen);
+   return (floor((args.value * powTen) + 0.5) / powTen);
 }
 extern WCHAR TIMETABLE[60][3];
 extern WCHAR WNUMBERS[10][2];
