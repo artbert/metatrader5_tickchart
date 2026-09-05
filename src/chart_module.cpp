@@ -1697,7 +1697,7 @@ bool CTickChartModule::TimeSepVLineDragged(__int64 &newValue)
    }
    return (true);
 }
-bool CTickChartModule::SetSymbolParameters(SYMBOLSETS &sets, char *date, int dateChars)
+bool CTickChartModule::SetSymbolParameters(SYMBOLSETS &sets, char *dateString)
 {
    PipsDivider = sets.pipsDivider;
    PipsDividerMultiplier = 1.0 / PipsDivider;
@@ -1709,7 +1709,7 @@ bool CTickChartModule::SetSymbolParameters(SYMBOLSETS &sets, char *date, int dat
    ExcludePremarketData = sets.excludePremarketData;
    EnableSpeedStats = sets.enableSpeedStats;
 
-   memcpy(TOOLTIPLABELCONTENT, date, dateChars);
+   strcat_s(TOOLTIPLABELCONTENT, sizeof(TOOLTIPLABELCONTENT), dateString);
 
    last_tick.ask = sets.initAsk;
    last_tick.bid = sets.initBid;

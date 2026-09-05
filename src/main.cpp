@@ -2,41 +2,19 @@
 #include <windows.h>
 #include "window_module.hpp"
 #include "mt5_tick_chart_lib.hpp"
+#include <cwchar>
 
 #define EXT extern "C" __declspec(dllexport)
 
 HINSTANCE moduleInstance;
 DWORD dwThreadId;
-EXT bool __stdcall SetSymbolParameters(SYMBOLSETS &sets, char *date, int dateChars)
+EXT bool __stdcall Initialize(SYMBOLSETS &sets, wchar_t *configFilePath, wchar_t *appTitle, char *dateString)
 {
-   return (chartModule.SetSymbolParameters(sets, date, dateChars));
-}
-EXT bool __stdcall Initialize(long long parent, const wchar_t *dataPath, const wchar_t *appTitle)
-{
-   MT5ParentChart = (HWND)parent;
-   int i = 0;
-   while (i < MAX_PATH && dataPath[i] != L'\0')
-   {
-      fullDataPath[i] = dataPath[i];
-      ++i;
-   }
-   if (i == MAX_PATH)
-   {
-      i = MAX_PATH - 1;
-   }
-   fullDataPath[i] = L'\0';
+   MT5ParentChart = (HWND)sets.currentChartHandle;
+   wcscat_s(fullDataPath, sizeof(fullDataPath), configFilePath);
+   wcscat_s(szTitle, sizeof(szTitle), appTitle);
 
-   i = 0;
-   while (i < MAX_LOADSTRING && appTitle[i] != L'\0')
-   {
-      szTitle[i] = appTitle[i];
-      ++i;
-   }
-   if (i == MAX_LOADSTRING)
-   {
-      i = MAX_LOADSTRING - 1;
-   }
-   szTitle[i] = L'\0';
+   chartModule.SetSymbolParameters(sets, dateString);
 
    if (threadHandle == nullptr)
    {

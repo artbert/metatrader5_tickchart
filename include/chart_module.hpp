@@ -116,7 +116,7 @@ public:
   bool GetRangeValData(double &upRangeVal, double &downRangeVal) const;
   bool RangeLineDragged(double &newValue, int index);
   bool TimeSepVLineDragged(time_t &newValue);
-  bool SetSymbolParameters(SYMBOLSETS &sets, char *date, int dateChars);
+  bool SetSymbolParameters(SYMBOLSETS &sets, char *dateString);
   bool TickDataLoaded(MqlTick tckArray[], int arrSize, char *date, int dateChars);
   bool OnNewTick(MqlTick &lastTick);
   bool TickDataPartialLoaded(MqlTick tckArray[], int arrSize);

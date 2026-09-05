@@ -141,14 +141,7 @@ public:
       vScaleParamsChanged = true;
       _itoa_s(barChartTickSize, DESCRIPTION, 100, 10);
 
-      strcat_s(DESCRIPTION, sizeof(DESCRIPTION), "ABC");
-
-      size_t len = strlen(DESCRIPTION);
-
-      DESCRIPTION[len] = ' ';
-      DESCRIPTION[len + 1] = 't';
-      DESCRIPTION[len + 2] = '.';
-      DESCRIPTION[len + 3] = '\0';
+      strcat_s(DESCRIPTION, sizeof(DESCRIPTION), " t.");
 
       if (update)
       {

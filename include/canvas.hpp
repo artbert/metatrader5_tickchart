@@ -6,7 +6,6 @@ using byte = unsigned char;
 using uint = unsigned int;
 using ulong = unsigned long long;
 
-#define XRGB(r, g, b) (0xFF000000 | (byte(r) << 16) | (byte(g) << 8) | byte(b))
 #define XRGB_gdi(r, g, b) ((byte(r) << 16) | (byte(g) << 8) | byte(b))
 
 struct NormalizationArgs

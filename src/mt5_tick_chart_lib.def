@@ -2,17 +2,16 @@ LIBRARY MT5TickChartDLL
 
 EXPORTS
     ; Explicit exports can go here
-SetSymbolParameters @1
-Initialize @2
-SignedLevelsAppend @3
-TickDataLoaded @4
-TickDataPartialLoaded @5
-NewRatesLoaded @6
-OnNewTick @7
-TransactionsPointsAppend @8
-GetSignedLevelData @9
-GetTimeAndPriceData @10
-GetRangeValData @11
-RangeLineDragged @12
-TimeSepVLineDragged @13
-ModuleDestroy @14
+Initialize @1
+SignedLevelsAppend @2
+TickDataLoaded @3
+TickDataPartialLoaded @4
+NewRatesLoaded @5
+OnNewTick @6
+TransactionsPointsAppend @7
+GetSignedLevelData @8
+GetTimeAndPriceData @9
+GetRangeValData @10
+RangeLineDragged @11
+TimeSepVLineDragged @12
+ModuleDestroy @13

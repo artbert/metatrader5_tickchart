@@ -147,16 +147,17 @@ typedef struct TICKCHARTMODULESETTINGS
 #pragma pack(push, 1)
 typedef struct SYMBOLPARAMETERS
 {
+   long long currentChartHandle;
+   double initAsk;
+   double initBid;
    double pointValue;
+   time_t initTime;
    unsigned int digitsCount;
    int pipsDivider;
    bool excludePremarketData;
    bool expandDateRange;
    bool darkMode;
    bool enableSpeedStats;
-   double initAsk;
-   double initBid;
-   time_t initTime;
 } SYMBOLSETS;
 
 typedef struct MQL5TICKDATA
